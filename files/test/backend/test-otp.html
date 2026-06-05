@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختبار OTP</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .step {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .step:last-child {
+      border-bottom: none;
+    }
+    
+    .step-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .step-number {
+      background: #667eea;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-left: 15px;
+      flex-shrink: 0;
+    }
+    
+    .step-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: border-color 0.3s;
+      font-family: inherit;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .input-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+      margin-bottom: 10px;
+    }
+    
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .info-box {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+    }
+    
+    .message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      display: none;
+      font-size: 14px;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      display: block;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+    
+    .message.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+      display: block;
+    }
+    
+    .token-display {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #333;
+      word-break: break-all;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    
+    .copy-btn {
+      width: auto;
+      padding: 8px 15px;
+      font-size: 12px;
+      background: #6c757d;
+      margin-top: 10px;
+    }
+    
+    .copy-btn:hover {
+      background: #5a6268;
+    }
+    
+    .success-icon {
+      color: #28a745;
+      font-size: 24px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .step.completed {
+      opacity: 0.7;
+    }
+    
+    .step.completed .step-number {
+      background: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 اختبار OTP</h1>
+    <p class="subtitle">اتبع الخطوات الثلاث أدناه</p>
+    
+    <!-- الخطوة 1: التسجيل -->
+    <div class="step" id="step1">
+      <div class="step-header">
+        <div class="step-number">1</div>
+        <div class="step-title">التسجيل أولاً</div>
+      </div>
+      
+      <div class="info-box">
+        📝 يجب أن تسجل أولاً للحصول على Token
+      </div>
+      
+      <div class="input-group">
+        <label>البريد الإلكتروني:</label>
+        <input type="email" id="email" placeholder="example@test.com" value="test@example.com">
+      </div>
+      
+      <div class="input-group">
+        <label>كلمة المرور:</label>
+        <input type="password" id="password" placeholder="كلمة المرور" value="pass123">
+      </div>
+      
+      <div class="input-group">
+        <label>رقم الهاتف:</label>
+        <input type="tel" id="phone" placeholder="0963123456" value="0963123456">
+      </div>
+      
+      <button onclick="handleRegister()">تسجيل ✓</button>
+      <div id="registerMessage"></div>
+    </div>
+    
+    <!-- الخطوة 2: طلب OTP -->
+    <div class="step" id="step2" style="display: none;">
+      <div class="step-header">
+        <div class="step-number">2</div>
+        <div class="step-title">اطلب OTP</div>
+      </div>
+      
+      <div class="info-box">
+        📱 سيتم إرسال رمز التحقق إلى رقم هاتفك عبر WhatsApp
+      </div>
+      
+      <button onclick="handleRequestOTP()">اطلب OTP الآن ✓</button>
+      <div id="otpRequestMessage"></div>
+    </div>
+    
+    <!-- الخطوة 3: التحقق من OTP -->
+    <div class="step" id="step3" style="display: none;">
+      <div class="step-header">
+        <div class="step-number">3</div>
+        <div class="step-title">التحقق من OTP</div>
+      </div>
+      
+      <div class="info-box">
+        ✏️ أدخل رمز التحقق الذي استقبلته (6 أرقام)
+      </div>
+      
+      <div class="input-group">
+        <label>رمز التحقق:</label>
+        <input type="text" id="otp" placeholder="أدخل OTP (6 أرقام)" maxlength="6">
+      </div>
+      
+      <button onclick="handleVerifyOTP()">تحقق ✓</button>
+      <div id="verifyMessage"></div>
+    </div>
+    
+    <!-- النتيجة النهائية -->
+    <div id="successMessage" style="display: none;">
+      <div class="success-icon">✅</div>
+      <div class="message success">
+        تم التحقق بنجاح! 🎉<br>
+        يمكنك الآن حجز الملعب
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api';
+    let userToken = null;
+    let userOTP = null;
+    
+    function showMessage(elementId, message, type) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = message;
+      el.className = `message ${type}`;
+    }
+    
+    function hideMessage(elementId) {
+      const el = document.getElementById(elementId);
+      el.className = 'message';
+    }
+    
+    async function handleRegister() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const phone = document.getElementById('phone').value;
+      
+      if (!email || !password || !phone) {
+        showMessage('registerMessage', '⚠️ يرجى ملء جميع الحقول', 'error');
+        return;
+      }
+      
+      try {
+        showMessage('registerMessage', '⏳ جاري التسجيل...', 'info');
+        
+        const res = await fetch(`${API_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, phone })
+        });
+        
+        const data = await res.json();
+        
+        if (data.token) {
+          userToken = data.token;
+          showMessage('registerMessage', 
+            `✅ تم التسجيل بنجاح!<br>
+             البريد: ${email}`, 'success');
+          
+          // إخفاء الخطوة 1 وإظهار الخطوة 2
+          document.getElementById('step1').style.display = 'none';
+          document.getElementById('step1').classList.add('completed');
+          document.getElementById('step2').style.display = 'block';
+          
+          setTimeout(() => hideMessage('registerMessage'), 3000);
+        } else {
+          showMessage('registerMessage', `❌ ${data.message}`, 'error');
+        }
+      } catch (error) {
+        showMessage('registerMessage', `❌ خطأ: ${error.message}`, 'error');
+      }
+    }
+    
+    async function handleRequestOTP() {
+      try {
+        showMessage('otpRequestMessage', '⏳ جاري إرسال OTP...', 'info');
+        
+        const res = await fetch(`${API_URL}/whatsapp/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          userOTP = data.otp;
+          showMessage('otpRequestMessage', 
+            `✅ تم إرسال OTP!<br>
+             <strong style="font-size: 16px;">OTP: ${data.otp}</strong><br>
+             (للاختبار فقط - في الإنتاج لن يظهر)<br>
+             الصلاحية: ${data.expiresIn}`, 'success');
+          
+          // إخفاء الخطوة 2 وإظهار الخطوة 3
+          document.getElementById('step2').style.display = 'none';
+          document.getElementById('step2').classList.add('completed');
+          document.getElementById('step3').style.display = 'block';
+          
+          // ملء حقل OTP تلقائياً للاختبار
+          document.getElementById('otp').value = data.otp;
+        } else {
+          showMessage('otpRequestMessage', `❌ ${data.message}`, 'error');
+        }
+      } catch (error) {
+        showMessage('otpRequestMessage', `❌ خطأ: ${error.message}`, 'error');
+      }
+    }
+    
+    async function handleVerifyOTP() {
+      const otp = document.getElementById('otp').value;
+      
+      if (!otp || otp.length !== 6) {
+        showMessage('verifyMessage', '⚠️ أدخل 6 أرقام', 'error');
+        return;
+      }
+      
+      try {
+        showMessage('verifyMessage', '⏳ جاري التحقق...', 'info');
+        
+        const res = await fetch(`${API_URL}/whatsapp/verify`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          },
+          body: JSON.stringify({ otp })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          showMessage('verifyMessage', '✅ تم التحقق بنجاح!', 'success');
+          
+          // إخفاء الخطوة 3 وإظهار رسالة النجاح
+          document.getElementById('step3').style.display = 'none';
+          document.getElementById('step3').classList.add('completed');
+          document.getElementById('successMessage').style.display = 'block';
+        } else {
+          const remaining = data.remainingAttempts !== undefined ? 
+            `<br>محاولات متبقية: ${data.remainingAttempts}` : '';
+          showMessage('verifyMessage', `❌ ${data.message}${remaining}`, 'error');
+        }
+      } catch (error) {
+        showMessage('verifyMessage', `❌ خطأ: ${error.message}`, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

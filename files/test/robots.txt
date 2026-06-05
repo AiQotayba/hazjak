@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Block access to sensitive files
+Disallow: /api/
+Disallow: /admin/
+Disallow: /private/
+
+# Allow access to static assets
+Allow: /assets/
+
+# Sitemap
+Sitemap: https://hazjak.com/sitemap.xml

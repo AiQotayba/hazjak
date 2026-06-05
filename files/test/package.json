@@ -1,0 +1,44 @@
+{
+  "name": "hazjak",
+  "version": "1.0.0",
+  "description": "منصة حجز الملاعب الخماسية في حلب",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -p 3000",
+    "dev": "http-server -p 3000 -o",
+    "build:css": "postcss assets/css/style.css -o assets/css/style.build.css",
+    "build": "npm run build:css",
+    "test": "echo 'No tests specified yet'",
+    "lint": "eslint assets/js/*.js api/*.js",
+    "format": "prettier --write .",
+    "load-test": "powershell -ExecutionPolicy Bypass -File load-test.ps1"
+  },
+  "keywords": [
+    "football",
+    "booking",
+    "stadium",
+    "haleb",
+    "syria",
+    "sports"
+  ],
+  "author": "Hazjak Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "artillery": "^2.0.8",
+    "prettier": "^3.0.0",
+    "eslint": "^8.0.0",
+    "postcss": "^8.4.0",
+    "postcss-cli": "^10.0.0",
+    "autoprefixer": "^10.4.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/hazjak.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/hazjak/issues"
+  },
+  "homepage": "https://hazjak.com"
+}

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: beeplay
+      POSTGRES_PASSWORD: beeplay
+      POSTGRES_DB: beeplay
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beeplay -d beeplay"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - beeplay_pg:/var/lib/postgresql/data
+
+volumes:
+  beeplay_pg:

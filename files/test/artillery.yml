@@ -1,0 +1,52 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 300
+      arrivalRate: 10
+      name: "Warm up phase"
+    - duration: 600
+      arrivalRate: 20
+      name: "Load testing phase"
+    - duration: 300
+      arrivalRate: 5
+      name: "Cool down phase"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Load homepage"
+    weight: 70
+    flow:
+      - get:
+          url: "/"
+
+  - name: "Simulate booking flow"
+    weight: 20
+    flow:
+      - get:
+          url: "/"
+      - think: 2
+      - post:
+          url: "/api/bookings"
+          json:
+            fieldId: 1
+            fieldName: "ملعب الأولمبي الخماسي"
+            date: "2026-05-15"
+            time: "14:00"
+            userId: 12345
+            userName: "مستخدم تجريبي"
+            phone: "+963999000000"
+      - think: 1
+
+  - name: "User registration"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/users/register"
+          json:
+            name: "مستخدم جديد"
+            phone: "+963999111111"
+            password: "password123"
+            idImage: "image.jpg"
+      - think: 1

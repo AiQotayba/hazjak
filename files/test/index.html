@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta
+      name="description"
+      content="منصة حجز الملاعب الخماسية في مدينة حلب - احجز ملعبك بثواني"
+    />
+    <meta
+      name="keywords"
+      content="حجز ملاعب, كرة قدم, حلب, ملاعب خماسية, رياضة"
+    />
+    <meta name="author" content="Hazjak Team" />
+    <meta name="robots" content="index, follow" />
+    <meta 
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <link rel="icon" href="/assets/images/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="/assets/images/icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1FAA59" />
+    <title>حجزك | Hazjak - منصة حجز الملاعب الخماسية في حلب</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+
+  <body class="bg-gray-50 text-gray-900 antialiased">
+    <nav
+      class="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 shadow-sm font-tajawal"
+      dir="rtl"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+          <div class="flex items-center">
+            <a href="#" class="flex items-center gap-2 group">
+              <div class="relative w-10 h-10 text-primary transition-colors">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="w-full h-full"
+                >
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                  />
+                  <path d="M12 2v20" stroke-dasharray="2 4" />
+                  <path d="M2 12h20" stroke-dasharray="2 4" />
+                  <path d="M12 12l2-3" stroke-width="2.5" />
+                  <path d="M12 12l-3 1" stroke-width="2.5" />
+                </svg>
+              </div>
+              <span class="font-cairo font-bold text-2xl text-black"
+                >حجزك <span class="text-primary">|</span> Hazjak</span
+              >
+            </a>
+          </div>
+          <div class="hidden md:flex items-center gap-8">
+            <a
+              href="#"
+              class="text-gray-700 hover:text-primary transition-colors font-medium"
+              >الرئيسية</a
+            >
+            <a
+              href="#fields"
+              class="text-gray-700 hover:text-primary transition-colors font-medium"
+              >الملاعب</a
+            >
+            <a
+              href="#features"
+              class="text-gray-700 hover:text-primary transition-colors font-medium"
+              >المميزات</a
+            >
+            <a
+              href="#contact"
+              class="text-gray-700 hover:text-primary transition-colors font-medium"
+              >اتصل بنا</a
+            >
+            <button
+              id="navAuthBtn"
+              class="bg-secondary hover:bg-primary text-white px-6 py-2.5 rounded-full font-medium transition-all transform hover:scale-105 shadow-md shadow-primary/20 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 2l-1 1" />
+                <path d="M22 8l-1-1" />
+                <path d="M18 4h2" />
+                <path d="M16 10h2" />
+              </svg>
+              <span id="authBtnText">التسجيل</span>
+            </button>
+            <button
+              id="logoutBtn"
+              class="hidden bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-full font-medium transition-all transform hover:scale-105 shadow-md shadow-red-500/20 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              خروج
+            </button>
+            <button
+              id="navBookBtn"
+              class="bg-primary hover:bg-secondary text-white px-6 py-2.5 rounded-full font-medium transition-all transform hover:scale-105 shadow-md shadow-primary/20 flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-4 h-4"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>احجز الآن</span>
+            </button>
+          </div>
+          <div class="flex items-center md:hidden">
+            <button
+              id="mobileMenuBtn"
+              class="text-gray-700 hover:text-primary p-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="h-6 w-6"
+              >
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="20" y1="6" y2="6" />
+                <line x1="4" x2="20" y1="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        id="mobileDrawer"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all duration-300"
+        style="top: 80px"
+      >
+        <div
+          class="bg-white w-3/4 h-full rounded-r-2xl shadow-xl p-6 flex flex-col gap-4"
+        >
+          <a href="#" class="text-gray-800 text-xl font-bold py-2 border-b"
+            >الرئيسية</a
+          >
+          <a
+            href="#fields"
+            class="text-gray-800 text-xl font-bold py-2 border-b"
+            >الملاعب</a
+          >
+          <a
+            href="#features"
+            class="text-gray-800 text-xl font-bold py-2 border-b"
+            >المميزات</a
+          >
+          <a
+            href="#contact"
+            class="text-gray-800 text-xl font-bold py-2 border-b"
+            >اتصل بنا</a
+          >
+          <button
+            id="mobileAuthBtn"
+            class="mt-4 bg-secondary text-white py-3 rounded-xl font-bold"
+          >
+            <span id="mobileAuthBtnText">تسجيل</span>
+          </button>
+          <button
+            id="mobileLogoutBtn"
+            class="mt-4 bg-red-500 text-white py-3 rounded-xl font-bold hidden"
+          >
+            خروج
+          </button>
+          <button
+            id="mobileBookBtn"
+            class="mt-4 bg-primary text-white py-3 rounded-xl font-bold"
+          >
+            احجز الآن
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="flex-grow pt-20">
+      <section
+        class="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-black font-cairo"
+        dir="rtl"
+      >
+        <div class="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=2070&auto=format"
+            alt="Football Field"
+            class="w-full h-full object-cover opacity-60 mix-blend-overlay"
+          />
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"
+          ></div>
+        </div>
+        <div
+          class="relative z-10 max-w-7xl mx-auto px-4 text-center text-white"
+        >
+          <div class="max-w-3xl mx-auto space-y-8">
+            <div
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-sm font-medium"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="w-4 h-4 text-primary"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>احجز الآن ووفر وقتك ومجهودك</span>
+            </div>
+            <h1
+              class="text-5xl md:text-7xl font-black tracking-tight leading-tight"
+            >
+              احجز ملعبك… <br class="hidden md:block" /><span
+                class="text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary"
+                >بثواني</span
+              >
+            </h1>
+            <p
+              class="text-lg md:text-xl text-gray-300 font-medium max-w-2xl mx-auto leading-relaxed"
+            >
+              وقتك… ملعبك. منصة حجزك هي الوجهة الأولى لتنظيم حجوزات الملاعب
+              الخماسية في مدينة حلب، بخطوات بسيطة وسريعة لتستمتع بمبارياتك بدون
+              أي تعقيد.
+            </p>
+            <div
+              class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8"
+            >
+              <button
+                id="heroBookBtn"
+                class="w-full sm:w-auto px-8 py-4 bg-primary hover:bg-secondary text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-3"
+              >
+                ابدأ الحجز الآن
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-5 h-5"
+                >
+                  <path d="m12 19-7-7 7-7" />
+                  <path d="M19 12H5" />
+                </svg>
+              </button>
+              <button
+                class="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl font-bold text-lg"
+              >
+                حمل التطبيق
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= FEATURES SECTION ======================= -->
+      <section
+        id="features"
+        class="py-24 bg-gray-50/50 relative overflow-hidden font-tajawal"
+        dir="rtl"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-16">
+            <div
+              class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-bold mb-6"
+            >
+              لماذا تختار حجزك؟
+            </div>
+            <h2
+              class="text-4xl font-cairo font-bold text-gray-900 mb-6 leading-tight"
+            >
+              نظام حجز ذكي، سريع وموثوق
+            </h2>
+            <p class="text-lg text-gray-600 font-medium">
+              وفرنا لك كل ما تحتاجه لتنظيم مبارياتك بسهولة، مع التركيز على
+              السرعة والموثوقية لتكون تجربتك خالية من التعقيدات.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature cards (6 items) -->
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                احجز بثواني
+              </h3>
+              <p class="text-gray-600 leading-relaxed">
+                لا حاجة للمكالمات الطويلة، بضع نقرات وتكون مبارياتك جاهزة للعب.
+              </p>
+            </div>
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                  />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                أفضل الملاعب الخماسية
+              </h3>
+              <p class="text-gray-600">
+                نغطي مجموعة كبيرة من الملاعب المميزة في مدينة حلب بأعلى
+                التقييمات.
+              </p>
+            </div>
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 2v4" />
+                  <path d="M16 2v4" />
+                  <rect width="18" height="18" x="3" y="4" rx="2" />
+                  <path d="M3 10h18" />
+                  <path d="M8 14h.01" />
+                  <path d="M12 14h.01" />
+                  <path d="M16 14h.01" />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                جدول زمني واضح
+              </h3>
+              <p class="text-gray-600">
+                تعرف على الأوقات المتاحة والمحجوزة لحظة بلحظة بدقة عالية.
+              </p>
+            </div>
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+                  <path d="M10 6h4" />
+                  <path d="M10 10h4" />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                مرافق وخدمات متكاملة
+              </h3>
+              <p class="text-gray-600">
+                نعرض لك كل مرافق الملعب قبل الحجز من إضاءة وحمامات وتكييف.
+              </p>
+            </div>
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+                  />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                تأكيد فوري
+              </h3>
+              <p class="text-gray-600">
+                بمجرد إتمام الحجز، تصلك رسالة التأكيد مباشرة دون انتظار.
+              </p>
+            </div>
+            <div
+              class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 group-hover:bg-primary transition"
+              >
+                <svg
+                  class="w-8 h-8 text-primary group-hover:text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                  />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <h3
+                class="text-xl font-bold font-cairo mb-3 group-hover:text-primary transition"
+              >
+                دفع آمن وسهل
+              </h3>
+              <p class="text-gray-600">
+                بوابات دفع متعددة وتجربة حجز آمنة تماماً.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= FIELDS SECTION (Live Mock API Ready) ======================= -->
+      <section id="fields" class="py-24 bg-white font-tajawal" dir="rtl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            class="flex flex-col md:flex-row justify-between items-end mb-16"
+          >
+            <div>
+              <h2 class="text-4xl font-cairo font-bold text-gray-900 mb-6">
+                أفضل الملاعب الخماسية في <span class="text-primary">حلب</span>
+              </h2>
+              <p class="text-lg text-gray-600 max-w-2xl">
+                استعرض قائمة الملاعب المتاحة، قارن الأسعار والتقييمات، واحجز
+                ملعبك بضغطة زر.
+              </p>
+            </div>
+            <button
+              id="showAllBtn"
+              class="mt-6 md:mt-0 px-6 py-3 bg-gray-50 hover:bg-primary text-gray-700 hover:text-white rounded-xl font-bold transition-all flex items-center gap-2 group"
+            >
+              عرض كل الملاعب
+              <svg
+                class="w-5 h-5 group-hover:-translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </svg>
+            </button>
+          </div>
+          <!-- Fields Grid -->
+          <div
+            id="fieldsContainer"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          ></div>
+        </div>
+      </section>
+
+      <!-- ======================= HOW IT WORKS ======================= -->
+      <section
+        class="py-24 bg-gray-900 text-white overflow-hidden relative"
+        dir="rtl"
+      >
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="order-2 lg:order-1 relative">
+              <div
+                class="relative rounded-3xl overflow-hidden shadow-2xl shadow-primary/20 aspect-video"
+              >
+                <img
+                  src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1935&auto=format"
+                  alt="App UI"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+            <div class="order-1 lg:order-2">
+              <div
+                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 text-primary border border-primary/20 text-sm font-bold mb-6"
+              >
+                آلية العمل
+              </div>
+              <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                خطوات بسيطة تفصلك عن <span class="text-primary">مبارياتك</span>
+              </h2>
+              <div class="mt-12 space-y-8">
+                <div class="flex items-start gap-6">
+                  <div
+                    class="w-16 h-16 rounded-2xl bg-gray-800 border flex items-center justify-center group-hover:bg-primary transition"
+                  >
+                    <svg
+                      class="w-8 h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-bold mb-2">ابحث عن ملعب</h3>
+                    <p class="text-gray-400 text-lg">
+                      تصفح قائمة الملاعب واستخدم الفلاتر لاختيار الأقرب والأفضل
+                      لك.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-6">
+                  <div
+                    class="w-16 h-16 rounded-2xl bg-gray-800 border flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-8 h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 2v4" />
+                      <path d="M16 2v4" />
+                      <path
+                        d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"
+                      />
+                      <path d="M3 10h18" />
+                      <path d="M16 19h6" />
+                      <path d="M19 16v6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-bold mb-2">اختر موعدك</h3>
+                    <p class="text-gray-400">
+                      اطلع على الجدول الزمني واحجز الساعة المناسبة لفريقك
+                      بسهولة.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-6">
+                  <div
+                    class="w-16 h-16 rounded-2xl bg-gray-800 border flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-8 h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-bold mb-2">أكّد وانطلق</h3>
+                    <p class="text-gray-400">
+                      قم بتأكيد حجزك، لتصلك رسالة التأكيد فوراً، وكن مستعداً
+                      للمباراة.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= FOOTER + CONTACT ======================= -->
+      <footer
+        id="contact"
+        class="bg-[#030213] text-gray-400 pt-24 pb-12 border-t border-gray-800"
+        dir="rtl"
+      >
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-16">
+            <div>
+              <a class="flex items-center gap-2 mb-6">
+                <div class="w-10 h-10 text-primary">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                    />
+                    <path d="M12 2v20" stroke-dasharray="2 4" />
+                  </svg>
+                </div>
+                <span class="font-cairo font-bold text-2xl text-white"
+                  >حجزك | Hazjak</span
+                >
+              </a>
+              <p class="mb-6">
+                تسهيل عملية حجز الملاعب الخماسية في مدينة حلب بخطوات بسيطة.
+              </p>
+              <p class="font-bold text-primary text-xl mb-4">"وقتك… ملعبك"</p>
+            </div>
+            <div>
+              <h4 class="text-white font-bold text-lg mb-6">روابط سريعة</h4>
+              <ul class="space-y-3">
+                <li><a href="#" class="hover:text-primary">الرئيسية</a></li>
+                <li>
+                  <a href="#fields" class="hover:text-primary"
+                    >الملاعب المتاحة</a
+                  >
+                </li>
+                <li>
+                  <a href="#features" class="hover:text-primary">كيف نعمل</a>
+                </li>
+                <li>
+                  <a href="#" class="hover:text-primary">الشروط والأحكام</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-white font-bold text-lg mb-6">خدماتنا</h4>
+              <ul class="space-y-3">
+                <li>
+                  <a href="#" class="hover:text-primary"
+                    >حجز الملاعب الخماسية</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="hover:text-primary"
+                    >حجز المزاعم (قريباً)</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="hover:text-primary">تنظيم البطولات</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-white font-bold text-lg mb-6">تواصل معنا</h4>
+              <ul class="space-y-5">
+                <li class="flex gap-4">
+                  <svg
+                    class="w-6 h-6 text-primary shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
+                    />
+                    <circle cx="12" cy="10" r="3" /></svg
+                  ><span>سوريا، حلب - مركز المدينة</span>
+                </li>
+                <li class="flex gap-4">
+                  <svg
+                    class="w-5 h-5 text-primary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                    /></svg
+                  ><span dir="ltr">+963 999 000 000</span>
+                </li>
+                <li class="flex gap-4">
+                  <svg
+                    class="w-5 h-5 text-primary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg
+                  ><span>support@hazjak.com</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="border-t border-gray-800 pt-8 text-center">
+            <p>
+              © 2026 حجزك - Hazjak. جميع الحقوق محفوظة. صنع بحب من أجل الرياضة
+              في <span class="text-primary font-bold">حلب</span>
+            </p>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Booking Modal & JS API Simulation -->
+    <div
+      id="bookingModal"
+      class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[200] transition-all"
+    >
+      <div
+        class="bg-white rounded-3xl p-8 w-[90%] lg:w-[70%] max-w-[70%] mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+        dir="rtl"
+      >
+        <button
+          id="closeModal"
+          class="absolute left-4 top-4 text-gray-400 hover:text-gray-800 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">حجز ملعبك</h3>
+        <p id="modalFieldName" class="text-primary font-bold text-lg mb-2"></p>
+        <div class="mb-3">
+          <p id="bookingSlotInfo" class="text-gray-600 mb-3">اختر موعداً من الجدول أولاً</p>
+          <label class="block text-gray-700 font-semibold mb-2"
+            >التاريخ والوقت المختار</label
+          ><input
+            type="datetime-local"
+            id="bookingDatetime"
+            class="w-full p-3 border rounded-xl bg-gray-50"
+            readonly
+          />
+        </div>
+        <div class="mb-4">
+          <p class="text-sm text-gray-600 mb-2">يرجى تعبئة البيانات التالية لإتمام الحجز بعد اختيار الموعد.</p>
+          <label class="block text-gray-700 font-semibold mb-2">اسمك</label
+          ><input
+            type="text"
+            id="bookingName"
+            placeholder="أدخل اسمك"
+            class="w-full p-3 border rounded-xl"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 font-semibold mb-2">البريد الإلكتروني</label
+          ><input
+            type="email"
+            id="bookingEmail"
+            placeholder="أدخل بريدك الإلكتروني"
+            class="w-full p-3 border rounded-xl"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700 font-semibold mb-2">رقم الهاتف</label
+          ><input
+            type="tel"
+            id="bookingPhone"
+            placeholder="أدخل رقم الهاتف"
+            class="w-full p-3 border rounded-xl"
+          />
+          <p class="text-xs text-gray-500 mt-2">سيصل رمز التحقق إلى هذا الرقم بعد الضغط على حجز الآن.</p>
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 font-semibold mb-2">صورة الهوية</label>
+          <p class="text-sm text-gray-600 mb-2">اختر صورة هوية واضحة (بطاقة شخصية أو جواز سفر). هذه الصورة تُستخدم لتأكيد الحجز.</p>
+          <input
+            type="file"
+            id="bookingIdPhoto"
+            accept="image/*"
+            class="w-full text-sm"
+          />
+          <div id="bookingIdPreview" class="mt-3"></div>
+        </div>
+        <div id="otpSection" class="mb-4 hidden">
+          <label class="block text-gray-700 font-semibold mb-2">رمز التحقق عبر واتساب</label>
+          <input
+            type="text"
+            id="bookingOtp"
+            placeholder="أدخل رمز OTP المرسل إلى واتساب"
+            class="w-full p-3 border rounded-xl"
+          />
+        </div>
+        <button
+          id="confirmBookingBtn"
+          class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-secondary transition"
+        >
+          حجز الآن
+        </button>
+        <button
+          id="confirmOtpBtn"
+          class="w-full bg-secondary text-white py-3 rounded-xl font-bold hover:bg-primary transition hidden mt-4"
+        >
+          تأكيد الرمز واستكمال الحجز
+        </button>
+        <p
+          id="bookingMessage"
+          class="text-sm text-gray-500 mt-4 text-center"
+        ></p>
+      </div>
+    </div>
+
+    <!-- New Booking Schedule Modal -->
+    <div
+      id="scheduleModal"
+      class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[100] transition-all"
+      dir="rtl"
+    >
+      <div
+        class="bg-white rounded-3xl p-8 max-w-6xl w-full mx-4 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+      >
+        <button
+          id="closeScheduleModal"
+          class="absolute left-4 top-4 text-gray-400 hover:text-gray-800 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+          جدول حجز الملعب
+        </h3>
+        <p
+          id="scheduleFieldName"
+          class="text-primary font-bold text-xl mb-4 text-center"
+        ></p>
+
+        <!-- Month/Year Selector -->
+        <div class="flex justify-center mb-6">
+          <div class="flex items-center gap-4">
+            <button
+              id="prevMonth"
+              class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+            >
+              &larr;
+            </button>
+            <span id="currentMonth" class="text-xl font-bold">مايو 2026</span>
+            <button
+              id="nextMonth"
+              class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+            >
+              &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div id="calendarGrid" class="grid grid-cols-7 gap-2 mb-6">
+          <!-- Days will be populated by JS -->
+        </div>
+
+        <!-- Daily Schedule -->
+        <div id="dailySchedule" class="hidden">
+          <h4
+            class="text-2xl font-bold mb-4 text-center"
+            id="selectedDate"
+          ></h4>
+          <div
+            id="timeSlots"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            <!-- Time slots will be populated by JS -->
+          </div>
+          <div class="mt-6 text-center">
+            <button
+              id="bookSelectedSlot"
+              class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-secondary transition hidden"
+            >
+              احجز هذا الوقت
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-gray-600">
+          <p>
+            الألوان:
+            <span class="inline-block w-4 h-4 bg-green-500 rounded mr-1"></span>
+            متاح
+            <span
+              class="inline-block w-4 h-4 bg-yellow-500 rounded mr-1 ml-4"
+            ></span>
+            محجوز دائم
+            <span
+              class="inline-block w-4 h-4 bg-red-500 rounded mr-1 ml-4"
+            ></span>
+            عربون
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div
+      id="registerModal"
+      class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[100] transition-all"
+      dir="rtl"
+    >
+      <div
+        class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative"
+      >
+        <button
+          id="closeRegisterModal"
+          class="absolute left-4 top-4 text-gray-400 hover:text-gray-800 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+          تسجيل حساب جديد
+        </h3>
+        <form id="registerForm">
+          <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2"
+              >البريد الإلكتروني</label
+            >
+            <input
+              type="email"
+              id="regEmail"
+              class="w-full p-3 border rounded-xl"
+              required
+            />
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 font-semibold mb-2"
+              >رقم الهاتف</label
+            >
+            <input
+              type="tel"
+              id="regPhone"
+              class="w-full p-3 border rounded-xl"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-secondary transition"
+          >
+            تسجيل
+          </button>
+        </form>
+        <p
+          id="registerMessage"
+          class="text-sm text-gray-500 mt-4 text-center"
+        ></p>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div
+      id="loginModal"
+      class="fixed inset-0 bg-black/70 hidden items-center justify-center z-[100] transition-all"
+      dir="rtl"
+    >
+      <div
+        class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl relative"
+      >
+        <button
+          id="closeLoginModal"
+          class="absolute left-4 top-4 text-gray-400 hover:text-gray-800 text-2xl"
+        >
+          &times;
+        </button>
+        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+          تسجيل الدخول
+        </h3>
+        <form id="loginForm">
+          <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">الاسم</label>
+            <input
+              type="text"
+              id="loginName"
+              class="w-full p-3 border rounded-xl"
+              placeholder="اكتب اسمك"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">اسم الأب</label>
+            <input
+              type="text"
+              id="loginFatherName"
+              class="w-full p-3 border rounded-xl"
+              placeholder="اكتب اسم الأب"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">البريد الإلكتروني</label>
+            <input
+              type="email"
+              id="loginEmail"
+              class="w-full p-3 border rounded-xl"
+              placeholder="example@example.com"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">رقم الموبايل</label>
+            <input
+              type="tel"
+              id="loginPhone"
+              class="w-full p-3 border rounded-xl"
+              placeholder="09XXXXXXXX"
+              required
+            />
+          </div>
+          <div class="mb-6">
+            <label class="block text-gray-700 font-semibold mb-2">نوع الملعب المفضل</label>
+            <select
+              id="loginFavoriteField"
+              class="w-full p-3 border rounded-xl bg-white"
+              required
+            >
+              <option value="">اختر نوع الملعب</option>
+              <option value="five-a-side">ملعب خماسي</option>
+              <option value="seven-a-side">ملعب سباعي</option>
+              <option value="nine-a-side">ملعب تساعي</option>
+              <option value="eleven-a-side">ملعب أحد عشر</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-secondary transition"
+          >
+            دخول
+          </button>
+        </form>
+        <p id="loginMessage" class="text-sm text-gray-500 mt-4 text-center"></p>
+        <p class="text-center mt-4">
+          <a href="#" id="switchToRegister" class="text-primary hover:underline"
+            >ليس لديك حساب؟ سجل الآن</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="api/api.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+﻿/* Override Tailwind theme to match Figma: primary #1FAA59, secondary #0E6B3C */
+:root {
+  --primary: #1FAA59;
+  --primary-dark: #0E6B3C;
+  --primary-light: #4bcb7e;
+}
+.text-primary { color: #1FAA59 !important; }
+.bg-primary { background-color: #1FAA59 !important; }
+.bg-primary\/10 { background-color: rgba(31, 170, 89, 0.1) !important; }
+.bg-primary\/20 { background-color: rgba(31, 170, 89, 0.2) !important; }
+.bg-primary\/90 { background-color: rgba(31, 170, 89, 0.9) !important; }
+.hover\:bg-primary:hover { background-color: #1FAA59 !important; }
+.hover\:bg-secondary:hover { background-color: #0E6B3C !important; }
+.border-primary { border-color: #1FAA59 !important; }
+.text-secondary { color: #0E6B3C !important; }
+.bg-secondary { background-color: #0E6B3C !important; }
+.shadow-primary\/20 { box-shadow: 0 10px 15px -3px rgba(31,170,89,0.2); }
+.shadow-primary\/30 { box-shadow: 0 10px 15px -3px rgba(31,170,89,0.3); }
+.from-primary { --tw-gradient-from: #1FAA59; }
+.to-secondary { --tw-gradient-to: #0E6B3C; }
+.border-primary\/20 { border-color: rgba(31,170,89,0.2); }
+.bg-white\/90 { background-color: rgba(255,255,255,0.9); }
+html {
+  scroll-behavior: smooth;
+}
+body {
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+}
+.font-cairo {
+  font-family: 'Cairo', sans-serif;
+}
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+/* animation for Hover */
+.group-hover\:scale-105:hover {
+  transform: scale(1.05);
+}
+.transition-all {
+  transition: all 0.3s ease;
+}
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #1FAA59;
+  border-radius: 20px;
+}
+.animate-pulse-slow {
+  animation: pulseSoft 2s infinite;
+}
+@keyframes pulseSoft {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}

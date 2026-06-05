@@ -1,0 +1,27 @@
+{
+  "name": "beeplay",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "db:generate": "pnpm --filter @beeplay/api generate",
+    "db:push": "pnpm --filter @beeplay/api push",
+    "db:migrate": "pnpm --filter @beeplay/api migrate",
+    "db:seed": "pnpm --filter @beeplay/api seed",
+    "db:studio": "pnpm --filter @beeplay/api studio",
+    "db:test": "pnpm --filter @beeplay/api db:test",
+    "db:setup": "docker compose up -d && pnpm db:push && pnpm db:seed",
+    "db:setup:local": "powershell -ExecutionPolicy Bypass -File scripts/ensure-beeplay-db.ps1",
+    "db:setup:local:legacy": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-postgres.ps1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.5.0",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "engines": {
+    "node": ">=20"
+  }
+}

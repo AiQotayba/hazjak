@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6fb;
+  --accent-teal: #0d9488;
+  --accent-orange: #ea580c;
+  --accent-pink: #db2777;
+  --foreground: #111827;
+  --heading: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #1faa59;
+  --primary-foreground: #ffffff;
+  --secondary: #f9fafb;
+  --secondary-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #1faa59;
+  --radius: 0.625rem;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-bg-base: #f3f4f6;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #f9fafb;
+  --color-bg-card: #ffffff;
+  --color-brand: #1faa59;
+  --color-brand-hover: #0e6b3c;
+  --color-text-base: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-subtle: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-negative: #dc2626;
+  --color-warning: #d97706;
+  --color-info: #2563eb;
+  --font-sans: var(--font-tajawal), "Segoe UI", Tahoma, sans-serif;
+  --radius-pill: 9999px;
+  --radius-card: 16px;
+  --shadow-card: 0 8px 30px rgba(17, 24, 39, 0.08);
+  --shadow-soft: 0 4px 20px rgba(17, 24, 39, 0.05);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-orange: var(--accent-orange);
+  --color-accent-pink: var(--accent-pink);
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-text-base);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}

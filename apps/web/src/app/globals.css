@@ -1,0 +1,124 @@
+@import "tailwindcss";
+@import "react-day-picker/style.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #181e4b;
+  --heading: #181e4b;
+  --card: #ffffff;
+  --card-foreground: #181e4b;
+  --popover: #ffffff;
+  --popover-foreground: #181e4b;
+  --primary: #df6951;
+  --primary-foreground: #ffffff;
+  --secondary: #f8f9ff;
+  --secondary-foreground: #181e4b;
+  --muted: #f8f9ff;
+  --muted-foreground: #5e6282;
+  --accent: #fff4e6;
+  --accent-foreground: #181e4b;
+  --accent-gold: #f1a501;
+  --accent-teal: #5eead4;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7f0;
+  --input: #e5e7f0;
+  --ring: #df6951;
+  --radius: 1rem;
+  --section-alt: #f8f9ff;
+  --shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 15px 40px rgba(94, 98, 130, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-teal: var(--accent-teal);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-section-alt: var(--section-alt);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) + 16px);
+  --radius-3xl: 2rem;
+  --font-sans: var(--font-tajawal), system-ui, sans-serif;
+  --font-display: var(--font-tajawal), system-ui, sans-serif;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-card: var(--shadow-card);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility text-heading {
+  color: var(--heading);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility bg-section-alt {
+  background-color: var(--section-alt);
+}
+
+@utility blob-orange {
+  background: radial-gradient(
+    circle at 30% 40%,
+    color-mix(in srgb, var(--primary) 18%, transparent),
+    transparent 65%
+  );
+}

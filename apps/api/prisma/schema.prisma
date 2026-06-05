@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STADIUM_OWNER
+  USER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REJECTED
+  EXPIRED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  BOOKING_PENDING
+  BOOKING_CONFIRMED
+  BOOKING_REJECTED
+  BOOKING_CANCELLED
+  MATCH_REMINDER
+  DEPOSIT_REMINDER
+}
+
+enum SportType {
+  FOOTBALL
+  FUTSAL
+  BASKETBALL
+  BASEBALL
+  OTHER
+}
+
+model User {
+  id              String           @id @default(uuid())
+  firstName       String
+  lastName        String
+  email           String           @unique
+  phone           String?
+  password        String
+  avatar          String?
+  role            Role             @default(USER)
+  isEmailVerified Boolean          @default(false)
+  isBanned        Boolean          @default(false)
+  otpCode         String?
+  otpExpiresAt    DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  stadiums        Stadium[]
+  bookings        Booking[]
+  reviews         Review[]
+  notifications   Notification[]
+  payments        Payment[]
+  refreshTokens   RefreshToken[]
+}
+
+model Stadium {
+  id                String             @id @default(uuid())
+  ownerId           String
+  name              String
+  slug              String             @unique
+  description       String
+  address           String
+  city              String
+  area              String
+  latitude          Float?
+  longitude         Float?
+  morningPrice      Float
+  eveningPrice      Float
+  depositAmount     Float?
+  contactPhone      String?
+  contactWhatsapp   String?
+  coverImage        String?
+  sportType         SportType          @default(FOOTBALL)
+  isActive          Boolean            @default(true)
+  isSuspended       Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  owner             User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images            StadiumImage[]
+  bookings          Booking[]
+  reviews           Review[]
+  availabilitySlots AvailabilitySlot[]
+  blockedDays       StadiumBlockedDay[]
+
+  @@index([city, area])
+}
+
+model StadiumImage {
+  id        String   @id @default(uuid())
+  stadiumId String
+  imageUrl  String
+  createdAt DateTime @default(now())
+
+  stadium Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+}
+
+model AvailabilitySlot {
+  id          String   @id @default(uuid())
+  stadiumId   String
+  startTime   DateTime
+  endTime     DateTime
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  stadium Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+
+  @@index([stadiumId, startTime, endTime])
+}
+
+model StadiumBlockedDay {
+  id        String   @id @default(uuid())
+  stadiumId String
+  date      DateTime @db.Date
+  reason    String?
+  createdAt DateTime @default(now())
+
+  stadium Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+
+  @@unique([stadiumId, date])
+  @@index([stadiumId])
+}
+
+model Booking {
+  id              String        @id @default(uuid())
+  userId          String
+  stadiumId       String
+  startTime       DateTime
+  endTime         DateTime
+  totalPrice      Float
+  depositAmount   Float?
+  status          BookingStatus @default(PENDING)
+  notes           String?
+  cancelledReason String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stadium Stadium  @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+  payment       Payment?
+  review        Review?
+  notifications Notification[]
+
+  @@index([stadiumId, startTime, endTime])
+  @@index([userId, status])
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  userId    String
+  bookingId String        @unique
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  stadiumId String
+  bookingId String   @unique
+  rating    Int
+  comment   String?
+  ownerReply String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stadium Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([stadiumId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  bookingId String?
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@index([bookingId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Settings {
+  id                   String   @id @default(uuid())
+  cancellationPolicy   String?
+  allowInstantBooking  Boolean  @default(false)
+  bookingExpirationMin Int      @default(15)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

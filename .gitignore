@@ -1,4 +1,6 @@
 node_modules
+apps/api/api/index.js
+apps/api/api/index.js.map
 .turbo
 dist
 .next

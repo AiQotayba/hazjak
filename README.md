@@ -42,27 +42,13 @@ pnpm db:seed
 pnpm dev
 ```
 
-### خطأ: `Authentication failed for beeplay`
-
-يعني أن PostgreSQL يعمل لكن بيانات الدخول في `.env` لا تطابق الخادم.
-
-| الحالة | الحل |
-|--------|------|
-| تستخدم **Docker** | شغّل Docker Desktop، ثم `docker compose up -d`. استخدم المنفذ **5433** في `.env` (انظر `.env.example`). |
-| **PostgreSQL مثبت** على الجهاز (منفذ 5432) | `$env:PGPASSWORD="postgres-password"; pnpm db:setup:local` ثم `pnpm db:push && pnpm db:seed` |
-| مجلد Docker قديم بكلمة مرور مختلفة | `docker compose down -v` ثم `docker compose up -d` |
-
-```bash
-pnpm db:test   # يختبر الاتصال ويعرض الحلول
-```
-
 ## الحسابات التجريبية (بعد seed)
 
-| الدور | البريد | كلمة المرور |
-|-------|--------|-------------|
-| إدارة | admin@beeplay.ps | Password123! |
-| مالك ملعب | owner@beeplay.ps | Password123! |
-| مستخدم | user@beeplay.ps | Password123! |
+| الدور     | البريد           | كلمة المرور  |
+| --------- | ---------------- | ------------ |
+| إدارة     | admin@beeplay.ps | ******* |
+| مالك ملعب | owner@beeplay.ps | ******* |
+| مستخدم    | user@beeplay.ps  | ******* |
 
 ## الروابط
 

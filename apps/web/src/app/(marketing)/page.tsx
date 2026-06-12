@@ -12,13 +12,14 @@ import {
   LandingFinalCta,
   LandingJsonLd,
 } from "@/features/landing";
-import type { Metadata } from "next";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "بي بلاي | احجز ملعبك — حلب وإدلب",
+export const metadata = createMetadata({
+  title: "احجز ملعبك — حلب وإدلب",
   description:
     "منصة حجز ملاعب كرة القدم في حلب وإدلب: تصفّح المواعيد، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب.",
-};
+  path: "/",
+});
 
 export default function HomePage() {
   return (

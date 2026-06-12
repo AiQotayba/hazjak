@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu, type LucideIcon } from "lucide-react";
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { Button } from "@/components/ui/button";

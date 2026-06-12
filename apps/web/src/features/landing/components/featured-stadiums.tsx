@@ -36,7 +36,7 @@ export async function LandingFeaturedStadiums() {
         <SectionHeading
           className="mb-0"
           title="ملاعب متاحة الآن"
-          description="حجز مباشر من المنصة — الأسعار محدثة من أصحاب الملاعب."
+          description="أرسل طلب حجز — الأسعار محدثة من أصحاب الملاعب."
         />
         <Link
           href="/stadiums"
@@ -53,8 +53,10 @@ export async function LandingFeaturedStadiums() {
         </div>
       ) : (
         <p className="text-center text-sm text-muted-foreground py-8 rounded-3xl border border-dashed border-border/60">
-          لا توجد ملاعب معروضة حالياً — شغّل الخادم ونفّذ{" "}
-          <code className="text-xs bg-secondary px-1.5 py-0.5 rounded-lg">pnpm db:seed</code>
+          لا توجد ملاعب معروضة حالياً —{" "}
+          <Link href="/stadiums" className="text-primary font-bold hover:underline">
+            تصفّح كل الملاعب
+          </Link>
         </p>
       )}
     </Section>

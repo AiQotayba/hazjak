@@ -10,7 +10,7 @@ export function LandingMidCta() {
           مباراة الأسبوع الجاي محتاجة ملعب؟
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          حساب مجاني — بدون بطاقة للتصفح.
+          حساب مجاني — تصفّح الملاعب وأرسل طلب حجز.
         </p>
         <Button className="mt-5 rounded-full shadow-soft" size="lg" asChild>
           <Link href="/stadiums">شوف المواعيد الفاضية</Link>

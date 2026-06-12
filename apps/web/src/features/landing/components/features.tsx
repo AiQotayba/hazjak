@@ -31,7 +31,7 @@ const features = [
   {
     icon: CreditCard,
     title: "عربون واضح",
-    description: "المبلغ يظهر قبل الإرسال. إلغاء قبل 24 ساعة حسب سياسة المنصة.",
+    description: "المبلغ يظهر قبل الإرسال — بدون مفاجآت عند الدفع.",
   },
   {
     icon: Star,

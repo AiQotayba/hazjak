@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, LogOut, User } from "lucide-react";
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
+import Image from "next/image";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,7 +49,8 @@ export function SiteHeader() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <span className="font-display text-xl font-bold text-heading">
+            <Image src="/logo.png" alt={APP_NAME_AR} width={32} height={32} className="w-8 h-8" />
+            <span className="font-display text-xl font-extrabold text-heading">
               {APP_NAME_AR}
             </span>
           </Link>

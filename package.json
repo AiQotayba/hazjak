@@ -13,7 +13,8 @@
     "db:test": "pnpm --filter @beeplay/api db:test",
     "db:setup": "docker compose up -d && pnpm db:push && pnpm db:seed",
     "db:setup:local": "powershell -ExecutionPolicy Bypass -File scripts/ensure-beeplay-db.ps1",
-    "db:setup:local:legacy": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-postgres.ps1"
+    "db:setup:local:legacy": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-postgres.ps1",
+    "deploy:api": "ssh api-beeplay@45.132.241.51 \"bash -ic 'cd ~/htdocs/api-beeplay.sy-calculator.com/beeplay && git pull && cd apps/api && pnpm run build && pm2 restart beeplay-api'\""
   },
   "devDependencies": {
     "dotenv": "^16.5.0",

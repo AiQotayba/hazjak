@@ -48,7 +48,7 @@ export function OwnerFeatures() {
           كل اللي تحتاجه كصاحب ملعب
         </h2>
         <p className="text-sm text-muted-foreground mb-8 text-center md:text-start">
-          مصمّم لفرق كرة القدم في حلب وإدلب.
+          مصمّم لأصحاب الملاعب في حلب وإدلب.
         </p>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(({ icon: Icon, title, desc }) => (

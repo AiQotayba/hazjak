@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, MapPin, ShieldCheck } from "lucide-react";
-import { APP_NAME_AR, APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
 
 const highlights = [
   {

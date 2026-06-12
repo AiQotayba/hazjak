@@ -1,7 +1,7 @@
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_CITIES } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
+import { citiesLabel, siteUrl } from "@/lib/seo";
 import { landingFaqs } from "../data/faq-data";
-
-const siteUrl = process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
 
 export function LandingJsonLd() {
   const graph = [
@@ -9,13 +9,17 @@ export function LandingJsonLd() {
       "@type": "Organization",
       name: APP_NAME_AR,
       url: siteUrl,
-      description: "منصة حجز ملاعب كرة القدم في فلسطين",
+      description: `منصة حجز ملاعب كرة القدم في ${citiesLabel}، سوريا`,
+      areaServed: APP_CITIES.map((city) => ({
+        "@type": "City",
+        name: city,
+      })),
     },
     {
       "@type": "WebSite",
       name: APP_NAME_AR,
       url: siteUrl,
-      inLanguage: "ar",
+      inLanguage: "ar-SY",
     },
     {
       "@type": "SoftwareApplication",
@@ -25,7 +29,7 @@ export function LandingJsonLd() {
       offers: {
         "@type": "Offer",
         price: "0",
-        priceCurrency: "ILS",
+        priceCurrency: "SYP",
         description: "تصفح مجاني — دفع العربون عند تأكيد الحجز",
       },
     },

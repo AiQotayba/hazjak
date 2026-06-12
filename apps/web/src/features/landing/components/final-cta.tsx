@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Section } from "./section";
 import { APP_CITIES } from "@beeplay/constants";
 
@@ -17,15 +16,10 @@ export function LandingFinalCta() {
             جاهز تحجز في {APP_CITIES.join(" أو ")}؟
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            تصفح مجاناً — وألغِ قبل 24 ساعة بدون خسارة العربون.
+            تصفّح مجاناً — حساب بسيط لإرسال طلب الحجز.
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-            <Input
-              type="email"
-              placeholder="بريدك للتنبيهات (اختياري)"
-              className="h-11 rounded-full bg-background border-border flex-1"
-            />
-            <Button type="button" size="lg" className="shrink-0 rounded-full shadow-soft" asChild>
+          <div className="mt-6 flex justify-center">
+            <Button type="button" size="lg" className="rounded-full shadow-soft" asChild>
               <Link href="/stadiums">ابدأ الحجز</Link>
             </Button>
           </div>

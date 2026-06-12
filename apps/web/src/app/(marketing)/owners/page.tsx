@@ -6,13 +6,14 @@ import {
   OwnerSteps,
   OwnerFinalCta,
 } from "@/features/landing";
-import type { Metadata } from "next";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "بي بلاي | سجّل ملعبك — حلب وإدلب",
+export const metadata = createMetadata({
+  title: "سجّل ملعبك — حلب وإدلب",
   description:
     "لوحة تحكم لأصحاب ملاعب كرة القدم في حلب وإدلب: قبول الحجوزات، التقويم، والإحصائيات.",
-};
+  path: "/owners",
+});
 
 export default function OwnersLandingPage() {
   return (

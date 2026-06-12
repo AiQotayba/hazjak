@@ -1,5 +1,13 @@
+import { createMetadata } from "@/lib/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata = createMetadata({
+  title: "سياسة الإلغاء والعربون",
+  description:
+    "قواعد الإلغاء واسترداد العربون قبل تأكيد الحجز. إلغاء قبل 24 ساعة من موعد المباراة.",
+  path: "/policy",
+});
 
 export default function PolicyPage() {
   return (
@@ -28,4 +36,3 @@ export default function PolicyPage() {
     </MarketingPageShell>
   );
 }
-

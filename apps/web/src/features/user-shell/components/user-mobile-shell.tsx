@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, User, CalendarDays, MapPin } from "lucide-react";
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 export function UserMobileShell({ children }: { children: React.ReactNode }) {

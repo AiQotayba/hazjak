@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
+import { APP_CITIES } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
+import { citiesLabel, ogImage } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -9,10 +12,22 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
 });
 
+const defaultDescription = `منصة حجز ملاعب كرة القدم في ${citiesLabel}. تصفّح الملاعب، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب.`;
+
 export const metadata: Metadata = {
-  title: "بي بلاي | احجز ملعبك بضغطة",
-  description:
-    "منصة حجز ملاعب كرة القدم — تصفح، احجز، وتابع تأكيد صاحب الملعب.",
+  title: {
+    default: `${APP_NAME_AR} — احجز ملعبك في ${APP_CITIES.join(" و")}`,
+    template: `%s | ${APP_NAME_AR}`,
+  },
+  description: defaultDescription,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000"),
+  openGraph: {
+    siteName: APP_NAME_AR,
+    locale: "ar_SY",
+    type: "website",
+    images: [{ url: ogImage, width: 512, height: 512, alt: APP_NAME_AR }],
+  },
+  twitter: { card: "summary" },
 };
 
 export default function RootLayout({

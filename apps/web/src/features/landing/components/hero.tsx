@@ -5,11 +5,12 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Bell, MapPin, Play, ShieldCheck } from "lucide-react";
 import { APP_CITIES, APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 
 const perks = [
   { icon: ShieldCheck, label: "إلغاء قبل 24 ساعة" },
-  { icon: Bell, label: "تأكيد فوري" },
+  { icon: Bell, label: "إشعار عند القبول" },
   { icon: MapPin, label: "حلب وإدلب" },
 ];
 
@@ -70,7 +71,7 @@ export function LandingHero() {
               {...enter(0.2)}
               className="mt-4 text-sm md:text-base text-muted-foreground max-w-lg mx-auto lg:mx-0 leading-relaxed"
             >
-              بي بلاي يعرض ملاعب حلب وإدلب في مكان واحد: شوف الموعد الفاضي، أرسل طلب
+              {APP_NAME_AR} يعرض ملاعب حلب وإدلب في مكان واحد: شوف الموعد الفاضي، أرسل طلب
               حجز، واستلم تأكيد من صاحب الملعب.
             </motion.p>
 

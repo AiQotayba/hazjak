@@ -10,7 +10,7 @@ const items = [
   {
     icon: Sparkles,
     title: "مجاني لشهرين",
-    desc: "التسجيل مجاني",
+    desc: "كل الميزات متاحة مجاناً — بدون بطاقة ائتمان",
   },
   {
     icon: MapPin,

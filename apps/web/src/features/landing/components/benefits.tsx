@@ -1,3 +1,4 @@
+import { APP_NAME_AR } from "@/lib/brand";
 import { Section, SectionHeading } from "./section";
 
 const benefits = [
@@ -22,7 +23,7 @@ export function LandingBenefits() {
   return (
     <Section id="benefits" alt>
       <SectionHeading
-        title="شو يتغيّر لما تحجز عبر بي بلاي؟"
+        title={`شو يتغيّر لما تحجز عبر ${APP_NAME_AR}؟`}
         description="قبل وبعد — بدون وعود فاضية."
         centered
       />

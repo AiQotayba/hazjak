@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import {
   CalendarCheck,
@@ -10,7 +10,7 @@ import {
   MapPin,
   XCircle,
 } from "lucide-react";
-import { formatDate, formatPrice, formatTime } from "@beeplay/utils";
+import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BookingStats } from "@/features/user-bookings/lib/user-bookings";
 import { cn } from "@/lib/utils";

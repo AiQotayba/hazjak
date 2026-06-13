@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Clock, Banknote, FileText, User } from "lucide-react";
-import { formatDate, formatPrice, formatTime } from "@beeplay/utils";
+import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import {
   Dialog,
   DialogContent,

@@ -1,9 +1,9 @@
-# Idempotent BeePlay DB user/database setup (local PostgreSQL on 5432)
+# Idempotent Hazjak DB user/database setup (local PostgreSQL on 5432)
 # Usage:
 #   $env:PGPASSWORD = "your-postgres-password"
-#   .\scripts\ensure-beeplay-db.ps1
+#   .\scripts\ensure-hazjak-db.ps1
 # Or:
-#   .\scripts\ensure-beeplay-db.ps1 -PostgresPassword "your-postgres-password"
+#   .\scripts\ensure-hazjak-db.ps1 -PostgresPassword "your-postgres-password"
 
 param(
     [string]$PostgresPassword = $env:PGPASSWORD,
@@ -24,7 +24,7 @@ if (-not (Test-Path $psql)) {
 
 if (-not $PostgresPassword) {
     Write-Host ""
-    Write-Host "BeePlay — إعداد قاعدة البيانات المحلية" -ForegroundColor Cyan
+    Write-Host "Hazjak — إعداد قاعدة البيانات المحلية" -ForegroundColor Cyan
     Write-Host "أدخل كلمة مرور مستخدم postgres:"
     $secure = Read-Host -AsSecureString
     $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
@@ -37,10 +37,10 @@ $root = Split-Path $PSScriptRoot -Parent
 $userSql = @'
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'beeplay') THEN
-    CREATE USER beeplay WITH PASSWORD 'beeplay' CREATEDB LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'hazjak') THEN
+    CREATE USER hazjak WITH PASSWORD 'hazjak' CREATEDB LOGIN;
   ELSE
-    ALTER USER beeplay WITH PASSWORD 'beeplay';
+    ALTER USER hazjak WITH PASSWORD 'hazjak';
   END IF;
 END
 $$;
@@ -48,18 +48,18 @@ $$;
 
 try {
     & $psql -U postgres -h localhost -p $Port -c $userSql 2>&1 | Out-Host
-    if ($LASTEXITCODE -ne 0) { throw "Failed to create or update user beeplay" }
+    if ($LASTEXITCODE -ne 0) { throw "Failed to create or update user hazjak" }
 
-    $dbExists = (& $psql -U postgres -h localhost -p $Port -tAc "SELECT 1 FROM pg_database WHERE datname='beeplay'" 2>&1).Trim()
+    $dbExists = (& $psql -U postgres -h localhost -p $Port -tAc "SELECT 1 FROM pg_database WHERE datname='hazjak'" 2>&1).Trim()
     if ($dbExists -ne "1") {
-        & $psql -U postgres -h localhost -p $Port -c "CREATE DATABASE beeplay OWNER beeplay;" 2>&1 | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "Failed to create database beeplay" }
+        & $psql -U postgres -h localhost -p $Port -c "CREATE DATABASE hazjak OWNER hazjak;" 2>&1 | Out-Host
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create database hazjak" }
     } else {
-        Write-Host "Database beeplay already exists" -ForegroundColor DarkYellow
+        Write-Host "Database hazjak already exists" -ForegroundColor DarkYellow
     }
 
-    & $psql -U beeplay -h localhost -p $Port -d beeplay -tAc "SELECT 1" 2>&1 | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "beeplay user cannot connect to beeplay database" }
+    & $psql -U hazjak -h localhost -p $Port -d hazjak -tAc "SELECT 1" 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "hazjak user cannot connect to hazjak database" }
 
     Write-Host ""
     Write-Host "Database ready." -ForegroundColor Green
@@ -73,7 +73,7 @@ try {
 }
 
 $envPath = Join-Path $root ".env"
-$url = "DATABASE_URL=`"postgresql://beeplay:beeplay@localhost:${Port}/beeplay`""
+$url = "DATABASE_URL=`"postgresql://hazjak:hazjak@localhost:${Port}/hazjak`""
 $lines = @(
     $url
     'JWT_SECRET="change-me-in-production"'

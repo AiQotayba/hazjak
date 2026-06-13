@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { authenticate } from "../../middlewares/auth";
 import { validate } from "../../middlewares/validate";
 import {
@@ -7,7 +7,7 @@ import {
   forgotPasswordSchema,
   verifyOtpSchema,
   resetPasswordSchema,
-} from "@beeplay/validation";
+} from "@hazjak/validation";
 import * as ctrl from "./auth.controller";
 
 const router = Router();

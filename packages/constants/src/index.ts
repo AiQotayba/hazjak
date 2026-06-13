@@ -34,7 +34,7 @@ export const CANCELLATION_HOURS = 24;
 export const MATCH_REMINDER_HOURS = 24;
 export const MATCH_REMINDER_HOURS_BEFORE = 2;
 
-export const APP_NAME_AR = "بي بلاي";
+export const APP_NAME_AR = "Hazjak";
 export const APP_TAGLINE_AR = "ملعبك الجاي — احجزه بضغطة";
 export const APP_MOTTO_AR = "العب أكثر، ابحث أقل";
 export const APP_CITIES = ["حلب", "إدلب"] as const;

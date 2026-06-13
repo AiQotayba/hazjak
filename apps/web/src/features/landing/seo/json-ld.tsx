@@ -1,4 +1,4 @@
-import { APP_CITIES } from "@beeplay/constants";
+﻿import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 import { citiesLabel, siteUrl } from "@/lib/seo";
 import { landingFaqs } from "../data/faq-data";

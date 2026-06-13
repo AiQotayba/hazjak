@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { Mail, Phone, Shield, User } from "lucide-react";
-import { formatDate } from "@beeplay/utils";
+import { formatDate } from "@hazjak/utils";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ROLE_LABELS } from "@/lib/labels";
-import type { Role } from "@beeplay/types";
+import type { Role } from "@hazjak/types";
 
 export type AdminUserRow = {
   id: string;

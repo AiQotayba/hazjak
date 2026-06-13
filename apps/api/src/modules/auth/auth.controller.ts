@@ -1,4 +1,4 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../db";
 import {
@@ -7,14 +7,42 @@ import {
   forgotPasswordSchema,
   verifyOtpSchema,
   resetPasswordSchema,
-} from "@beeplay/validation";
-import { omitPassword } from "@beeplay/utils";
+} from "@hazjak/validation";
+import { omitPassword } from "@hazjak/utils";
 import type { AuthRequest } from "../../middlewares/auth";
-import { signAccessToken, signRefreshToken } from "../../utils/jwt";
+import { signAccessToken, signRefreshToken, signVerificationToken } from "../../utils/jwt";
 import { sendError, sendSuccess } from "../../utils/response";
+import { sendEmail } from "../../services/email/email.service";
+import {
+  passwordResetOtpEmail,
+  verificationOtpEmail,
+} from "../../services/email/templates";
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function issueSession(user: { id: string; email: string; role: string }) {
+  const safe = omitPassword(
+    await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
+  );
+  const accessToken = signAccessToken(safe as never);
+  const refreshToken = signRefreshToken(user.id);
+
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
+
+  return { accessToken, refreshToken, user: safe };
+}
+
+async function sendOtpEmail(email: string, otp: string) {
+  const tpl = verificationOtpEmail(otp);
+  sendEmail({ to: email, ...tpl });
 }
 
 export async function register(req: AuthRequest, res: Response) {
@@ -34,15 +62,12 @@ export async function register(req: AuthRequest, res: Response) {
       otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
     },
   });
-
-  // In production: send email with OTP
-  console.log(`[OTP] ${user.email}: ${otp}`);
-
+  sendOtpEmail(user.email, otp);
   const safe = omitPassword(user);
-  const accessToken = signAccessToken(safe as never);
+  const verificationToken = signVerificationToken(user.id, user.email);
   return sendSuccess(
     res,
-    { accessToken, user: safe, otpSent: true },
+    { verificationToken, user: safe, otpSent: true },
     "تم التسجيل. تحقق من بريدك الإلكتروني",
     201
   );
@@ -50,6 +75,7 @@ export async function register(req: AuthRequest, res: Response) {
 
 export async function login(req: AuthRequest, res: Response) {
   const { email, password } = loginSchema.parse(req.body);
+  console.log(req.body);
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || user.isBanned) {
     return sendError(res, "بيانات الدخول غير صحيحة", 401);
@@ -57,26 +83,39 @@ export async function login(req: AuthRequest, res: Response) {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return sendError(res, "بيانات الدخول غير صحيحة", 401);
 
-  const safe = omitPassword(user);
-  const accessToken = signAccessToken(safe as never);
-  const refreshToken = signRefreshToken(user.id);
+  console.log("USER", user);
+  console.log("IS EMAIL VERIFIED", user.isEmailVerified);
+  if (!user.isEmailVerified) {
+    console.log("GENERATING OTP");
+    const otp = generateOtp();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: otp,
+        otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+    sendOtpEmail(user.email, otp);
 
-  await prisma.refreshToken.create({
-    data: {
-      userId: user.id,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    },
-  });
+    const safe = omitPassword(user);
+    return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403, {
+      code: "EMAIL_NOT_VERIFIED",
+      data: {
+        verificationToken: signVerificationToken(user.id, user.email),
+        user: safe,
+      },
+    });
+  }
 
-  res.cookie("accessToken", accessToken, {
+  const session = await issueSession(user);
+  res.cookie("accessToken", session.accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  return sendSuccess(res, { accessToken, user: safe }, "تم تسجيل الدخول بنجاح");
+  return sendSuccess(res, session, "تم تسجيل الدخول بنجاح");
 }
 
 export async function me(req: AuthRequest, res: Response) {
@@ -100,7 +139,15 @@ export async function verifyOtp(req: AuthRequest, res: Response) {
     data: { isEmailVerified: true, otpCode: null, otpExpiresAt: null },
   });
 
-  return sendSuccess(res, null, "تم التحقق من البريد الإلكتروني");
+  const session = await issueSession(user);
+  res.cookie("accessToken", session.accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  return sendSuccess(res, session, "تم التحقق من البريد الإلكتروني");
 }
 
 export async function resetPassword(req: AuthRequest, res: Response) {
@@ -134,7 +181,8 @@ export async function forgotPassword(req: AuthRequest, res: Response) {
         otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    console.log(`[Reset OTP] ${email}: ${otp}`);
+    const tpl = passwordResetOtpEmail(otp);
+    sendEmail({ to: email, ...tpl });
   }
   return sendSuccess(res, null, "إذا كان البريد مسجلاً، ستصلك رسالة قريباً");
 }

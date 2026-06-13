@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import type { BookingListItemData } from "@/features/user-bookings/components/booking-list-item";
-import type { PaginationMeta } from "@beeplay/types";
+import type { PaginationMeta } from "@hazjak/types";
 
 export interface UserBookingsFilters {
   status?: string;

@@ -1,4 +1,4 @@
-import { Tajawal } from "next/font/google";
+﻿import { Tajawal } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -9,7 +9,7 @@ const tajawal = Tajawal({
 });
 
 export const metadata = {
-  title: "بي بلاي | لوحة الإدارة",
+  title: "Hazjak | لوحة الإدارة",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
@@ -10,9 +10,9 @@ const nextConfig: NextConfig = {
     ],
   },
   transpilePackages: [
-    "@beeplay/constants",
-    "@beeplay/types",
-    "@beeplay/utils",
+    "@hazjak/constants",
+    "@hazjak/types",
+    "@hazjak/utils",
   ],
 };
 

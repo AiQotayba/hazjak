@@ -1,6 +1,6 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
-import { APP_CITIES } from "@beeplay/constants";
+import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 
 

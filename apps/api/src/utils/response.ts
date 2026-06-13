@@ -22,7 +22,13 @@ export function sendError(
   res: Response,
   message: string,
   status = 400,
-  errors?: Record<string, string[]>
+  extras?: { errors?: Record<string, string[]>; code?: string; data?: unknown }
 ) {
-  return res.status(status).json({ success: false, message, errors });
+  return res.status(status).json({
+    success: false,
+    message,
+    ...(extras?.errors && { errors: extras.errors }),
+    ...(extras?.code && { code: extras.code }),
+    ...(extras?.data !== undefined && { data: extras.data }),
+  });
 }

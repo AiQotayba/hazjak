@@ -1,4 +1,4 @@
-# Create local PostgreSQL user/database for BeePlay (Windows)
+# Create local PostgreSQL user/database for Hazjak (Windows)
 # Run: .\scripts\setup-local-postgres.ps1
 
 $ErrorActionPreference = "Stop"
@@ -14,7 +14,7 @@ if (-not (Test-Path $psql)) {
 }
 
 Write-Host ""
-Write-Host "BeePlay - local database setup" -ForegroundColor Cyan
+Write-Host "Hazjak - local database setup" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Enter the postgres superuser password (set at install time):"
 $secure = Read-Host -AsSecureString
@@ -25,10 +25,10 @@ $env:PGPASSWORD = $postgresPassword
 $userSql = @'
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'beeplay') THEN
-    CREATE USER beeplay WITH PASSWORD 'beeplay' CREATEDB LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'hazjak') THEN
+    CREATE USER hazjak WITH PASSWORD 'hazjak' CREATEDB LOGIN;
   ELSE
-    ALTER USER beeplay WITH PASSWORD 'beeplay';
+    ALTER USER hazjak WITH PASSWORD 'hazjak';
   END IF;
 END
 $$;
@@ -36,14 +36,14 @@ $$;
 
 try {
     & $psql -U postgres -h localhost -p 5432 -c $userSql 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "Failed to create or update user beeplay" }
+    if ($LASTEXITCODE -ne 0) { throw "Failed to create or update user hazjak" }
 
-    $dbExists = & $psql -U postgres -h localhost -p 5432 -tAc "SELECT 1 FROM pg_database WHERE datname='beeplay'" 2>&1
+    $dbExists = & $psql -U postgres -h localhost -p 5432 -tAc "SELECT 1 FROM pg_database WHERE datname='hazjak'" 2>&1
     if ($dbExists -notmatch "1") {
-        & $psql -U postgres -h localhost -p 5432 -c "CREATE DATABASE beeplay OWNER beeplay;" 2>&1
-        if ($LASTEXITCODE -ne 0) { throw "Failed to create database beeplay" }
+        & $psql -U postgres -h localhost -p 5432 -c "CREATE DATABASE hazjak OWNER hazjak;" 2>&1
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create database hazjak" }
     } else {
-        Write-Host "Database beeplay already exists" -ForegroundColor DarkYellow
+        Write-Host "Database hazjak already exists" -ForegroundColor DarkYellow
     }
 } catch {
     Write-Host ""
@@ -55,7 +55,7 @@ try {
     $env:PGPASSWORD = ""
 }
 
-$envContent = 'DATABASE_URL="postgresql://beeplay:beeplay@localhost:5432/beeplay"'
+$envContent = 'DATABASE_URL="postgresql://hazjak:hazjak@localhost:5432/hazjak"'
 $root = Split-Path $PSScriptRoot -Parent
 Set-Content -Path (Join-Path $root ".env") -Value @(
     $envContent

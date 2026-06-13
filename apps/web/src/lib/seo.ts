@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { APP_CITIES } from "@beeplay/constants";
+﻿import type { Metadata } from "next";
+import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 
 export const siteUrl = process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";

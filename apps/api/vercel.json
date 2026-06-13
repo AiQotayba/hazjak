@@ -1,7 +1,7 @@
-{
+﻿{
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd ../.. && pnpm install",
-  "buildCommand": "cd ../.. && pnpm --filter @beeplay/api generate && pnpm --filter @beeplay/api build",
+  "buildCommand": "cd ../.. && pnpm --filter @hazjak/api generate && pnpm --filter @hazjak/api build",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }],
   "functions": {
     "api/index.js": {

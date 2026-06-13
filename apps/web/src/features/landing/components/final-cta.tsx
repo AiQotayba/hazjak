@@ -1,7 +1,7 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Section } from "./section";
-import { APP_CITIES } from "@beeplay/constants";
+import { APP_CITIES } from "@hazjak/constants";
 
 export function LandingFinalCta() {
   return (

@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { authenticate, authorize } from "../../middlewares/auth";
 import { validate } from "../../middlewares/validate";
 import {
@@ -6,7 +6,7 @@ import {
   updateBookingStatusSchema,
   ownerManualBookingSchema,
   bookingListQuerySchema,
-} from "@beeplay/validation";
+} from "@hazjak/validation";
 import * as ctrl from "./bookings.controller";
 
 const router = Router();

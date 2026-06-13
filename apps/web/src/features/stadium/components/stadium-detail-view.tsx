@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
@@ -9,7 +9,6 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
-  MessageCircle,
   Moon,
   Star,
   Sun,
@@ -19,12 +18,12 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { SPORT_TYPE_LABELS } from "@beeplay/constants";
-import { formatPrice } from "@beeplay/utils";
+import { SPORT_TYPE_LABELS } from "@hazjak/constants";
+import { formatPrice } from "@hazjak/utils";
 import { Button } from "@/components/ui/button";
 import { BookingDialog } from "@/features/stadium/components/booking-dialog";
 import { BOOKING_SLOT_MINUTES } from "@/lib/booking-slots";
-import type { AuthUser } from "@beeplay/types";
+import type { AuthUser } from "@hazjak/types";
 import { cn } from "@/lib/utils";
 
 export interface StadiumDetailData {
@@ -170,12 +169,7 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
 
           <StadiumFeaturesGrid features={features} />
 
-          <div
-            className={cn(
-              "grid gap-2",
-              stadium.contactWhatsapp ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"
-            )}
-          >
+          <div className="grid gap-2 grid-cols-1">
             <Button
               size="lg"
               className="rounded-2xl h-12 shadow-soft text-base gap-2"
@@ -183,23 +177,6 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
             >
               {token ? "اختر الموعد وأكمل الحجز" : "سجّل للحجز"}
             </Button>
-            {stadium.contactWhatsapp && (
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-2xl h-12 border-0 bg-[#25D366]/10 text-[#128C7E] hover:bg-[#25D366]/15 gap-2"
-                asChild
-              >
-                <a
-                  href={`https://wa.me/${stadium.contactWhatsapp.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  واتساب
-                </a>
-              </Button>
-            )}
           </div>
         </motion.div>
       </div>

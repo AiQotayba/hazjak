@@ -1,6 +1,6 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import { prisma, type Prisma } from "../../db";
-import { slugify, getPagination, buildMeta, buildTableOrderBy, isMorningSlot } from "@beeplay/utils";
+import { slugify, getPagination, buildMeta, buildTableOrderBy, isMorningSlot } from "@hazjak/utils";
 import {
   createStadiumSchema,
   updateStadiumSchema,
@@ -9,10 +9,18 @@ import {
   stadiumFiltersSchema,
   adminStadiumListQuerySchema,
   addStadiumImageSchema,
-} from "@beeplay/validation";
+} from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
+import { computeDaySlots } from "../../utils/booking-slots";
+
+function redactPublicContacts<T extends { contactPhone?: string | null; contactWhatsapp?: string | null }>(
+  stadium: T
+) {
+  const { contactPhone: _p, contactWhatsapp: _w, ...rest } = stadium;
+  return { ...rest, showContact: false };
+}
 
 export async function listStadiums(req: AuthRequest, res: Response) {
   const filters = stadiumFiltersSchema.parse(req.query);
@@ -63,7 +71,11 @@ export async function listStadiums(req: AuthRequest, res: Response) {
         ? ratings.reduce((a: number, r: { rating: number }) => a + r.rating, 0) / ratings.length
         : 0;
     const { reviews: _r, ...rest } = s;
-    return { ...rest, averageRating: Math.round(avg * 10) / 10, reviewCount: s._count.reviews };
+    return {
+      ...redactPublicContacts(rest),
+      averageRating: Math.round(avg * 10) / 10,
+      reviewCount: s._count.reviews,
+    };
   });
 
   return sendPaginated(res, data, buildMeta(total, page, limit));
@@ -173,9 +185,8 @@ export async function getStadium(req: AuthRequest, res: Response) {
       : 0;
 
   return sendSuccess(res, {
-    ...stadium,
+    ...redactPublicContacts(stadium),
     averageRating: Math.round(avg * 10) / 10,
-    showContact: false,
   });
 }
 
@@ -284,25 +295,83 @@ export async function getAvailability(req: AuthRequest, res: Response) {
     ? new Date(req.query.endDate as string)
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-  const slots = await prisma.availabilitySlot.findMany({
-    where: {
-      stadiumId,
-      isAvailable: true,
-      startTime: { gte: startDate, lte: endDate },
-    },
-    orderBy: { startTime: "asc" },
+  const [slots, bookings, blockedDays] = await Promise.all([
+    prisma.availabilitySlot.findMany({
+      where: {
+        stadiumId,
+        startTime: { gte: startDate, lte: endDate },
+      },
+      orderBy: { startTime: "asc" },
+    }),
+    prisma.booking.findMany({
+      where: {
+        stadiumId,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        startTime: { gte: startDate, lte: endDate },
+      },
+      select: { startTime: true, endTime: true },
+    }),
+    prisma.stadiumBlockedDay.findMany({
+      where: { stadiumId },
+      orderBy: { date: "asc" },
+    }),
+  ]);
+
+  return sendSuccess(res, { slots, bookedRanges: bookings, blockedDays });
+}
+
+export async function getBookingSlots(req: AuthRequest, res: Response) {
+  const stadiumId = param(req, "id");
+  const date = req.query.date as string | undefined;
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return sendError(res, "تاريخ غير صالح", 400);
+  }
+
+  const stadium = await prisma.stadium.findUnique({ where: { id: stadiumId } });
+  if (!stadium || !stadium.isActive || stadium.isSuspended) {
+    return sendError(res, "الملعب غير موجود", 404);
+  }
+
+  const dayStart = new Date(`${date}T00:00:00`);
+  const dayEnd = new Date(`${date}T23:59:59.999`);
+
+  const [bookings, windows, blockedDay] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        stadiumId,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        startTime: { lte: dayEnd },
+        endTime: { gte: dayStart },
+      },
+      select: { startTime: true, endTime: true },
+    }),
+    prisma.availabilitySlot.findMany({
+      where: {
+        stadiumId,
+        startTime: { lte: dayEnd },
+        endTime: { gte: dayStart },
+      },
+    }),
+    prisma.stadiumBlockedDay.findFirst({
+      where: {
+        stadiumId,
+        date: new Date(`${date}T12:00:00.000Z`),
+      },
+    }),
+  ]);
+
+  const slots = computeDaySlots({
+    dateStr: date,
+    dayBlocked: !!blockedDay,
+    bookedRanges: bookings,
+    availabilityWindows: windows,
   });
 
-  const bookings = await prisma.booking.findMany({
-    where: {
-      stadiumId,
-      status: { in: ["PENDING", "CONFIRMED"] },
-      startTime: { gte: startDate, lte: endDate },
-    },
-    select: { startTime: true, endTime: true },
+  return sendSuccess(res, {
+    date,
+    dayBlocked: !!blockedDay,
+    slots,
   });
-
-  return sendSuccess(res, { slots, bookedRanges: bookings });
 }
 
 export function calculatePrice(

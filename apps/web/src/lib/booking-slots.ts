@@ -1,4 +1,4 @@
-import { estimateBookingPrice, formatDate } from "@beeplay/utils";
+﻿import { estimateBookingPrice, formatDate } from "@hazjak/utils";
 
 export const BOOKING_SLOT_MINUTES = 90;
 const DAY_START_HOUR = 8;

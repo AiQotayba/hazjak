@@ -1,18 +1,19 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ExternalLink,
+  CalendarClock,
   ImageIcon,
   MapPin,
   Phone,
   User,
   Wallet,
 } from "lucide-react";
-import { APP_CITIES, SPORT_TYPE_OPTIONS } from "@beeplay/constants";
-import { formatPrice } from "@beeplay/utils";
+import { APP_CITIES, SPORT_TYPE_OPTIONS } from "@hazjak/constants";
+import { formatPrice } from "@hazjak/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/auth";
+import { OwnerAvailabilityTab } from "@/features/owner-stadium/components/owner-availability-tab";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 type StadiumData = {
   id: string;
@@ -47,6 +50,8 @@ type StadiumData = {
   depositAmount: number | null;
   contactPhone: string | null;
   contactWhatsapp: string | null;
+  shamCashId: string | null;
+  shamCashQrImage: string | null;
   coverImage: string | null;
   sportType?: string;
   isActive?: boolean;
@@ -163,6 +168,8 @@ export default function OwnerSettingsPage() {
       depositAmount: s.depositAmount != null ? Number(s.depositAmount) : undefined,
       contactPhone: s.contactPhone || undefined,
       contactWhatsapp: s.contactWhatsapp || undefined,
+      shamCashId: s.shamCashId || undefined,
+      shamCashQrImage: s.shamCashQrImage || undefined,
       coverImage: s.coverImage || undefined,
       sportType: s.sportType,
     };
@@ -252,6 +259,10 @@ export default function OwnerSettingsPage() {
           <TabsTrigger value="pricing" className="gap-1.5 text-xs sm:text-sm">
             <Wallet className="h-3.5 w-3.5 shrink-0" />
             التسعير والتواصل
+          </TabsTrigger>
+          <TabsTrigger value="availability" className="gap-1.5 text-xs sm:text-sm">
+            <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+            المواعيد
           </TabsTrigger>
           <TabsTrigger value="images" className="gap-1.5 text-xs sm:text-sm">
             <ImageIcon className="h-3.5 w-3.5 shrink-0" />
@@ -501,10 +512,48 @@ export default function OwnerSettingsPage() {
                   </Field>
                 </div>
 
+                <p className="text-sm font-bold text-heading flex items-center gap-2 pt-2 border-t border-border/40">
+                  <Wallet className="h-4 w-4 text-primary" />
+                  شام كاش
+                </p>
+                <p className="text-[11px] text-muted-foreground -mt-2">
+                  يُرسل للاعب مع كود العربون عند طلب الحجز
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="معرّف شام كاش">
+                    <Input
+                      className={inputClass}
+                      value={stadium.shamCashId ?? ""}
+                      onChange={(e) =>
+                        setStadium((s) => s && { ...s, shamCashId: e.target.value })
+                      }
+                      dir="ltr"
+                      placeholder="رقم الحساب أو المعرف"
+                    />
+                  </Field>
+                  <Field label="صورة باركود شام كاش">
+                    <ImageUpload
+                      value={stadium.shamCashQrImage ?? ""}
+                      onChange={(url) =>
+                        setStadium((s) => s && { ...s, shamCashQrImage: url || null })
+                      }
+                      token={token ?? undefined}
+                      previewFit="contain"
+                      showUrlInput
+                      inputClassName={inputClass}
+                      disabled={saving}
+                    />
+                  </Field>
+                </div>
+
                 <SaveButton saving={saving} label="حفظ التسعير والتواصل" />
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="availability">
+          {token && <OwnerAvailabilityTab stadiumId={stadium.id} token={token} />}
         </TabsContent>
 
         <TabsContent value="images">

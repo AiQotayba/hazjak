@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { BOOKING_STATUS_FILTER_ALL, BOOKING_STATUS_FILTER_OPTIONS } from "@beeplay/constants";
-import { formatPrice, formatDate, formatTime } from "@beeplay/utils";
+import { BOOKING_STATUS_FILTER_ALL, BOOKING_STATUS_FILTER_OPTIONS } from "@hazjak/constants";
+import { formatPrice, formatDate, formatTime } from "@hazjak/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

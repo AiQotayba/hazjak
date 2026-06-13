@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { MapPin, Plus } from "lucide-react";
-import { formatPrice } from "@beeplay/utils";
+import { formatPrice } from "@hazjak/utils";
 import { AdminPageHero } from "@/features/shell/components/admin-page-hero";
 import { DataTable, type TableColumn } from "@/features/shared/components/data-table";
 import { StadiumFormSheet } from "@/components/stadiums/stadium-form-sheet";

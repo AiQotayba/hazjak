@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Clock, ExternalLink, FileText, MapPin, MessageCircle, Phone, Wallet } from "lucide-react";
-import { formatDate, formatPrice, formatTime } from "@beeplay/utils";
+import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -186,11 +186,11 @@ function BookingDetailBody({
               {locationLine && (
                 <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                  {locationLine}
+                  {locationLine} <span className="text-xs text-muted-foreground">•</span> 
+                  {booking.stadium.address && (
+                    <p className="text-xs text-muted-foreground pe-5">{booking.stadium.address}</p>
+                  )}
                 </p>
-              )}
-              {booking.stadium.address && (
-                <p className="text-xs text-muted-foreground pe-5">{booking.stadium.address}</p>
               )}
             </div>
           </DialogDescription>
@@ -232,7 +232,7 @@ function BookingDetailBody({
         )}
 
         {showContact && (
-          <div className="space-y-2">
+          <div className="space-y-2 flex flex-row gap-2">
             {booking.stadium.contactWhatsapp && (
               <Button
                 size="lg"
@@ -246,14 +246,6 @@ function BookingDetailBody({
                 >
                   <MessageCircle className="h-4 w-4" />
                   تواصل واتساب
-                </a>
-              </Button>
-            )}
-            {booking.stadium.contactPhone && (
-              <Button variant="outline" className="w-full rounded-2xl h-11 gap-2 border-0 bg-secondary" asChild>
-                <a href={`tel:${booking.stadium.contactPhone}`}>
-                  <Phone className="h-4 w-4" />
-                  اتصال بالملعب
                 </a>
               </Button>
             )}

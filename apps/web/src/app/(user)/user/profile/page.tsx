@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { LogOut, Mail, Pencil, Phone, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ import type { BookingListItemData } from "@/features/user-bookings/components/bo
 import { api } from "@/lib/api";
 import { computeBookingStats, type BookingStats } from "@/features/user-bookings/lib/user-bookings";
 import { useAuthStore } from "@/features/auth/store/auth";
-import type { PaginationMeta } from "@beeplay/types";
+import type { PaginationMeta } from "@hazjak/types";
 
 export default function UserProfilePage() {
   const { user, token, logout } = useAuthStore();

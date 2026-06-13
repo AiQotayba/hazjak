@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -18,10 +18,10 @@ const nextConfig: NextConfig = {
     ],
   },
   transpilePackages: [
-    "@beeplay/constants",
-    "@beeplay/types",
-    "@beeplay/utils",
-    "@beeplay/validation",
+    "@hazjak/constants",
+    "@hazjak/types",
+    "@hazjak/utils",
+    "@hazjak/validation",
   ],
 };
 

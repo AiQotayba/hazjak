@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate } from "@beeplay/utils";
+import { formatDate } from "@hazjak/utils";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { cn } from "@/lib/utils";

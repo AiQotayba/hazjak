@@ -1,5 +1,5 @@
-import { Clock, MapPin, Sparkles } from "lucide-react";
-import { APP_CITIES } from "@beeplay/constants";
+﻿import { Clock, MapPin, Sparkles } from "lucide-react";
+import { APP_CITIES } from "@hazjak/constants";
 
 const items = [
   {

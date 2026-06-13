@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createStadiumSchema } from "@beeplay/validation";
-import { APP_CITIES, SPORT_TYPE_OPTIONS } from "@beeplay/constants";
+import { createStadiumSchema } from "@hazjak/validation";
+import { APP_CITIES, SPORT_TYPE_OPTIONS } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

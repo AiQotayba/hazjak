@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -15,7 +15,7 @@ import {
   Filter,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { PaginationMeta } from "@beeplay/types";
+import type { PaginationMeta } from "@hazjak/types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

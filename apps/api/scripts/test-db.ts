@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+﻿import { createPrismaClient } from "../src/db/create-prisma-client";
 
 const candidates = [
   process.env.DATABASE_URL,
-  "postgresql://beeplay:beeplay@localhost:5433/beeplay",
-  "postgresql://beeplay:beeplay@localhost:5432/beeplay",
+  "postgresql://Hazjak:Hazjak@localhost:5433/Hazjak",
+  "postgresql://Hazjak:Hazjak@localhost:5432/Hazjak",
 ].filter(Boolean) as string[];
 
 const unique = [...new Set(candidates)];
@@ -13,7 +13,7 @@ function mask(url: string) {
 }
 
 async function tryUrl(url: string) {
-  const prisma = new PrismaClient({ datasources: { db: { url } } });
+  const prisma = createPrismaClient(url);
   try {
     await prisma.$queryRaw`SELECT 1`;
     return true;
@@ -55,7 +55,7 @@ async function main() {
 الحل (PostgreSQL مثبت على Windows):
   1. شغّل (استبدل كلمة مرور postgres):
      $env:PGPASSWORD = "YOUR_POSTGRES_PASSWORD"
-     .\\scripts\\ensure-beeplay-db.ps1
+     .\\scripts\\ensure-Hazjak-db.ps1
 
   2. ثم:
      pnpm db:push
@@ -66,7 +66,7 @@ async function main() {
   1. شغّل Docker Desktop
   2. docker compose up -d
   3. في .env:
-     DATABASE_URL="postgresql://beeplay:beeplay@localhost:5433/beeplay"
+     DATABASE_URL="postgresql://Hazjak:Hazjak@localhost:5433/Hazjak"
   4. pnpm db:push && pnpm db:seed
 `);
   process.exit(1);

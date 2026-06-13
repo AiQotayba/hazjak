@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Bell, MapPin, Play, ShieldCheck } from "lucide-react";
-import { APP_CITIES, APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_CITIES, APP_TAGLINE_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 

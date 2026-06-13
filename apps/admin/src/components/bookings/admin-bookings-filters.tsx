@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { Search, ListFilter, LayoutList, Clock, CheckCircle2, BadgeCheck, XCircle, type LucideIcon } from "lucide-react";
-import { BOOKING_STATUSES } from "@beeplay/constants";
+import { BOOKING_STATUSES } from "@hazjak/constants";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 

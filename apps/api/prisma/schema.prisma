@@ -4,8 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 enum Role {
@@ -89,6 +88,8 @@ model Stadium {
   depositAmount     Float?
   contactPhone      String?
   contactWhatsapp   String?
+  shamCashId        String?
+  shamCashQrImage   String?
   coverImage        String?
   sportType         SportType          @default(FOOTBALL)
   isActive          Boolean            @default(true)
@@ -148,9 +149,10 @@ model Booking {
   startTime       DateTime
   endTime         DateTime
   totalPrice      Float
-  depositAmount   Float?
-  status          BookingStatus @default(PENDING)
-  notes           String?
+  depositAmount         Float?
+  depositReferenceCode  String?
+  status                BookingStatus @default(PENDING)
+  notes                 String?
   cancelledReason String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

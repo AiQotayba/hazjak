@@ -1,4 +1,4 @@
-import {
+﻿import {
   LayoutList,
   Hourglass,
   ShieldCheck,
@@ -9,7 +9,7 @@ import {
   UserX,
   type LucideIcon,
 } from "lucide-react";
-import { BOOKING_STATUS_FILTER_ALL } from "@beeplay/constants";
+import { BOOKING_STATUS_FILTER_ALL } from "@hazjak/constants";
 
 export const BOOKING_STATUS_ICONS: Record<string, LucideIcon> = {
   [BOOKING_STATUS_FILTER_ALL]: LayoutList,

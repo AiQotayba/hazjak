@@ -1,6 +1,6 @@
-import { toast } from "sonner";
+﻿import { toast } from "sonner";
 import { createApi, type ApiOptions, type HttpMethod, type ToastType } from "./api-client";
-import type { PaginatedResponse } from "@beeplay/types";
+import type { PaginatedResponse } from "@hazjak/types";
 import { useAuthStore } from "@/store/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";

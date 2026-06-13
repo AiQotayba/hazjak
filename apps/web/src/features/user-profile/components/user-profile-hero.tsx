@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Bell, Plus, ShieldCheck, Sparkles } from "lucide-react";
-import { APP_MOTTO_AR, APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_MOTTO_AR, APP_TAGLINE_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
-import type { AuthUser } from "@beeplay/types";
+import type { AuthUser } from "@hazjak/types";
 import { cn } from "@/lib/utils";
 
 interface UserProfileHeroProps {

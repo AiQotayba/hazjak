@@ -1,4 +1,4 @@
-import { APP_CITIES } from "@beeplay/constants";
+﻿import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 import { createMetadata } from "@/lib/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
@@ -22,8 +22,8 @@ export default function ContactPage() {
           <CardTitle className="font-display text-heading">فريق الدعم</CardTitle>
           <p className="flex items-center gap-3 text-muted-foreground">
             <Mail className="h-5 w-5 shrink-0 text-primary" />
-            <a href="mailto:support@beeplay.ps" className="hover:text-primary transition-colors">
-              support@beeplay.ps
+            <a href="mailto:support@hazjak.sy" className="hover:text-primary transition-colors">
+              support@hazjak.sy
             </a>
           </p>
           <p className="flex items-center gap-3 text-muted-foreground">

@@ -1,6 +1,6 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { CalendarDays, MapPin, ShieldCheck } from "lucide-react";
-import { APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_TAGLINE_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 
 const highlights = [
@@ -12,7 +12,7 @@ const highlights = [
   {
     icon: CalendarDays,
     title: "حجز فوري",
-    description: "اختر الموعد وأكّد حجزك في دقائق",
+    description: "اختر الموعد وأكّد Hazjak في دقائق",
   },
   {
     icon: ShieldCheck,

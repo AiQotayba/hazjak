@@ -1,6 +1,6 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import { prisma } from "../../db";
-import { createReviewSchema, reviewReplySchema } from "@beeplay/validation";
+import { createReviewSchema, reviewReplySchema } from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendSuccess } from "../../utils/response";

@@ -1,4 +1,4 @@
-import { createApi, type ApiOptions, type HttpMethod } from "./api-client";
+﻿import { createApi, type ApiOptions, type HttpMethod } from "./api-client";
 import { useAuthStore } from "@/features/auth/store/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
@@ -27,6 +27,7 @@ export type FetchApiResult<T> = {
   success: boolean;
   message: string;
   data?: T;
+  code?: string;
   errors?: Record<string, string[]>;
   meta?: {
     page: number;
@@ -83,7 +84,7 @@ async function request<T>(
   return toFetchResult<T>(response as unknown as Record<string, unknown>);
 }
 
-/** BeePlay fetch helper — `{ success, data, message }` responses */
+/** Hazjak fetch helper — `{ success, data, message }` responses */
 export const api = request;
 
 export async function apiUpload<T>(

@@ -1,8 +1,8 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { authenticate, authorize, type AuthRequest } from "../../middlewares/auth";
 import { avatarUploadMiddleware } from "../../middlewares/avatar-upload";
 import { validate } from "../../middlewares/validate";
-import { updateProfileSchema, userListQuerySchema } from "@beeplay/validation";
+import { updateProfileSchema, userListQuerySchema } from "@hazjak/validation";
 import { sendError } from "../../utils/response";
 import * as ctrl from "./users.controller";
 

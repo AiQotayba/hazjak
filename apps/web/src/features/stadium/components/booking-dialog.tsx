@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Clock, FileText, LogIn, Timer, User, Wallet } from "lucide-react";
-import { formatPrice } from "@beeplay/utils";
-import type { AuthUser } from "@beeplay/types";
+import { Clock, LogIn, Timer, Wallet } from "lucide-react";
+import { formatPrice } from "@hazjak/utils";
+import type { AuthUser } from "@hazjak/types";
 import {
   Dialog,
   DialogContent,
@@ -26,16 +26,31 @@ import { api } from "@/lib/api";
 import {
   BOOKING_SLOT_MINUTES,
   buildBookingRange,
-  formatBookingDate,
   getBookingTimeSlots,
   getEstimatedPrice,
   localDateInputValue,
 } from "@/lib/booking-slots";
-const TIME_SLOTS = getBookingTimeSlots();
+import { cn } from "@/lib/utils";
+
+const FALLBACK_SLOTS = getBookingTimeSlots();
+
+interface DaySlot {
+  value: string;
+  label: string;
+  available: boolean;
+  reason?: string;
+}
 
 function formatCount(value: number): string {
   return new Intl.NumberFormat("ar-SY", { numberingSystem: "latn" }).format(value);
 }
+
+const REASON_LABELS: Record<string, string> = {
+  booked: "محجوز",
+  blocked: "يوم مغلق",
+  outside_hours: "غير متاح",
+  past: "انتهى",
+};
 
 export interface BookingDialogStadium {
   id: string;
@@ -65,18 +80,39 @@ export function BookingDialog({
   const minDate = useMemo(() => localDateInputValue(), []);
 
   const [date, setDate] = useState(minDate);
-  const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[4]?.value ?? TIME_SLOTS[0]?.value ?? "16:00");
+  const [timeSlot, setTimeSlot] = useState(FALLBACK_SLOTS[4]?.value ?? FALLBACK_SLOTS[0]?.value ?? "16:00");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [daySlots, setDaySlots] = useState<DaySlot[]>(FALLBACK_SLOTS.map((s) => ({ ...s, available: true })));
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [dayBlocked, setDayBlocked] = useState(false);
+
+  useEffect(() => {
+    if (!open || !stadium.id || !date) return;
+
+    setLoadingSlots(true);
+    api<{ date: string; dayBlocked: boolean; slots: DaySlot[] }>(
+      `/stadiums/${stadium.id}/booking-slots?date=${date}`
+    )
+      .then((res) => {
+        if (res.success && res.data?.slots) {
+          setDaySlots(res.data.slots);
+          setDayBlocked(res.data.dayBlocked);
+          const firstAvailable = res.data.slots.find((s) => s.available);
+          if (firstAvailable) setTimeSlot(firstAvailable.value);
+        }
+      })
+      .finally(() => setLoadingSlots(false));
+  }, [open, stadium.id, date]);
 
   const estimatedPrice = useMemo(
     () => getEstimatedPrice(stadium.morningPrice, stadium.eveningPrice, date, timeSlot),
     [stadium.morningPrice, stadium.eveningPrice, date, timeSlot]
   );
 
-  const selectedSlotLabel =
-    TIME_SLOTS.find((s) => s.value === timeSlot)?.label ?? timeSlot;
+  const selectedSlot = daySlots.find((s) => s.value === timeSlot);
+  const selectedSlotLabel = selectedSlot?.label ?? timeSlot;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,8 +123,18 @@ export function BookingDialog({
       return;
     }
 
+    if (!user.isEmailVerified) {
+      router.push("/verify-email");
+      return;
+    }
+
     if (!date || !timeSlot) {
       setError("اختر التاريخ والتوقيت");
+      return;
+    }
+
+    if (!selectedSlot?.available) {
+      setError("هذا الموعد غير متاح — اختر وقتاً آخر");
       return;
     }
 
@@ -148,7 +194,6 @@ export function BookingDialog({
               />
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2 sm:col-span-1">
                     <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
@@ -166,7 +211,7 @@ export function BookingDialog({
                     <Label htmlFor="booking-time" className="text-xs text-muted-foreground">
                       التوقيت ({formatCount(BOOKING_SLOT_MINUTES)} د)
                     </Label>
-                    <Select value={timeSlot} onValueChange={setTimeSlot} required>
+                    <Select value={timeSlot} onValueChange={setTimeSlot} required disabled={loadingSlots || dayBlocked}>
                       <SelectTrigger
                         id="booking-time"
                         className="h-11 border-0 bg-secondary/60 shadow-none"
@@ -174,12 +219,20 @@ export function BookingDialog({
                         dir="rtl"
                       >
                         <Clock className="h-4 w-4 text-primary shrink-0" />
-                        <SelectValue placeholder="اختر التوقيت" />
+                        <SelectValue placeholder={loadingSlots ? "جاري التحميل..." : "اختر التوقيت"} />
                       </SelectTrigger>
                       <SelectContent align="start" dir="rtl">
-                        {TIME_SLOTS.map((slot) => (
-                          <SelectItem key={slot.value} value={slot.value}>
+                        {daySlots.map((slot) => (
+                          <SelectItem
+                            key={slot.value}
+                            value={slot.value}
+                            disabled={!slot.available}
+                            className={cn(!slot.available && "opacity-50")}
+                          >
                             {slot.label}
+                            {!slot.available && slot.reason
+                              ? ` — ${REASON_LABELS[slot.reason] ?? "غير متاح"}`
+                              : ""}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -187,12 +240,11 @@ export function BookingDialog({
                   </div>
                 </div>
 
-                {/* {date && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <InfoTile icon={CalendarDays} label="اليوم" value={formatBookingDate(date)} />
-                    <InfoTile icon={Clock} label="الفترة" value={selectedSlotLabel} dir="ltr" />
-                  </div>
-                )} */}
+                {dayBlocked && (
+                  <p className="text-sm text-destructive rounded-2xl bg-destructive/10 px-3 py-2">
+                    الملعب مغلق في هذا اليوم — اختر تاريخاً آخر
+                  </p>
+                )}
 
                 <div className="space-y-1.5">
                   <textarea
@@ -231,7 +283,7 @@ export function BookingDialog({
                   <Button
                     type="submit"
                     className="rounded-2xl h-11 shadow-soft"
-                    disabled={submitting}
+                    disabled={submitting || dayBlocked || !selectedSlot?.available}
                   >
                     {submitting ? "جاري الإرسال..." : "تأكيد الطلب"}
                   </Button>
@@ -260,34 +312,6 @@ function LoginPrompt({ onLogin }: { onLogin: () => void }) {
         <LogIn className="h-4 w-4" />
         تسجيل الدخول
       </Button>
-    </div>
-  );
-}
-
-
-
-function InfoTile({
-  icon: Icon,
-  label,
-  value,
-  dir,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-  dir?: "ltr" | "rtl";
-}) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-2xl bg-secondary/70 px-3 py-2.5 min-w-0">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-        <Icon className="h-4 w-4 text-primary" aria-hidden />
-      </div>
-      <div className="min-w-0">
-        <p className="text-[10px] text-muted-foreground">{label}</p>
-        <p className="text-xs font-bold text-heading mt-0.5 leading-snug" dir={dir}>
-          {value}
-        </p>
-      </div>
     </div>
   );
 }

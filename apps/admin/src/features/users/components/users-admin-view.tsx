@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import { DataTable, type TableColumn } from "@/features/shared/components/data-t
 import { UrlFilterSelect } from "@/features/shared/components/url-filter-select";
 import { apiClient } from "@/lib/api";
 import { ROLE_LABELS } from "@/lib/labels";
-import type { Role } from "@beeplay/types";
+import type { Role } from "@hazjak/types";
 import { UserDetailDialog, type AdminUserRow } from "./user-detail-dialog";
 
 const roleOptions = (["USER", "STADIUM_OWNER", "ADMIN"] as Role[]).map((r) => ({

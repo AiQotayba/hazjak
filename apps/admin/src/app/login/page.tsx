@@ -1,13 +1,13 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
-import type { AuthTokens } from "@beeplay/types";
+import type { AuthTokens } from "@hazjak/types";
 
 export default function AdminLoginPage() {
   const { token, user, setAuth } = useAuthStore();

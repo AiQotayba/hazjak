@@ -1,11 +1,11 @@
-import express from "express";
+﻿import express from "express";
 import path from "path";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-import { API_PREFIX } from "@beeplay/constants";
-import { env } from "@beeplay/config";
+import { API_PREFIX } from "@hazjak/constants";
+import { env } from "@hazjak/config";
 
 import authRoutes from "./modules/auth/auth.routes";
 import stadiumRoutes from "./modules/stadiums/stadiums.routes";
@@ -48,7 +48,7 @@ app.use(
 );
 
 app.get("/health", (_req, res) => {
-  res.json({ success: true, message: "BeePlay API", data: { status: "ok" } });
+  res.json({ success: true, message: "Hazjak API", data: { status: "ok" } });
 });
 
 const api = express.Router();

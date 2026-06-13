@@ -1,7 +1,7 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { authenticate, authorize } from "../../middlewares/auth";
 import { validate } from "../../middlewares/validate";
-import { createAvailabilitySchema, createBlockedDaySchema } from "@beeplay/validation";
+import { createAvailabilitySchema, createBlockedDaySchema } from "@hazjak/validation";
 import * as ctrl from "./availability.controller";
 
 const router = Router();

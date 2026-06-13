@@ -15,12 +15,12 @@ if (existsSync(envPath)) {
   process.exit(1);
 }
 
-if (!process.env.DATABASE_URL?.trim().startsWith("mysql://")) {
-  const dbUrl = process.env.DATABASE_URL?.trim();
+const dbUrl = process.env.DATABASE_URL?.trim();
+if (!dbUrl?.startsWith("mysql://") && !dbUrl?.startsWith("postgresql://")) {
   const preview = dbUrl
     ? dbUrl.replace(/:[^:@]+@/, ":****@").slice(0, 60)
     : "(empty or unset)";
-  console.error("DATABASE_URL must start with mysql://");
+  console.error("DATABASE_URL must start with mysql:// or postgresql://");
   console.error(`File: ${envPath}`);
   console.error(`Current value: ${preview}`);
   console.error(`\nFix: nano ${envPath}`);

@@ -1,5 +1,5 @@
-{
-  "name": "@beeplay/web",
+﻿{
+  "name": "@hazjak/web",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -9,10 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@beeplay/constants": "workspace:*",
-    "@beeplay/types": "workspace:*",
-    "@beeplay/utils": "workspace:*",
-    "@beeplay/validation": "workspace:*",
+    "@hazjak/constants": "workspace:*",
+    "@hazjak/types": "workspace:*",
+    "@hazjak/utils": "workspace:*",
+    "@hazjak/validation": "workspace:*",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",

@@ -1,18 +1,22 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Role } from "@beeplay/types";
+import type { Role } from "@hazjak/types";
 import { useAuthStore } from "@/features/auth/store/auth";
 
 export function useRequireRole(role: Role, loginPath = "/login") {
   const { token, user } = useAuthStore();
   const router = useRouter();
-  const ready = !!token && user?.role === role;
+  const ready = !!token && user?.role === role && user.isEmailVerified;
 
   useEffect(() => {
     if (!token || user?.role !== role) {
       router.replace(loginPath);
+      return;
+    }
+    if (!user.isEmailVerified) {
+      router.replace("/verify-email");
     }
   }, [token, user, role, router, loginPath]);
 

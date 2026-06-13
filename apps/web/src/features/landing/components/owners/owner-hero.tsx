@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Building2, CalendarCheck, ClipboardList, Zap } from "lucide-react";
-import { APP_CITIES } from "@beeplay/constants";
+import { APP_CITIES } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 
 const perks = [

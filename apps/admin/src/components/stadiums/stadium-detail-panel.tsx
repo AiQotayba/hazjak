@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { MapPin, Phone, X } from "lucide-react";
-import { formatPrice } from "@beeplay/utils";
+import { formatPrice } from "@hazjak/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { AdminStadiumRecord } from "./stadium-admin-card";

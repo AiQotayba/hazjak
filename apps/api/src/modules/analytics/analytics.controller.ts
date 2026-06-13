@@ -1,6 +1,6 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import { prisma } from "../../db";
-import { isMorningSlot } from "@beeplay/utils";
+import { isMorningSlot } from "@hazjak/utils";
 import type { AuthRequest } from "../../middlewares/auth";
 import { sendSuccess } from "../../utils/response";
 

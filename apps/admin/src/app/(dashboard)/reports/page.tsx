@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { formatPrice } from "@beeplay/utils";
+import { formatPrice } from "@hazjak/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";

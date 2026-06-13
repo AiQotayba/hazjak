@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ClipboardList } from "lucide-react";
-import { BOOKING_STATUSES } from "@beeplay/constants";
-import { formatDate, formatPrice } from "@beeplay/utils";
+import { BOOKING_STATUSES } from "@hazjak/constants";
+import { formatDate, formatPrice } from "@hazjak/utils";
 import { AdminPageHero } from "@/features/shell/components/admin-page-hero";
 import { DataTable, type TableColumn } from "@/features/shared/components/data-table";
 import { UrlFilterSelect } from "@/features/shared/components/url-filter-select";

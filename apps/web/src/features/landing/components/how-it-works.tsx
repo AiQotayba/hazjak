@@ -19,7 +19,7 @@ const steps = [
     icon: Trophy,
     color: "bg-accent-teal/30 text-teal-700",
     title: "العب بثقة",
-    description: "بعد التأكيد: رقم التواصل والعربون في صفحة حجزك. تذكير قبل المباراة.",
+    description: "بعد التأكيد: رقم التواصل والعربون في صفحة Hazjak. تذكير قبل المباراة.",
   },
 ];
 

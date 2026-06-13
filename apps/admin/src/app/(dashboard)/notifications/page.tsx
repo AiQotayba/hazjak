@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-import { formatDate } from "@beeplay/utils";
+import { formatDate } from "@hazjak/utils";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { useRequireAdmin } from "@/hooks/use-require-admin";

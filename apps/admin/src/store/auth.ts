@@ -1,6 +1,6 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AuthUser } from "@beeplay/types";
+import type { AuthUser } from "@hazjak/types";
 
 interface AuthState {
   token: string | null;
@@ -17,6 +17,6 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (token, user) => set({ token, user }),
       logout: () => set({ token: null, user: null }),
     }),
-    { name: "beeplay-admin-auth" }
+    { name: "Hazjak-admin-auth" }
   )
 );

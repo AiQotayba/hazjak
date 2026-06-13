@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,19 +6,20 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
-import { loginSchema, type LoginInput } from "@beeplay/validation";
-import { APP_MOTTO_AR } from "@beeplay/constants";
+import { loginSchema, type LoginInput } from "@hazjak/validation";
+import { APP_MOTTO_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
-import type { AuthUser } from "@beeplay/types";
+import type { AuthUser } from "@hazjak/types";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const setVerificationPending = useAuthStore((s) => s.setVerificationPending);
   const [error, setError] = useState("");
 
   const {
@@ -31,14 +32,26 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginInput) {
     setError("");
-    const res = await api<{ accessToken: string; user: AuthUser }>("/auth/login", {
+    const res = await api<{ accessToken: string; user: AuthUser } | { verificationToken: string; user: AuthUser }>("/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (!res.success || !res.data) {
+
+    if (!res.success) {
+      if (res.code === "EMAIL_NOT_VERIFIED" && res.data && "verificationToken" in res.data) {
+        setVerificationPending(res.data.verificationToken, res.data.user);
+        router.push("/verify-email");
+        return;
+      }
       setError(res.message);
       return;
     }
+
+    if (!res.data || !("accessToken" in res.data)) {
+      setError("تعذّر تسجيل الدخول");
+      return;
+    }
+
     setAuth(res.data.accessToken, res.data.user);
     const role = res.data.user.role;
     if (role === "STADIUM_OWNER") router.push("/owner");

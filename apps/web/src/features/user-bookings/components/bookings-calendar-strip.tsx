@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
-import { formatDate } from "@beeplay/utils";
+import { formatDate } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
 
 export interface CalendarBookingDay {

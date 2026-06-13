@@ -1,11 +1,11 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import fs from "fs";
 import path from "path";
-import { env } from "@beeplay/config";
+import { env } from "@hazjak/config";
 import { prisma } from "../../db";
-import { getPagination, buildMeta, buildTableOrderBy, omitPassword } from "@beeplay/utils";
-import { userListQuerySchema } from "@beeplay/validation";
-import { updateProfileSchema } from "@beeplay/validation";
+import { getPagination, buildMeta, buildTableOrderBy, omitPassword } from "@hazjak/utils";
+import { userListQuerySchema } from "@hazjak/validation";
+import { updateProfileSchema } from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
 import { UPLOADS_ROOT } from "../../utils/uploads-path";
 import { param } from "../../utils/params";

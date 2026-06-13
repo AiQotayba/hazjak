@@ -1,17 +1,29 @@
-import type { Response } from "express";
+﻿import type { Response } from "express";
 import { prisma } from "../../db";
-import { getPagination, buildMeta, buildTableOrderBy, isMorningSlot } from "@beeplay/utils";
+import { getPagination, buildMeta, buildTableOrderBy, isMorningSlot } from "@hazjak/utils";
 import {
   createBookingSchema,
   updateBookingStatusSchema,
   ownerManualBookingSchema,
   bookingListQuerySchema,
-} from "@beeplay/validation";
+} from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { notifyBookingStatus } from "../../services/notification.service";
+import { sendEmail } from "../../services/email/email.service";
+import {
+  bookingConfirmedEmail,
+  bookingRejectedEmail,
+  depositRequestEmail,
+} from "../../services/email/templates";
 import { calculatePrice } from "../stadiums/stadiums.controller";
+import {
+  computeDaySlots,
+  generateDepositReferenceCode,
+  localDateKey,
+  localTimeValue,
+} from "../../utils/booking-slots";
 
 async function hasConflict(
   stadiumId: string,
@@ -54,11 +66,60 @@ export async function createBooking(req: AuthRequest, res: Response) {
     return sendError(res, "هذا الموعد محجوز مسبقاً", 409);
   }
 
+  const dateStr = localDateKey(start);
+  const blockedDay = await prisma.stadiumBlockedDay.findFirst({
+    where: {
+      stadiumId: body.stadiumId,
+      date: new Date(`${dateStr}T12:00:00.000Z`),
+    },
+  });
+  if (blockedDay) {
+    return sendError(res, "الملعب غير متاح في هذا اليوم", 409);
+  }
+
+  const dayStart = new Date(`${dateStr}T00:00:00`);
+  const dayEnd = new Date(`${dateStr}T23:59:59.999`);
+  const [dayBookings, windows] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        stadiumId: body.stadiumId,
+        status: { in: ["PENDING", "CONFIRMED"] },
+        startTime: { lte: dayEnd },
+        endTime: { gte: dayStart },
+      },
+      select: { startTime: true, endTime: true },
+    }),
+    prisma.availabilitySlot.findMany({
+      where: {
+        stadiumId: body.stadiumId,
+        startTime: { lte: dayEnd },
+        endTime: { gte: dayStart },
+      },
+    }),
+  ]);
+
+  const timeValue = localTimeValue(start);
+  const slotCheck = computeDaySlots({
+    dateStr,
+    dayBlocked: false,
+    bookedRanges: dayBookings,
+    availabilityWindows: windows,
+  }).find((s) => s.value === timeValue);
+
+  if (!slotCheck?.available) {
+    return sendError(res, "هذا الموعد غير متاح", 409);
+  }
+
   const totalPrice = calculatePrice(
     stadium.morningPrice,
     stadium.eveningPrice,
     start
   );
+
+  const depositReferenceCode =
+    stadium.depositAmount && stadium.depositAmount > 0
+      ? generateDepositReferenceCode()
+      : null;
 
   const booking = await prisma.booking.create({
     data: {
@@ -68,10 +129,14 @@ export async function createBooking(req: AuthRequest, res: Response) {
       endTime: end,
       totalPrice,
       depositAmount: stadium.depositAmount,
+      depositReferenceCode,
       notes: body.notes,
       status: "PENDING",
     },
-    include: { stadium: { select: { name: true, ownerId: true } } },
+    include: {
+      stadium: { select: { name: true, ownerId: true, shamCashId: true, shamCashQrImage: true } },
+      user: { select: { email: true } },
+    },
   });
 
   await notifyBookingStatus(req.user!.id, booking.stadium.name, "PENDING", booking.id);
@@ -81,6 +146,17 @@ export async function createBooking(req: AuthRequest, res: Response) {
     "PENDING",
     booking.id
   );
+
+  if (booking.depositAmount && booking.depositAmount > 0 && booking.depositReferenceCode) {
+    const tpl = depositRequestEmail({
+      stadiumName: booking.stadium.name,
+      depositAmount: booking.depositAmount,
+      referenceCode: booking.depositReferenceCode,
+      shamCashId: booking.stadium.shamCashId,
+      shamCashQrImage: booking.stadium.shamCashQrImage,
+    });
+    sendEmail({ to: booking.user.email, ...tpl });
+  }
 
   return sendSuccess(res, booking, "تم إرسال طلب الحجز", 201);
 }
@@ -270,10 +346,29 @@ export async function updateStatus(req: AuthRequest, res: Response) {
   const updated = await prisma.booking.update({
     where: { id },
     data: { status, cancelledReason },
-    include: { stadium: { select: { name: true } } },
+    include: {
+      stadium: { select: { name: true, shamCashId: true } },
+      user: { select: { email: true } },
+    },
   });
 
   await notifyBookingStatus(booking.userId, updated.stadium.name, status, booking.id);
+
+  if (status === "CONFIRMED") {
+    const tpl = bookingConfirmedEmail({
+      stadiumName: updated.stadium.name,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      totalPrice: booking.totalPrice,
+    });
+    sendEmail({ to: updated.user.email, ...tpl });
+  }
+
+  if (status === "REJECTED") {
+    const tpl = bookingRejectedEmail(updated.stadium.name);
+    sendEmail({ to: updated.user.email, ...tpl });
+  }
+
   return sendSuccess(res, updated, "تم تحديث حالة الحجز");
 }
 

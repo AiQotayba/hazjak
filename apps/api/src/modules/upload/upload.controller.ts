@@ -1,5 +1,5 @@
-import type { Response } from "express";
-import { env } from "@beeplay/config";
+﻿import type { Response } from "express";
+import { env } from "@hazjak/config";
 import type { AuthRequest } from "../../middlewares/auth";
 import { FILES_SUBDIR, IMAGES_SUBDIR } from "../../middlewares/upload";
 import { sendError, sendSuccess } from "../../utils/response";

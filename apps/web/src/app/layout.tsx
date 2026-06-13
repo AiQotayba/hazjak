@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
-import { APP_CITIES } from "@beeplay/constants";
+import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 import { citiesLabel, ogImage } from "@/lib/seo";
 import { Providers } from "./providers";

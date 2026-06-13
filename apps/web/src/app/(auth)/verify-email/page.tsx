@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MailCheck } from "lucide-react";
-import { verifyOtpSchema } from "@beeplay/validation";
+import { verifyOtpSchema } from "@hazjak/validation";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,14 @@ import {
 } from "@/features/auth/components/auth-form-shell";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
+import type { AuthUser } from "@hazjak/types";
 
 type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const pendingUser = useAuthStore((s) => s.pendingUser);
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
@@ -35,39 +37,42 @@ export default function VerifyEmailPage() {
   } = useForm<VerifyOtpInput>({
     resolver: zodResolver(verifyOtpSchema),
     defaultValues: {
-      email: user?.email ?? "",
+      email: pendingUser?.email ?? "",
     },
   });
 
   async function onSubmit(data: VerifyOtpInput) {
     setError("");
-    const res = await api("/auth/verify-otp", {
+    const res = await api<{ accessToken: string; user: AuthUser }>("/auth/verify-otp", {
       method: "POST",
       body: JSON.stringify(data),
     });
-    if (!res.success) {
+    if (!res.success || !res.data) {
       setError(res.message);
       return;
     }
+    setAuth(res.data.accessToken, res.data.user);
     setDone(true);
-    const role = user?.role;
+    const role = res.data.user.role;
     setTimeout(() => {
       if (role === "STADIUM_OWNER") router.push("/owner/stadium/new");
       else router.push("/user/bookings");
     }, 1200);
   }
 
+  const email = pendingUser?.email;
+
   return (
     <AuthFormShell
       icon={MailCheck}
       title="تحقق من بريدك"
       description={
-        user?.email
-          ? `أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى ${user.email}`
-          : "أدخل رمز التحقق المرسل إلى بريدك"
+        email
+          ? `أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى ${email}`
+          : "أدخل بريدك ورمز التحقق المرسل إليك"
       }
       footer={
-        !user && (
+        !pendingUser && (
           <p className="mt-6 text-center text-sm text-muted-foreground">
             <Link href="/login" className="font-bold text-primary hover:underline">
               تسجيل الدخول
@@ -80,7 +85,7 @@ export default function VerifyEmailPage() {
         <AuthSuccess message="تم التحقق بنجاح — جاري التحويل..." />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {!user?.email && (
+          {!email && (
             <div className="space-y-2">
               <Label htmlFor="email">البريد الإلكتروني</Label>
               <Input
@@ -117,14 +122,10 @@ export default function VerifyEmailPage() {
           <Button
             type="submit"
             className="h-11 w-full rounded-2xl shadow-soft"
-            disabled={isSubmitting || !user?.email}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "جاري التحقق..." : "تحقق"}
           </Button>
-
-          <p className="text-center text-xs text-muted-foreground">
-            في التطوير: راجع سجل الخادم للرمز
-          </p>
         </form>
       )}
     </AuthFormShell>

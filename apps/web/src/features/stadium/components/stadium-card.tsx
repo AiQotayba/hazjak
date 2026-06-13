@@ -1,8 +1,8 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star, Timer, Trophy } from "lucide-react";
-import { SPORT_TYPE_LABELS } from "@beeplay/constants";
-import { formatPrice } from "@beeplay/utils";
+import { SPORT_TYPE_LABELS } from "@hazjak/constants";
+import { formatPrice } from "@hazjak/utils";
 import { BOOKING_SLOT_MINUTES } from "@/lib/booking-slots";
 import { cn } from "@/lib/utils";
 

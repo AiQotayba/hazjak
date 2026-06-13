@@ -42,6 +42,8 @@ export const createStadiumSchema = z.object({
   depositAmount: z.number().nonnegative().optional(),
   contactPhone: z.string().optional(),
   contactWhatsapp: z.string().optional(),
+  shamCashId: z.string().max(100).optional(),
+  shamCashQrImage: z.string().optional(),
   coverImage: z
     .string()
     .optional()

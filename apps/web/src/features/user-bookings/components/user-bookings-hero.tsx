@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { Plus, CalendarDays } from "lucide-react";
-import { APP_MOTTO_AR, APP_TAGLINE_AR } from "@beeplay/constants";
+import { APP_MOTTO_AR, APP_TAGLINE_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 
 interface UserBookingsHeroProps {

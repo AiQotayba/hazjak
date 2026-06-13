@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import {
   LogOut,
   Plus,
 } from "lucide-react";
-import { APP_NAME_AR } from "@beeplay/constants";
+import { APP_NAME_AR } from "@hazjak/constants";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth";
 import { AdminTopBar } from "@/features/shell/components/admin-top-bar";

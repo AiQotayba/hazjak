@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowDownUp, MapPin, Search, X } from "lucide-react";
-import { APP_CITIES } from "@beeplay/constants";
+import { APP_CITIES } from "@hazjak/constants";
 import { Input } from "@/components/ui/input";
 import {
   Select,

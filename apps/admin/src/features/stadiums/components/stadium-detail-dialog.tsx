@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { MapPin, Phone } from "lucide-react";
-import { formatPrice } from "@beeplay/utils";
+import { formatPrice } from "@hazjak/utils";
 import {
   Dialog,
   DialogContent,

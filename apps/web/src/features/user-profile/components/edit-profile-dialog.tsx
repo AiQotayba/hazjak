@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Camera, Loader2, Trash2, UserRound } from "lucide-react";
-import { updateProfileSchema } from "@beeplay/validation";
-import type { AuthUser } from "@beeplay/types";
+import { updateProfileSchema } from "@hazjak/validation";
+import type { AuthUser } from "@hazjak/types";
 import {
   Dialog,
   DialogContent,

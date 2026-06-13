@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 import { authenticate, authorize } from "../../middlewares/auth";
 import { validate } from "../../middlewares/validate";
 import {
@@ -7,7 +7,7 @@ import {
   stadiumFiltersSchema,
   adminStadiumListQuerySchema,
   addStadiumImageSchema,
-} from "@beeplay/validation";
+} from "@hazjak/validation";
 import * as ctrl from "./stadiums.controller";
 
 const router = Router();
@@ -34,6 +34,7 @@ router.post(
   ctrl.adminCreateStadium
 );
 router.get("/:id/availability", ctrl.getAvailability);
+router.get("/:id/booking-slots", ctrl.getBookingSlots);
 router.post(
   "/:id/images",
   authenticate,

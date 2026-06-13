@@ -1,5 +1,5 @@
 {
-  "name": "@beeplay/validation",
+  "name": "@hazjak/validation",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",

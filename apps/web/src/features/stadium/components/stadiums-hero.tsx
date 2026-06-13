@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import { CalendarCheck, MapPin, Sparkles, Zap } from "lucide-react";
-import { APP_CITIES, APP_MOTTO_AR } from "@beeplay/constants";
+import { APP_CITIES, APP_MOTTO_AR } from "@hazjak/constants";
 import { cn } from "@/lib/utils";
 
 const perks = [

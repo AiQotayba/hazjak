@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -19,7 +19,7 @@ import {
 } from "date-fns";
 import { arSA } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { formatTime } from "@beeplay/utils";
+import { formatTime } from "@hazjak/utils";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";

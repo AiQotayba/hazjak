@@ -1,9 +1,9 @@
-import type { Request, Response, NextFunction } from "express";
+﻿import type { Request, Response, NextFunction } from "express";
 import { prisma } from "../db";
-import type { Role } from "@beeplay/types";
+import type { Role } from "@hazjak/types";
 import { verifyAccessToken } from "../utils/jwt";
 import { sendError } from "../utils/response";
-import { omitPassword } from "@beeplay/utils";
+import { omitPassword } from "@hazjak/utils";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -31,9 +31,15 @@ export async function authenticate(
 
   try {
     const payload = verifyAccessToken(token);
+    if (payload.purpose === "email_verification") {
+      return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403);
+    }
     const user = await prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user || user.isBanned) {
       return sendError(res, "حساب غير صالح", 401);
+    }
+    if (!user.isEmailVerified) {
+      return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403);
     }
     req.user = omitPassword(user) as AuthRequest["user"];
     next();

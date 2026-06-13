@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, UserPlus } from "lucide-react";
-import { registerSchema, type RegisterInput } from "@beeplay/validation";
-import { APP_MOTTO_AR } from "@beeplay/constants";
+import { registerSchema, type RegisterInput } from "@hazjak/validation";
+import { APP_MOTTO_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
 } from "@/features/auth/components/auth-form-shell";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
-import type { AuthUser } from "@beeplay/types";
+import type { AuthUser } from "@hazjak/types";
 
 const VARIANTS = {
   player: {
@@ -45,7 +45,7 @@ type RegisterFormProps = {
 export function RegisterForm({ variant }: RegisterFormProps) {
   const { icon, title, description, submitLabel, role } = VARIANTS[variant];
   const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const setVerificationPending = useAuthStore((s) => s.setVerificationPending);
   const [error, setError] = useState("");
 
   const {
@@ -62,7 +62,7 @@ export function RegisterForm({ variant }: RegisterFormProps) {
       ...data,
       role: role === "STADIUM_OWNER" ? ("STADIUM_OWNER" as const) : undefined,
     };
-    const res = await api<{ accessToken: string; user: AuthUser }>("/auth/register", {
+    const res = await api<{ verificationToken: string; user: AuthUser }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -70,7 +70,7 @@ export function RegisterForm({ variant }: RegisterFormProps) {
       setError(res.message);
       return;
     }
-    setAuth(res.data.accessToken, res.data.user);
+    setVerificationPending(res.data.verificationToken, res.data.user);
     router.push("/verify-email");
   }
 

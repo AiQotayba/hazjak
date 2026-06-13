@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { formatPrice } from "@beeplay/utils";
+import { formatPrice } from "@hazjak/utils";
 import { Card, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

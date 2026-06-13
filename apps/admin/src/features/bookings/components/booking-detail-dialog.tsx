@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CalendarDays, MapPin, User } from "lucide-react";
-import { formatDate, formatPrice } from "@beeplay/utils";
+import { formatDate, formatPrice } from "@hazjak/utils";
 import {
   Dialog,
   DialogContent,

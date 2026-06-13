@@ -1,11 +1,11 @@
-# بي بلاي (BeePlay)
+# Hazjak (Hazjak)
 
 منصة حجز ملاعب كرة القدم — واجهة عربية كاملة (RTL) مع تصميم داكن مستوحى من Spotify.
 
 ## الهيكل
 
 ```
-beeplay/
+hazjak/
 ├── apps/
 │   ├── web/      # المنصة الرئيسية (مستخدم + مالك ملعب) — :3000
 │   ├── admin/    # لوحة الإدارة — :3001
@@ -46,9 +46,9 @@ pnpm dev
 
 | الدور     | البريد           | كلمة المرور  |
 | --------- | ---------------- | ------------ |
-| إدارة     | admin@beeplay.sy | Password123! |
-| مالك ملعب | owner@beeplay.sy | Password123! |
-| مستخدم    | user@beeplay.sy  | Password123! |
+| إدارة     | admin@hazjak.sy | Password123! |
+| مالك ملعب | owner@hazjak.sy | Password123! |
+| مستخدم    | user@hazjak.sy  | Password123! |
 
 ## الروابط
 

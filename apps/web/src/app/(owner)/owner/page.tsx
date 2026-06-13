@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { formatDate, formatPrice, formatTime } from "@beeplay/utils";
+import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Banknote, CalendarCheck, ClipboardList, Percent } from "lucide-react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

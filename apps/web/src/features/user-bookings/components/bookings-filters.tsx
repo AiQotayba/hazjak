@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -6,7 +6,7 @@ import { LayoutList, Search } from "lucide-react";
 import {
   BOOKING_STATUS_FILTER_ALL,
   BOOKING_STATUS_FILTER_OPTIONS,
-} from "@beeplay/constants";
+} from "@hazjak/constants";
 import { Input } from "@/components/ui/input";
 import {
   Select,

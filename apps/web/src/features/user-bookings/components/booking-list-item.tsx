@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
-import { formatDate, formatPrice, formatTime } from "@beeplay/utils";
+import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "./StatusBadge";
 

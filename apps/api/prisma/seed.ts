@@ -1,18 +1,19 @@
-import { PrismaClient, Role } from "@prisma/client";
+﻿import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { createPrismaClient } from "../src/db/create-prisma-client";
 
-const prisma = new PrismaClient();
+const prisma = createPrismaClient();
 
 async function main() {
   const password = await bcrypt.hash("Password123!", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@beeplay.ps" },
+    where: { email: "admin@hazjak.sy" },
     update: {},
     create: {
       firstName: "مدير",
       lastName: "النظام",
-      email: "admin@beeplay.ps",
+      email: "admin@hazjak.sy",
       password,
       role: Role.ADMIN,
       isEmailVerified: true,
@@ -20,12 +21,12 @@ async function main() {
   });
 
   const owner = await prisma.user.upsert({
-    where: { email: "owner@beeplay.ps" },
+    where: { email: "owner@hazjak.sy" },
     update: {},
     create: {
       firstName: "أحمد",
       lastName: "الملعب",
-      email: "owner@beeplay.ps",
+      email: "owner@hazjak.sy",
       phone: "+970599000001",
       password,
       role: Role.STADIUM_OWNER,
@@ -34,12 +35,12 @@ async function main() {
   });
 
   const user = await prisma.user.upsert({
-    where: { email: "user@beeplay.ps" },
+    where: { email: "user@hazjak.sy" },
     update: {},
     create: {
       firstName: "محمد",
       lastName: "لاعب",
-      email: "user@beeplay.ps",
+      email: "user@hazjak.sy",
       phone: "+970599000002",
       password,
       role: Role.USER,

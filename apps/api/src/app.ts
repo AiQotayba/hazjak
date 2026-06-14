@@ -5,7 +5,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { API_PREFIX } from "@hazjak/constants";
-import { env } from "@hazjak/config";
+import { env, isCorsOriginAllowed } from "@hazjak/config";
 
 import authRoutes from "./modules/auth/auth.routes";
 import stadiumRoutes from "./modules/stadiums/stadiums.routes";
@@ -28,14 +28,42 @@ if (env.trustProxy !== false) {
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
   })
 );
 app.use("/uploads", express.static(UPLOADS_ROOT));
+/** Origins مضمّنة — تُدمج مع CORS_ORIGIN / CORS_ALLOWED_ORIGINS / WEB_URL / ADMIN_URL */
+const BUILTIN_CORS_ORIGINS = [
+  "https://hazjak.vercel.app",
+  "https://beeplay.vercel.app",
+  "https://admin-hazjak.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+] as const;
+
 app.use(
   cors({
-    origin: [env.corsOrigin, env.adminUrl, env.webUrl],
+    origin(origin, callback) {
+      if (
+        !origin ||
+        isCorsOriginAllowed(origin) ||
+        BUILTIN_CORS_ORIGINS.includes(origin as (typeof BUILTIN_CORS_ORIGINS)[number])
+      ) {
+        callback(null, true);
+        return;
+      }
+
+      if (env.nodeEnv !== "production") {
+        console.warn(
+          `[cors] blocked origin: ${origin} (allowed: ${[...env.corsOrigins, ...BUILTIN_CORS_ORIGINS].join(", ")})`,
+        );
+      }
+
+      callback(null, false);
+    },
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());

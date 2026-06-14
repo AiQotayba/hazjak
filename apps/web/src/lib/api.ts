@@ -13,6 +13,16 @@ export const apiClient = createApi({
   },
   onUnauthorized: () => {
     if (typeof window === "undefined") return;
+    const path = window.location.pathname;
+    const publicAuthPaths = [
+      "/login",
+      "/register",
+      "/register/owner",
+      "/forgot-password",
+      "/reset-password",
+      "/verify-email",
+    ];
+    if (publicAuthPaths.some((p) => path === p || path.startsWith(`${p}/`))) return;
     useAuthStore.getState().logout();
     window.location.href = "/login";
   },

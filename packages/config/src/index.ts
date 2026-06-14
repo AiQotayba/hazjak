@@ -45,20 +45,6 @@ if (corsOrigins.length === 0) {
   corsOrigins.push(defaultWebUrl, defaultAdminUrl);
 }
 
-export function isCorsOriginAllowed(origin: string) {
-  const normalized = normalizeOrigin(origin);
-  if (corsOrigins.includes(normalized)) return true;
-
-  try {
-    const { hostname, protocol } = new URL(normalized);
-    if (protocol === "https:" && hostname.endsWith(".vercel.app")) return true;
-  } catch {
-    return false;
-  }
-
-  return false;
-}
-
 export const env = {
   nodeEnv,
   databaseUrl: process.env.DATABASE_URL ?? "",

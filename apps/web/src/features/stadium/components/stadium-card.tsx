@@ -41,7 +41,7 @@ export function StadiumCard({
   const isFavorite = averageRating >= 4.5 && reviewCount >= 3;
 
   return (
-    <Link href={`/stadiums/${slug}`} className="group block h-full">
+    <Link href={`/stadiums/${slug}`} aria-label={name} className="group block h-full">
       <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
         <div className="relative aspect-[9/6] overflow-hidden bg-muted">
           {coverImage ? (

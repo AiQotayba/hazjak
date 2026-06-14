@@ -67,3 +67,19 @@
 - تأكيد الحجز من الملعب 
 <!-- - سجل مدفوعات  -->
 
+---
+
+## E2E Testing (Playwright)
+
+| ID | User Story | ملف الاختبار |
+|----|------------|--------------|
+| US-01 | كزائر، أريد تصفّح الملاعب | `apps/web/e2e/landing-browse-stadiums.spec.ts` |
+| US-02 | كلاعب، أريد تسجيل الدخول | `apps/web/e2e/auth/login.spec.ts` |
+| US-03 | كزائر، أريد صفحة ملعب | `apps/web/e2e/stadium-detail.spec.ts` |
+| Auth | تسجيل / استعادة / تحقق | `apps/web/e2e/auth/*.spec.ts` |
+
+```bash
+pnpm test:e2e
+pnpm --filter @hazjak/web test:e2e e2e/auth   # Auth فقط
+```
+

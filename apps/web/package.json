@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "@hazjak/web",
   "version": "0.0.0",
   "private": true,
@@ -6,7 +6,11 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@hazjak/constants": "workspace:*",
@@ -39,6 +43,8 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "dotenv": "^16.5.0",
+    "@playwright/test": "^1.51.1",
     "@tailwindcss/postcss": "^4.1.10",
     "@types/node": "^22.15.32",
     "@types/react": "^19.1.8",

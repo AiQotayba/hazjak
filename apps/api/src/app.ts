@@ -5,7 +5,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { API_PREFIX } from "@hazjak/constants";
-import { env, isCorsOriginAllowed } from "@hazjak/config";
+import { env } from "@hazjak/config";
 
 import authRoutes from "./modules/auth/auth.routes";
 import stadiumRoutes from "./modules/stadiums/stadiums.routes";
@@ -42,14 +42,26 @@ const BUILTIN_CORS_ORIGINS = [
   "http://localhost:3001",
 ] as const;
 
+function isAllowedCorsOrigin(origin: string) {
+  if (env.corsOrigins.includes(origin)) return true;
+  if (BUILTIN_CORS_ORIGINS.includes(origin as (typeof BUILTIN_CORS_ORIGINS)[number])) {
+    return true;
+  }
+
+  try {
+    const { hostname, protocol } = new URL(origin);
+    if (protocol === "https:" && hostname.endsWith(".vercel.app")) return true;
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (
-        !origin ||
-        isCorsOriginAllowed(origin) ||
-        BUILTIN_CORS_ORIGINS.includes(origin as (typeof BUILTIN_CORS_ORIGINS)[number])
-      ) {
+      if (!origin || isAllowedCorsOrigin(origin)) {
         callback(null, true);
         return;
       }

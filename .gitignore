@@ -12,3 +12,6 @@ uploads/*
 .DS_Store
 Thumbs.db
 .vercel
+playwright-report/
+test-results/
+blob-report/

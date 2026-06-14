@@ -6,6 +6,7 @@
     "build": "turbo build",
     "start": "turbo start",
     "lint": "turbo lint",
+    "test:e2e": "pnpm --filter @hazjak/web test:e2e",
     "db:generate": "pnpm --filter @hazjak/api generate",
     "db:push": "pnpm --filter @hazjak/api push",
     "db:migrate": "pnpm --filter @hazjak/api migrate",

@@ -8,7 +8,15 @@ const sharedOptions = {
   format: "cjs",
   sourcemap: true,
   packages: "bundle",
-  external: ["@prisma/client", ".prisma", "prisma"],
+  external: [
+    "@prisma/client",
+    ".prisma",
+    "prisma",
+    "@prisma/adapter-pg",
+    "@prisma/adapter-mariadb",
+    "pg",
+    "mariadb",
+  ],
   logLevel: "info",
 };
 

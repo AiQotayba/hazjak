@@ -65,9 +65,5 @@ export const env = {
   trustProxy:
     process.env.TRUST_PROXY === "false" || process.env.TRUST_PROXY === "0"
       ? false
-      : process.env.TRUST_PROXY
-        ? Number(process.env.TRUST_PROXY) || 1
-        : process.env.NODE_ENV === "production"
-          ? 1
-          : false,
+      : Number(process.env.TRUST_PROXY ?? 1) || 1,
 };

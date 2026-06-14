@@ -10,6 +10,7 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { UPLOADS_ROOT } from "../../utils/uploads-path";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
+import { icontains } from "../../utils/prisma-search";
 
 function avatarPublicUrl(filename: string) {
   const base =
@@ -46,9 +47,9 @@ export async function listUsers(req: AuthRequest, res: Response) {
     ...(role && { role }),
     ...(search && {
       OR: [
-        { firstName: { contains: search, mode: "insensitive" as const } },
-        { lastName: { contains: search, mode: "insensitive" as const } },
-        { email: { contains: search, mode: "insensitive" as const } },
+        { firstName: icontains(search) },
+        { lastName: icontains(search) },
+        { email: icontains(search) },
       ],
     }),
   };

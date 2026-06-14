@@ -14,6 +14,7 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { computeDaySlots } from "../../utils/booking-slots";
+import { icontains } from "../../utils/prisma-search";
 
 function redactPublicContacts<T extends { contactPhone?: string | null; contactWhatsapp?: string | null }>(
   stadium: T
@@ -33,9 +34,9 @@ export async function listStadiums(req: AuthRequest, res: Response) {
     ...(filters.area && { area: filters.area }),
     ...(filters.search && {
       OR: [
-        { name: { contains: filters.search, mode: "insensitive" } },
-        { area: { contains: filters.search, mode: "insensitive" } },
-        { city: { contains: filters.search, mode: "insensitive" } },
+        { name: icontains(filters.search) },
+        { area: icontains(filters.search) },
+        { city: icontains(filters.search) },
       ],
     }),
     ...(filters.minPrice && { eveningPrice: { gte: filters.minPrice } }),
@@ -117,15 +118,15 @@ export async function adminListStadiums(req: AuthRequest, res: Response) {
   const where: Prisma.StadiumWhereInput = {
     ...(search && {
       OR: [
-        { name: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-        { area: { contains: search, mode: "insensitive" } },
+        { name: icontains(search) },
+        { city: icontains(search) },
+        { area: icontains(search) },
         {
           owner: {
             OR: [
-              { firstName: { contains: search, mode: "insensitive" } },
-              { lastName: { contains: search, mode: "insensitive" } },
-              { email: { contains: search, mode: "insensitive" } },
+              { firstName: icontains(search) },
+              { lastName: icontains(search) },
+              { email: icontains(search) },
             ],
           },
         },

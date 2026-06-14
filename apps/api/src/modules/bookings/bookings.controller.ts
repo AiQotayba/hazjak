@@ -10,6 +10,7 @@ import {
 import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
+import { icontains } from "../../utils/prisma-search";
 import { notifyBookingStatus } from "../../services/notification.service";
 import { sendEmail } from "../../services/email/email.service";
 import {
@@ -233,12 +234,12 @@ export async function listBookings(req: AuthRequest, res: Response) {
   if (search?.trim()) {
     const q = search.trim();
     where.OR = [
-      { stadium: { name: { contains: q, mode: "insensitive" } } },
-      { stadium: { city: { contains: q, mode: "insensitive" } } },
-      { user: { firstName: { contains: q, mode: "insensitive" } } },
-      { user: { lastName: { contains: q, mode: "insensitive" } } },
-      { user: { email: { contains: q, mode: "insensitive" } } },
-      { notes: { contains: q, mode: "insensitive" } },
+      { stadium: { name: icontains(q) } },
+      { stadium: { city: icontains(q) } },
+      { user: { firstName: icontains(q) } },
+      { user: { lastName: icontains(q) } },
+      { user: { email: icontains(q) } },
+      { notes: icontains(q) },
     ];
   }
 

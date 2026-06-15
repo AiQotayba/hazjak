@@ -12,13 +12,20 @@ import {
   LandingFinalCta,
   LandingJsonLd,
 } from "@/features/landing";
-import { createMetadata } from "@/lib/seo";
+import { citiesLabel, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "احجز ملعبك — حلب وإدلب",
+  title: `احجز ملعب كرة قدم في ${citiesLabel}`,
   description:
-    "منصة حجز ملاعب كرة القدم في حلب وإدلب: تصفّح المواعيد، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب.",
+    `منصة Hazjak لحجز ملاعب كرة القدم في ${citiesLabel}: تصفّح المواعيد والأسعار، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب خلال دقائق.`,
   path: "/",
+  keywords: [
+    "حجز ملاعب حلب",
+    "حجز ملاعب إدلب",
+    "ملاعب كرة قدم",
+    "حجز ملعب أونلاين",
+    "Hazjak",
+  ],
 });
 
 export default function HomePage() {

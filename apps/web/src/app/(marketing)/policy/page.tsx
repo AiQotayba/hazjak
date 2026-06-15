@@ -1,17 +1,25 @@
-import { createMetadata } from "@/lib/seo";
+import { createMetadata, citiesLabel } from "@/lib/seo";
+import { BreadcrumbJsonLd } from "@/features/marketing/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = createMetadata({
   title: "سياسة الإلغاء والعربون",
   description:
-    "قواعد الإلغاء واسترداد العربون قبل تأكيد الحجز. إلغاء قبل 24 ساعة من موعد المباراة.",
+    `قواعد الإلغاء واسترداد العربون على ${citiesLabel}: إلغاء قبل 24 ساعة من موعد المباراة لاسترداد كامل العربون.`,
   path: "/policy",
 });
 
 export default function PolicyPage() {
   return (
-    <MarketingPageShell
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "الرئيسية", path: "/" },
+          { name: "سياسة الإلغاء", path: "/policy" },
+        ]}
+      />
+      <MarketingPageShell
       title="سياسة الإلغاء والعربون"
       description="قواعد واضحة قبل ما ترسل طلب الحجز"
     >
@@ -34,5 +42,6 @@ export default function PolicyPage() {
         </CardContent>
       </Card>
     </MarketingPageShell>
+    </>
   );
 }

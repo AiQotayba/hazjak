@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { fetchStadiumSlugs, siteUrl } from "@/lib/seo";
+import { fetchStadiumsForSeo, siteUrl } from "@/lib/seo";
 
 const staticRoutes = ["", "/stadiums", "/owners", "/about", "/contact", "/policy"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const stadiums = await fetchStadiumSlugs();
+  const stadiums = await fetchStadiumsForSeo();
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((path) => ({
     url: `${siteUrl}${path}`,

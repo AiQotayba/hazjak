@@ -20,14 +20,30 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME_AR}`,
   },
   description: defaultDescription,
+  applicationName: APP_NAME_AR,
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000"),
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
   openGraph: {
     siteName: APP_NAME_AR,
     locale: "ar_SY",
     type: "website",
     images: [{ url: ogImage, width: 512, height: 512, alt: APP_NAME_AR }],
   },
-  twitter: { card: "summary" },
+  twitter: { card: "summary_large_image" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
 };
 
 export default function RootLayout({

@@ -1,19 +1,40 @@
 ﻿import { APP_CITIES } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { createMetadata } from "@/lib/seo";
+import { citiesLabel, createMetadata, supportEmail } from "@/lib/seo";
+import { BreadcrumbJsonLd, JsonLd } from "@/features/marketing/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Mail, MapPin } from "lucide-react";
 
 export const metadata = createMetadata({
   title: "تواصل معنا",
-  description: `تواصل مع فريق دعم ${APP_NAME_AR} في ${APP_CITIES.join(" و")}. نرد خلال يوم عمل.`,
+  description: `تواصل مع فريق دعم ${APP_NAME_AR} في ${citiesLabel}. البريد: ${supportEmail} — نرد خلال يوم عمل.`,
   path: "/contact",
 });
 
 export default function ContactPage() {
   return (
-    <MarketingPageShell
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "الرئيسية", path: "/" },
+          { name: "تواصل معنا", path: "/contact" },
+        ]}
+      />
+      <JsonLd
+        data={{
+          "@type": "ContactPage",
+          name: `تواصل مع ${APP_NAME_AR}`,
+          description: `صفحة التواصل مع فريق دعم ${APP_NAME_AR} في ${citiesLabel}`,
+          mainEntity: {
+            "@type": "Organization",
+            name: APP_NAME_AR,
+            email: supportEmail,
+            areaServed: APP_CITIES.map((city) => ({ "@type": "City", name: city })),
+          },
+        }}
+      />
+      <MarketingPageShell
       title="تواصل معنا"
       description={`فريق الدعم في ${APP_CITIES.join(" و")} — نرد خلال يوم عمل`}
     >
@@ -33,5 +54,6 @@ export default function ContactPage() {
         </CardContent>
       </Card>
     </MarketingPageShell>
+    </>
   );
 }

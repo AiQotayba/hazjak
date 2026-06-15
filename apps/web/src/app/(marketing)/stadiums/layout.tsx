@@ -1,12 +1,31 @@
-import { createMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd, StadiumsListJsonLd } from "@/features/marketing/seo";
+import { citiesLabel, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "الملاعب — حلب وإدلب",
+  title: `ملاعب كرة القدم في ${citiesLabel}`,
   description:
-    "تصفّح ملاعب كرة القدم في حلب وإدلب. قارن الأسعار وأرسل طلب حجز — صاحب الملعب يؤكّد الموعد.",
+    `تصفّح ملاعب كرة القدم في ${citiesLabel}. قارن أسعار الصباح والمساء، اطلع على التقييمات، وأرسل طلب حجز — صاحب الملعب يؤكّد الموعد.`,
   path: "/stadiums",
+  keywords: [
+    "ملاعب حلب",
+    "ملاعب إدلب",
+    "حجز ملعب",
+    "أسعار ملاعب",
+    "ملاعب خماسيات",
+  ],
 });
 
-export default function StadiumsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function StadiumsLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "الرئيسية", path: "/" },
+          { name: "الملاعب", path: "/stadiums" },
+        ]}
+      />
+      <StadiumsListJsonLd />
+      {children}
+    </>
+  );
 }

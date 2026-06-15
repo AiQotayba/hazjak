@@ -157,6 +157,15 @@ function main() {
     process.exit(1);
   }
 
+  const smtpUser = process.env.SMTP_USER?.trim();
+  const smtpFrom = process.env.SMTP_FROM?.trim();
+  if (smtpUser && smtpFrom && smtpUser !== smtpFrom) {
+    console.warn(
+      "\n⚠️  SMTP_FROM يختلف عن SMTP_USER — Gmail قد يرفض الإرسال أو يضع الرسائل في Spam"
+    );
+    console.warn("   الأفضل: SMTP_FROM=" + smtpUser);
+  }
+
   console.log("✅ المتغيرات المطلوبة موجودة في المكان الصحيح");
 }
 

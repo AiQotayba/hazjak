@@ -13,6 +13,8 @@
     "seed": "node scripts/run-seed.mjs",
     "studio": "node scripts/with-root-env.mjs studio",
     "db:test": "node scripts/with-root-env.mjs generate && tsx --env-file=../../.env scripts/test-db.ts",
+    "email:test": "tsx --env-file=../../.env scripts/test-email.ts",
+    "email:probe": "node scripts/smtp-probe.mjs",
     "env:check": "node scripts/check-env.mjs"
   },
   "dependencies": {

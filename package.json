@@ -14,6 +14,7 @@
     "db:studio": "pnpm --filter @hazjak/api studio",
     "db:test": "pnpm --filter @hazjak/api db:test",
     "env:check": "pnpm --filter @hazjak/api env:check",
+    "email:test": "pnpm --filter @hazjak/api email:test",
     "db:setup": "docker compose up -d && pnpm db:push && pnpm db:seed",
     "db:setup:local": "powershell -ExecutionPolicy Bypass -File scripts/ensure-hazjak-db.ps1",
     "db:setup:local:legacy": "powershell -ExecutionPolicy Bypass -File scripts/setup-local-postgres.ps1",

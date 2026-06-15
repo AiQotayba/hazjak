@@ -12,7 +12,7 @@
     "migrate": "node scripts/with-root-env.mjs migrate dev",
     "seed": "node scripts/run-seed.mjs",
     "studio": "node scripts/with-root-env.mjs studio",
-    "db:test": "tsx --env-file=../../.env scripts/test-db.ts"
+    "db:test": "node scripts/with-root-env.mjs generate && tsx --env-file=../../.env scripts/test-db.ts"
   },
   "dependencies": {
     "@hazjak/config": "workspace:*",

@@ -1,8 +1,19 @@
-﻿import { createPrismaClient } from "../src/db/create-prisma-client";
+﻿import { readFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { createPrismaClient } from "../src/db/create-prisma-client";
 import { parseMysqlUrl, resolveDatabaseProvider } from "../src/db/database-url";
+
+const apiRoot = resolve(import.meta.dirname, "..");
 
 function mask(url: string) {
   return url.replace(/:[^:@]+@/, ":****@");
+}
+
+function readGeneratedSchemaProvider() {
+  const path = resolve(apiRoot, "prisma/.schema.generated.prisma");
+  if (!existsSync(path)) return null;
+  const match = readFileSync(path, "utf8").match(/provider\s*=\s*"(mysql|postgresql)"/);
+  return match?.[1] ?? null;
 }
 
 async function main() {
@@ -17,11 +28,25 @@ async function main() {
   }
 
   const provider = resolveDatabaseProvider(url, providerEnv);
+  const schemaProvider = readGeneratedSchemaProvider();
 
   console.log(`DATABASE_PROVIDER: ${providerEnv ?? "(غير معرّف — يُستنتج من الرابط)"}`);
   console.log(`المزوّد المستخدم:    ${provider}`);
+  console.log(`Prisma schema:       ${schemaProvider ?? "(لم يُولَّد — شغّل pnpm run generate)"}`);
   console.log(`DATABASE_URL:        ${mask(url)}`);
 
+  if (schemaProvider && schemaProvider !== provider) {
+    console.error(`
+❌ عدم تطابق: .env يطلب ${provider} لكن Prisma Client مُولَّد لـ ${schemaProvider}
+
+الحل على السيرفر:
+  cd apps/api
+  pnpm run generate
+  pnpm run build
+  pm2 restart beeplay-api --update-env
+`);
+    process.exit(1);
+  }
   if (provider === "mysql") {
     const cfg = parseMysqlUrl(url);
     console.log(`MySQL host:          ${cfg.host}:${cfg.port}`);
@@ -77,6 +102,9 @@ async function main() {
                    └─ prisma.$queryRaw   ← هنا فشل الاختبار
 
 ── أخطاء شائعة على السيرفر ──
+
+  • adapter-mariadb ... not compatible with provider postgres
+    → شغّل generate قبل الاختبار: pnpm run db:test (يولّد تلقائياً)
 
   • received invalid response: 4d
     → DATABASE_PROVIDER=mysql لكن الكود يستخدم pg (أو العكس)

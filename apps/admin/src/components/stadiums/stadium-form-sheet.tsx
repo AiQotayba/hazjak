@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_CITIES, SPORT_TYPE_OPTIONS } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,14 +32,19 @@ type FormState = {
   ownerId: string;
   name: string;
   description: string;
+  sportType: string;
   city: string;
   area: string;
   address: string;
+  latitude: string;
+  longitude: string;
   morningPrice: string;
   eveningPrice: string;
   depositAmount: string;
   contactPhone: string;
   contactWhatsapp: string;
+  shamCashId: string;
+  shamCashQrImage: string;
   coverImage: string;
   isActive: boolean;
   isSuspended: boolean;
@@ -49,14 +54,19 @@ const emptyForm = (ownerId = ""): FormState => ({
   ownerId,
   name: "",
   description: "",
+  sportType: "FOOTBALL",
   city: APP_CITIES[0],
   area: "",
   address: "",
+  latitude: "",
+  longitude: "",
   morningPrice: "",
   eveningPrice: "",
   depositAmount: "",
   contactPhone: "",
   contactWhatsapp: "",
+  shamCashId: "",
+  shamCashQrImage: "",
   coverImage: "",
   isActive: true,
   isSuspended: false,
@@ -67,18 +77,27 @@ function formFromStadium(s: AdminStadiumRecord): FormState {
     ownerId: s.owner.id,
     name: s.name,
     description: s.description,
+    sportType: s.sportType ?? "FOOTBALL",
     city: s.city,
     area: s.area,
     address: s.address,
+    latitude: s.latitude != null ? String(s.latitude) : "",
+    longitude: s.longitude != null ? String(s.longitude) : "",
     morningPrice: String(s.morningPrice),
     eveningPrice: String(s.eveningPrice),
     depositAmount: s.depositAmount != null ? String(s.depositAmount) : "",
     contactPhone: s.contactPhone ?? "",
     contactWhatsapp: s.contactWhatsapp ?? "",
+    shamCashId: s.shamCashId ?? "",
+    shamCashQrImage: s.shamCashQrImage ?? "",
     coverImage: s.coverImage ?? "",
     isActive: s.isActive,
     isSuspended: s.isSuspended,
   };
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h3 className="font-bold text-sm text-foreground">{children}</h3>;
 }
 
 interface StadiumFormSheetProps {
@@ -132,6 +151,13 @@ export function StadiumFormSheet({
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  function parseOptionalNumber(value: string): number | undefined {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const n = Number(trimmed);
+    return Number.isFinite(n) ? n : undefined;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -147,6 +173,7 @@ export function StadiumFormSheet({
       ownerId: form.ownerId,
       name: form.name.trim(),
       description: form.description.trim(),
+      sportType: form.sportType,
       city: form.city,
       area: form.area.trim(),
       address: form.address.trim(),
@@ -158,7 +185,14 @@ export function StadiumFormSheet({
         contactWhatsapp: form.contactWhatsapp.trim(),
       }),
       ...(form.coverImage.trim() && { coverImage: form.coverImage.trim() }),
+      ...(form.shamCashId.trim() && { shamCashId: form.shamCashId.trim() }),
+      ...(form.shamCashQrImage.trim() && { shamCashQrImage: form.shamCashQrImage.trim() }),
     };
+
+    const latitude = parseOptionalNumber(form.latitude);
+    const longitude = parseOptionalNumber(form.longitude);
+    if (latitude !== undefined) payload.latitude = latitude;
+    if (longitude !== undefined) payload.longitude = longitude;
 
     if (mode === "edit") {
       payload.isActive = form.isActive;
@@ -201,7 +235,7 @@ export function StadiumFormSheet({
       aria-modal
       aria-labelledby="stadium-form-title"
     >
-      <Card className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-2xl sm:rounded-2xl overflow-hidden">
+      <Card className="w-full sm:max-w-2xl max-h-[92dvh] flex flex-col rounded-t-2xl sm:rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-secondary shrink-0">
           <h2 id="stadium-form-title" className="font-bold text-sm">
             {mode === "create" ? "إضافة ملعب" : "تعديل الملعب"}
@@ -219,165 +253,264 @@ export function StadiumFormSheet({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
-          <div className="p-4 space-y-4 overflow-y-auto text-sm">
+          <div className="p-4 space-y-5 overflow-y-auto text-sm">
             {error && (
               <p className="rounded-lg bg-destructive/15 text-destructive text-xs px-3 py-2">
                 {error}
               </p>
             )}
 
-            <div className="space-y-1.5">
-              <Label htmlFor="ownerId">صاحب الملعب *</Label>
-              {loadingOwners ? (
-                <Skeleton className="h-10 w-full rounded-xl" />
-              ) : (
-                <Select
-                  value={form.ownerId || undefined}
-                  onValueChange={(v) => set("ownerId", v)}
-                >
-                  <SelectTrigger id="ownerId" className="w-full">
-                    <SelectValue placeholder="اختر صاحب الملعب" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {owners.map((o) => (
-                      <SelectItem key={o.id} value={o.id}>
-                        {o.firstName} {o.lastName} — {o.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="name">اسم الملعب *</Label>
-              <Input
-                id="name"
-                required
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="description">الوصف *</Label>
-              <Textarea
-                id="description"
-                required
-                rows={3}
-                value={form.description}
-                onChange={(e) => set("description", e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-4">
+              <SectionTitle>صاحب الملعب</SectionTitle>
               <div className="space-y-1.5">
-                <Label htmlFor="city">المدينة *</Label>
-                <Select value={form.city} onValueChange={(v) => set("city", v)}>
-                  <SelectTrigger id="city" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {APP_CITIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="ownerId">صاحب الملعب *</Label>
+                {loadingOwners ? (
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                ) : (
+                  <Select
+                    value={form.ownerId || undefined}
+                    onValueChange={(v) => set("ownerId", v)}
+                    disabled={mode === "edit"}
+                  >
+                    <SelectTrigger id="ownerId" className="w-full">
+                      <SelectValue placeholder="اختر صاحب الملعب" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {owners.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          {o.firstName} {o.lastName} — {o.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-4">
+              <SectionTitle>معلومات الملعب</SectionTitle>
+
               <div className="space-y-1.5">
-                <Label htmlFor="area">المنطقة *</Label>
+                <Label htmlFor="name">اسم الملعب *</Label>
                 <Input
-                  id="area"
+                  id="name"
                   required
-                  value={form.area}
-                  onChange={(e) => set("area", e.target.value)}
+                  value={form.name}
+                  onChange={(e) => set("name", e.target.value)}
+                  placeholder="مثال: ملعب الأمل"
                 />
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="sportType">نوع الملعب *</Label>
+                  <Select value={form.sportType} onValueChange={(v) => set("sportType", v)}>
+                    <SelectTrigger id="sportType" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SPORT_TYPE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="city">المدينة *</Label>
+                  <Select value={form.city} onValueChange={(v) => set("city", v)}>
+                    <SelectTrigger id="city" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {APP_CITIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="description">الوصف *</Label>
+                <Textarea
+                  id="description"
+                  required
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => set("description", e.target.value)}
+                  placeholder="وصف الملعب، المساحة، الإضاءة، التكييف..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="area">المنطقة / الحي *</Label>
+                  <Input
+                    id="area"
+                    required
+                    value={form.area}
+                    onChange={(e) => set("area", e.target.value)}
+                    placeholder="حي الشجاعية"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="address">العنوان التفصيلي *</Label>
+                  <Input
+                    id="address"
+                    required
+                    value={form.address}
+                    onChange={(e) => set("address", e.target.value)}
+                    placeholder="شارع..."
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="latitude">خط العرض (اختياري)</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    value={form.latitude}
+                    onChange={(e) => set("latitude", e.target.value)}
+                    dir="ltr"
+                    className="text-start"
+                    placeholder="33.5138"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="longitude">خط الطول (اختياري)</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    value={form.longitude}
+                    onChange={(e) => set("longitude", e.target.value)}
+                    dir="ltr"
+                    className="text-start"
+                    placeholder="36.2765"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="address">العنوان *</Label>
-              <Input
-                id="address"
-                required
-                value={form.address}
-                onChange={(e) => set("address", e.target.value)}
+            <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-4">
+              <SectionTitle>التسعير والتواصل</SectionTitle>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="morningPrice">سعر الصباح (ل.س) *</Label>
+                  <Input
+                    id="morningPrice"
+                    required
+                    type="number"
+                    min={1}
+                    value={form.morningPrice}
+                    onChange={(e) => set("morningPrice", e.target.value)}
+                    dir="ltr"
+                    className="text-start tabular-nums"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="eveningPrice">سعر المساء (ل.س) *</Label>
+                  <Input
+                    id="eveningPrice"
+                    required
+                    type="number"
+                    min={1}
+                    value={form.eveningPrice}
+                    onChange={(e) => set("eveningPrice", e.target.value)}
+                    dir="ltr"
+                    className="text-start tabular-nums"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="depositAmount">العربون (اختياري)</Label>
+                  <Input
+                    id="depositAmount"
+                    type="number"
+                    min={0}
+                    value={form.depositAmount}
+                    onChange={(e) => set("depositAmount", e.target.value)}
+                    dir="ltr"
+                    className="text-start tabular-nums"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="contactPhone">هاتف التواصل</Label>
+                  <Input
+                    id="contactPhone"
+                    value={form.contactPhone}
+                    onChange={(e) => set("contactPhone", e.target.value)}
+                    dir="ltr"
+                    className="text-start"
+                    placeholder="+963..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="contactWhatsapp">واتساب (اختياري)</Label>
+                  <Input
+                    id="contactWhatsapp"
+                    value={form.contactWhatsapp}
+                    onChange={(e) => set("contactWhatsapp", e.target.value)}
+                    dir="ltr"
+                    className="text-start"
+                    placeholder="+963..."
+                  />
+                </div>
+              </div>
+
+              <ImageUpload
+                label="صورة الغلاف"
+                value={form.coverImage}
+                onChange={(url) => set("coverImage", url)}
+                folder="stadiums"
+                token={token}
+                disabled={saving}
+                showUrlInput
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 rounded-xl border border-border bg-secondary/30 p-4">
+              <SectionTitle>شام كاش (اختياري)</SectionTitle>
+              <p className="text-xs text-muted-foreground">
+                تُعرض لحجز العربون بعد تأكيد صاحب الملعب.
+              </p>
               <div className="space-y-1.5">
-                <Label htmlFor="morningPrice">سعر الصباح (ل.س) *</Label>
+                <Label htmlFor="shamCashId">رقم / معرّف شام كاش</Label>
                 <Input
-                  id="morningPrice"
-                  required
-                  type="number"
-                  min={1}
-                  value={form.morningPrice}
-                  onChange={(e) => set("morningPrice", e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="eveningPrice">سعر المساء (ل.س) *</Label>
-                <Input
-                  id="eveningPrice"
-                  required
-                  type="number"
-                  min={1}
-                  value={form.eveningPrice}
-                  onChange={(e) => set("eveningPrice", e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="depositAmount">العربون (ل.س)</Label>
-              <Input
-                id="depositAmount"
-                type="number"
-                min={0}
-                value={form.depositAmount}
-                onChange={(e) => set("depositAmount", e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="contactPhone">هاتف التواصل</Label>
-                <Input
-                  id="contactPhone"
-                  value={form.contactPhone}
-                  onChange={(e) => set("contactPhone", e.target.value)}
+                  id="shamCashId"
+                  value={form.shamCashId}
+                  onChange={(e) => set("shamCashId", e.target.value)}
                   dir="ltr"
                   className="text-start"
+                  placeholder="معرّف الحساب"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="contactWhatsapp">واتساب</Label>
-                <Input
-                  id="contactWhatsapp"
-                  value={form.contactWhatsapp}
-                  onChange={(e) => set("contactWhatsapp", e.target.value)}
-                  dir="ltr"
-                  className="text-start"
-                />
-              </div>
+              <ImageUpload
+                label="صورة QR شام كاش"
+                value={form.shamCashQrImage}
+                onChange={(url) => set("shamCashQrImage", url)}
+                folder="sham-cash"
+                token={token}
+                disabled={saving}
+                showUrlInput
+              />
             </div>
 
-            <ImageUpload
-              label="صورة الغلاف"
-              value={form.coverImage}
-              onChange={(url) => set("coverImage", url)}
-              folder="stadiums"
-              token={token}
-              disabled={saving}
-            />
-
-              <div className="flex flex-col gap-4 pt-1 rounded-xl bg-secondary/50 px-4 py-3">
+            {mode === "edit" && (
+              <div className="flex flex-col gap-4 rounded-xl border border-border bg-secondary/30 px-4 py-3">
+                <SectionTitle>الحالة</SectionTitle>
                 <div className="flex items-center justify-between gap-4">
-                  <Label htmlFor="isActive" className="text-sm text-foreground cursor-pointer">
+                  <Label htmlFor="isActive" className="text-sm cursor-pointer">
                     ظاهر في التطبيق
                   </Label>
                   <Switch
@@ -386,7 +519,18 @@ export function StadiumFormSheet({
                     onCheckedChange={(checked) => set("isActive", checked)}
                   />
                 </div>
+                <div className="flex items-center justify-between gap-4">
+                  <Label htmlFor="isSuspended" className="text-sm cursor-pointer">
+                    موقوف (إيقاف مؤقت)
+                  </Label>
+                  <Switch
+                    id="isSuspended"
+                    checked={form.isSuspended}
+                    onCheckedChange={(checked) => set("isSuspended", checked)}
+                  />
+                </div>
               </div>
+            )}
           </div>
 
           <div className="flex gap-2 border-t border-border p-4 shrink-0 bg-secondary">

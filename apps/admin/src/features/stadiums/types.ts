@@ -12,6 +12,11 @@ export type AdminStadiumRecord = {
   contactPhone: string | null;
   contactWhatsapp: string | null;
   coverImage: string | null;
+  sportType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  shamCashId?: string | null;
+  shamCashQrImage?: string | null;
   isActive: boolean;
   isSuspended: boolean;
   owner: { id: string; firstName: string; lastName: string; email: string };

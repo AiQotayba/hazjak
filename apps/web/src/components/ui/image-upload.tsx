@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { normalizeMediaUrl } from "@hazjak/utils";
 import { Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,7 +114,7 @@ export function ImageUpload({
           {hasValue ? (
             <div className="relative h-36 w-36 shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-muted sm:h-40 sm:w-40">
               <Image
-                src={value}
+                src={normalizeMediaUrl(value)}
                 alt="معاينة"
                 fill
                 className={previewFit === "contain" ? "object-contain" : "object-cover"}

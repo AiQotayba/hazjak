@@ -75,7 +75,6 @@ export async function register(req: AuthRequest, res: Response) {
 
 export async function login(req: AuthRequest, res: Response) {
   const { email, password } = loginSchema.parse(req.body);
-  console.log(req.body);
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || user.isBanned) {
     return sendError(res, "بيانات الدخول غير صحيحة", 401);
@@ -83,10 +82,7 @@ export async function login(req: AuthRequest, res: Response) {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return sendError(res, "بيانات الدخول غير صحيحة", 401);
 
-  console.log("USER", user);
-  console.log("IS EMAIL VERIFIED", user.isEmailVerified);
   if (!user.isEmailVerified) {
-    console.log("GENERATING OTP");
     const otp = generateOtp();
     await prisma.user.update({
       where: { id: user.id },

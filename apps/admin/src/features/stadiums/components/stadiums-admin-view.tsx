@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { useQueryClient } from "@tanstack/react-query";
 import { MapPin, Plus } from "lucide-react";
 import { formatPrice } from "@hazjak/utils";
@@ -25,7 +25,7 @@ const columns: TableColumn<AdminStadiumRecord>[] = [
     render: (_, row) => (
       <div className="relative h-12 w-16 rounded-lg overflow-hidden bg-muted shrink-0">
         {row.coverImage ? (
-          <Image src={row.coverImage} alt="" fill className="object-cover" sizes="64px" />
+          <MediaImage src={row.coverImage} alt="" fill className="object-cover" sizes="64px" />
         ) : (
           <span className="flex h-full items-center justify-center text-lg opacity-40">⚽</span>
         )}

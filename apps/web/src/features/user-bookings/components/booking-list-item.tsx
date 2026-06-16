@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,7 @@ function StadiumImage({
       )}
     >
       {coverImage ? (
-        <Image
+        <MediaImage
           src={coverImage}
           alt={name}
           fill

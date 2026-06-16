@@ -92,7 +92,7 @@ export function DashboardOverview() {
           href="/stadiums"
         />
         <AdminStatCard
-          label="الإيرادات"
+          label="الإيرادات (بعد انتهاء اللعب)"
           value={stats ? formatPrice(stats.revenue) : "—"}
           icon={Wallet}
           accent="orange"

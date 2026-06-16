@@ -7,6 +7,7 @@ import {
   stadiumFiltersSchema,
   adminStadiumListQuerySchema,
   addStadiumImageSchema,
+  reorderStadiumImagesSchema,
 } from "@hazjak/validation";
 import * as ctrl from "./stadiums.controller";
 
@@ -35,6 +36,13 @@ router.post(
 );
 router.get("/:id/availability", ctrl.getAvailability);
 router.get("/:id/booking-slots", ctrl.getBookingSlots);
+router.post(
+  "/:id/images/reorder",
+  authenticate,
+  authorize("ADMIN", "STADIUM_OWNER"),
+  validate(reorderStadiumImagesSchema),
+  ctrl.reorderStadiumImages
+);
 router.post(
   "/:id/images",
   authenticate,

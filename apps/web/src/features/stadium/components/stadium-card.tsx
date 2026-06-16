@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+﻿import { MediaImage } from "@/components/ui/media-image";
 import Link from "next/link";
 import { MapPin, Star, Timer, Trophy } from "lucide-react";
 import { SPORT_TYPE_LABELS } from "@hazjak/constants";
@@ -45,7 +45,7 @@ export function StadiumCard({
       <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
         <div className="relative aspect-[9/6] overflow-hidden bg-muted">
           {coverImage ? (
-            <Image
+            <MediaImage
               src={coverImage}
               alt={name}
               fill

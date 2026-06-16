@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { MapPin, Phone } from "lucide-react";
 import { formatPrice } from "@hazjak/utils";
 import {
@@ -35,7 +35,7 @@ export function StadiumDetailDialog({
       <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
         {stadium.coverImage && (
           <div className="relative h-44 bg-muted">
-            <Image
+            <MediaImage
               src={stadium.coverImage}
               alt={stadium.name}
               fill

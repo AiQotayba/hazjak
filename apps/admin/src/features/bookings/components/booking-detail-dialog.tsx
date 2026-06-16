@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { CalendarDays, MapPin, User } from "lucide-react";
 import { formatDate, formatPrice } from "@hazjak/utils";
 import {
@@ -89,7 +89,7 @@ export function BookingDetailDialog({
           <>
             {booking.stadium.coverImage && (
               <div className="relative -mx-6 -mt-6 mb-4 h-36 bg-muted">
-                <Image
+                <MediaImage
                   src={booking.stadium.coverImage}
                   alt={booking.stadium.name}
                   fill

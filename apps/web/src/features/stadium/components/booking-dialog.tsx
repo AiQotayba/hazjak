@@ -15,13 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { api } from "@/lib/api";
 import {
   BOOKING_SLOT_MINUTES,
@@ -30,6 +23,7 @@ import {
   getEstimatedPrice,
   localDateInputValue,
 } from "@/lib/booking-slots";
+import { getSlotColorClasses, SLOT_LEGEND, type SlotReason } from "@/lib/slot-colors";
 import { cn } from "@/lib/utils";
 
 const FALLBACK_SLOTS = getBookingTimeSlots();
@@ -44,13 +38,6 @@ interface DaySlot {
 function formatCount(value: number): string {
   return new Intl.NumberFormat("ar-SY", { numberingSystem: "latn" }).format(value);
 }
-
-const REASON_LABELS: Record<string, string> = {
-  booked: "محجوز",
-  blocked: "يوم مغلق",
-  outside_hours: "غير متاح",
-  past: "انتهى",
-};
 
 export interface BookingDialogStadium {
   id: string;
@@ -174,7 +161,7 @@ export function BookingDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="w-[calc(100%-2rem)] sm:max-w-md max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
+        className="w-[calc(100%-2rem)] sm:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
         dir="rtl"
       >
         <div className="overflow-hidden rounded-3xl bg-card shadow-card">
@@ -194,49 +181,63 @@ export function BookingDialog({
               />
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="col-span-2 sm:col-span-1">
-                    <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
-                      التاريخ
-                    </Label>
-                    <DatePicker
-                      id="booking-date"
-                      value={date}
-                      onChange={setDate}
-                      minDate={minDate}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
+                    التاريخ
+                  </Label>
+                  <DatePicker
+                    id="booking-date"
+                    value={date}
+                    onChange={setDate}
+                    minDate={minDate}
+                  />
+                </div>
 
-                  <div className="space-y-1.5 col-span-2 sm:col-span-1">
-                    <Label htmlFor="booking-time" className="text-xs text-muted-foreground">
-                      التوقيت ({formatCount(BOOKING_SLOT_MINUTES)} د)
-                    </Label>
-                    <Select value={timeSlot} onValueChange={setTimeSlot} required disabled={loadingSlots || dayBlocked}>
-                      <SelectTrigger
-                        id="booking-time"
-                        className="h-11 border-0 bg-secondary/60 shadow-none"
-                        aria-label="توقيت الحجز"
-                        dir="rtl"
-                      >
-                        <Clock className="h-4 w-4 text-primary shrink-0" />
-                        <SelectValue placeholder={loadingSlots ? "جاري التحميل..." : "اختر التوقيت"} />
-                      </SelectTrigger>
-                      <SelectContent align="start" dir="rtl">
-                        {daySlots.map((slot) => (
-                          <SelectItem
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground">
+                    التوقيت ({formatCount(BOOKING_SLOT_MINUTES)} د)
+                  </Label>
+
+                  {loadingSlots ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">جاري تحميل المواعيد...</p>
+                  ) : (
+                    <div
+                      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-1"
+                      role="listbox"
+                      aria-label="توقيت الحجز"
+                    >
+                      {daySlots.map((slot) => {
+                        const isSelected = timeSlot === slot.value;
+                        return (
+                          <button
                             key={slot.value}
-                            value={slot.value}
-                            disabled={!slot.available}
-                            className={cn(!slot.available && "opacity-50")}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            disabled={!slot.available || dayBlocked}
+                            onClick={() => slot.available && setTimeSlot(slot.value)}
+                            className={cn(
+                              "rounded-xl border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight",
+                              getSlotColorClasses(
+                                { available: slot.available, reason: slot.reason as SlotReason | undefined },
+                                isSelected
+                              )
+                            )}
                           >
                             {slot.label}
-                            {!slot.available && slot.reason
-                              ? ` — ${REASON_LABELS[slot.reason] ?? "غير متاح"}`
-                              : ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    {SLOT_LEGEND.map((item) => (
+                      <span key={item.key} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <span className={cn("h-2 w-2 rounded-full shrink-0", item.className)} />
+                        {item.label}
+                      </span>
+                    ))}
                   </div>
                 </div>
 

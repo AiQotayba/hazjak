@@ -143,7 +143,7 @@ async function main() {
     },
   });
 
-  console.log("Seed completed:", { admin: admin.email, owner: owner.email, user: user.email });
+  console.info("Seed completed:", { admin: admin.email, owner: owner.email, user: user.email });
 }
 
 main()

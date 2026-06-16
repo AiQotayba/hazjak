@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { MediaImage } from "@/components/ui/media-image";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -10,6 +9,7 @@ import {
   ChevronRight,
   MapPin,
   Moon,
+  Play,
   Star,
   Sun,
   Timer,
@@ -25,6 +25,11 @@ import { BookingDialog } from "@/features/stadium/components/booking-dialog";
 import { BOOKING_SLOT_MINUTES } from "@/lib/booking-slots";
 import type { AuthUser } from "@hazjak/types";
 import { cn } from "@/lib/utils";
+import { getVideoEmbedUrl, type VideoEmbed } from "@/lib/video-embed";
+
+type GalleryItem =
+  | { type: "image"; src: string }
+  | { type: "video"; embed: VideoEmbed };
 
 export interface StadiumDetailData {
   id: string;
@@ -40,9 +45,10 @@ export interface StadiumDetailData {
   eveningPrice: number;
   depositAmount?: number | null;
   coverImage?: string | null;
+  videoUrl?: string | null;
   sportType?: string;
   contactWhatsapp?: string | null;
-  images: { imageUrl: string }[];
+  images: { imageUrl: string; sortOrder?: number }[];
   averageRating: number;
   reviews: {
     id: string;
@@ -72,15 +78,22 @@ function formatCount(value: number): string {
 
 export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewProps) {
   const [bookingOpen, setBookingOpen] = useState(false);
-  const [activeImage, setActiveImage] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const gallery = useMemo(
-    () => [
-      ...(stadium.coverImage ? [stadium.coverImage] : []),
-      ...stadium.images.map((i) => i.imageUrl),
-    ],
-    [stadium.coverImage, stadium.images]
-  );
+  const mediaItems = useMemo(() => {
+    const sorted = [...stadium.images].sort(
+      (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    );
+    const items: GalleryItem[] = [
+      ...(stadium.coverImage ? [{ type: "image" as const, src: stadium.coverImage }] : []),
+    ];
+    if (stadium.videoUrl) {
+      const embed = getVideoEmbedUrl(stadium.videoUrl);
+      if (embed) items.push({ type: "video", embed });
+    }
+    items.push(...sorted.map((i) => ({ type: "image" as const, src: i.imageUrl })));
+    return items;
+  }, [stadium.coverImage, stadium.images, stadium.videoUrl]);
 
   const startPrice = Math.min(stadium.morningPrice, stadium.eveningPrice);
   const sportLabel = stadium.sportType ? SPORT_TYPE_LABELS[stadium.sportType] : null;
@@ -97,23 +110,29 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
   const features = buildFeatures(stadium, sportLabel);
 
   function goPrev() {
-    setActiveImage((i) => (i <= 0 ? gallery.length - 1 : i - 1));
+    setActiveIndex((i) => (i <= 0 ? mediaItems.length - 1 : i - 1));
   }
 
   function goNext() {
-    setActiveImage((i) => (i >= gallery.length - 1 ? 0 : i + 1));
+    setActiveIndex((i) => (i >= mediaItems.length - 1 ? 0 : i + 1));
   }
+
+  const posterSrc =
+    stadium.coverImage ??
+    stadium.images.find((i) => i.imageUrl)?.imageUrl ??
+    null;
 
   return (
     <div className="mx-auto max-w-6xl pb-12">
       <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
         <motion.div {...enter(0.06)} className="space-y-4">
           <StadiumGallery
-            images={gallery}
+            items={mediaItems}
             name={stadium.name}
             initial={initial}
-            activeIndex={activeImage}
-            onSelect={setActiveImage}
+            posterSrc={posterSrc}
+            activeIndex={activeIndex}
+            onSelect={setActiveIndex}
             onPrev={goPrev}
             onNext={goNext}
           />
@@ -315,36 +334,41 @@ function StadiumFeaturesGrid({ features }: { features: FeatureItem[] }) {
 }
 
 function StadiumGallery({
-  images,
+  items,
   name,
   initial,
+  posterSrc,
   activeIndex,
   onSelect,
   onPrev,
   onNext,
 }: {
-  images: string[];
+  items: GalleryItem[];
   name: string;
   initial: string;
+  posterSrc: string | null;
   activeIndex: number;
   onSelect: (index: number) => void;
   onPrev: () => void;
   onNext: () => void;
 }) {
-  const current = images[activeIndex];
+  const current = items[activeIndex];
   const visibleThumbs = 4;
-  const extraCount = Math.max(0, images.length - visibleThumbs);
+  const extraCount = Math.max(0, items.length - visibleThumbs);
+  const hasMultiple = items.length > 1;
 
   return (
     <div className="space-y-3">
       <div className="relative aspect-[9/6] overflow-hidden rounded-3xl bg-muted shadow-soft">
-        {current ? (
-          <Image
-            src={current}
+        {current?.type === "video" ? (
+          <GalleryVideoPlayer name={name} embed={current.embed} />
+        ) : current?.type === "image" ? (
+          <MediaImage
+            src={current.src}
             alt={name}
             fill
             className="object-cover"
-            priority
+            priority={activeIndex === 0}
             sizes="(max-width:1024px) 100vw, 50vw"
           />
         ) : (
@@ -356,46 +380,48 @@ function StadiumGallery({
           </>
         )}
 
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-heading/40 via-transparent to-transparent pointer-events-none"
-          aria-hidden
-        />
+        {current?.type === "image" && (
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-heading/40 via-transparent to-transparent pointer-events-none"
+            aria-hidden
+          />
+        )}
 
-        {images.length > 1 && (
+        {hasMultiple && (
           <>
             <button
               type="button"
               onClick={onPrev}
-              className="absolute top-1/2 start-3 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-card/95 shadow-soft text-heading hover:bg-card transition-colors backdrop-blur-sm"
-              aria-label="الصورة السابقة"
+              className="absolute top-1/2 start-3 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-card/95 shadow-soft text-heading hover:bg-card transition-colors backdrop-blur-sm"
+              aria-label="السابق"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
             <button
               type="button"
               onClick={onNext}
-              className="absolute top-1/2 end-3 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-card/95 shadow-soft text-heading hover:bg-card transition-colors backdrop-blur-sm"
-              aria-label="الصورة التالية"
+              className="absolute top-1/2 end-3 z-10 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-card/95 shadow-soft text-heading hover:bg-card transition-colors backdrop-blur-sm"
+              aria-label="التالي"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <span className="absolute bottom-3 start-3 rounded-full bg-heading/70 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
-              {formatCount(activeIndex + 1)} / {formatCount(images.length)}
+            <span className="absolute bottom-3 start-3 z-10 rounded-full bg-heading/70 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
+              {formatCount(activeIndex + 1)} / {formatCount(items.length)}
             </span>
           </>
         )}
       </div>
 
-      {images.length > 1 && (
+      {hasMultiple && (
         <div className="grid grid-cols-4 gap-2">
-          {images.slice(0, visibleThumbs).map((src, i) => {
+          {items.slice(0, visibleThumbs).map((item, i) => {
             const isLastVisible = i === visibleThumbs - 1 && extraCount > 0;
             const thumbIndex = isLastVisible ? visibleThumbs : i;
             const isActive = isLastVisible ? activeIndex >= visibleThumbs : activeIndex === i;
 
             return (
               <button
-                key={`${src}-${i}`}
+                key={`${item.type}-${i}`}
                 type="button"
                 onClick={() => onSelect(thumbIndex)}
                 className={cn(
@@ -403,7 +429,11 @@ function StadiumGallery({
                   isActive ? "ring-2 ring-primary opacity-100" : "opacity-70 hover:opacity-100"
                 )}
               >
-                <Image src={src} alt={`${name} ${i + 1}`} fill className="object-cover" sizes="120px" />
+                {item.type === "image" ? (
+                  <MediaImage src={item.src} alt={`${name} ${i + 1}`} fill className="object-cover" sizes="120px" />
+                ) : (
+                  <GalleryVideoThumb posterSrc={posterSrc} name={name} />
+                )}
                 {isLastVisible && (
                   <span className="absolute inset-0 flex items-center justify-center bg-heading/50 text-xs font-bold text-white">
                     +{formatCount(extraCount)}
@@ -415,6 +445,46 @@ function StadiumGallery({
         </div>
       )}
     </div>
+  );
+}
+
+function GalleryVideoPlayer({ name, embed }: { name: string; embed: VideoEmbed }) {
+  if (embed.type === "video") {
+    return (
+      <video
+        src={embed.src}
+        controls
+        className="absolute inset-0 h-full w-full object-cover"
+        title={`فيديو ${name}`}
+      />
+    );
+  }
+
+  return (
+    <iframe
+      src={embed.src}
+      title={`فيديو ${name}`}
+      className="absolute inset-0 h-full w-full border-0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    />
+  );
+}
+
+function GalleryVideoThumb({ posterSrc, name }: { posterSrc: string | null; name: string }) {
+  return (
+    <>
+      {posterSrc ? (
+        <MediaImage src={posterSrc} alt={`فيديو ${name}`} fill className="object-cover" sizes="120px" />
+      ) : (
+        <div className="absolute inset-0 bg-heading/80" />
+      )}
+      <span className="absolute inset-0 flex items-center justify-center bg-heading/30">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-card/95 shadow-soft">
+          <Play className="h-4 w-4 text-primary ms-0.5" aria-hidden />
+        </span>
+      </span>
+    </>
   );
 }
 

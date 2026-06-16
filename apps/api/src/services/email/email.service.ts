@@ -18,7 +18,6 @@ export async function sendEmail(input: {
   text: string;
   html: string;
 }) {
-  console.log("SENDING EMAIL", input);
   if (!transporter) {
     return { delivered: false, logged: true };
   }
@@ -30,6 +29,5 @@ export async function sendEmail(input: {
     text: input.text,
     html: input.html,
   });
-  console.log("EMAIL SENT");
   return { delivered: true, logged: false };
 }

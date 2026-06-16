@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { MapPin, Phone, X } from "lucide-react";
 import { formatPrice } from "@hazjak/utils";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export function StadiumDetailPanel({ stadium, onClose, onEdit, onPatch }: Stadiu
 
       {stadium.coverImage && (
         <div className="relative h-40 bg-bg-elevated">
-          <Image src={stadium.coverImage} alt={stadium.name} fill className="object-cover" sizes="400px" />
+          <MediaImage src={stadium.coverImage} alt={stadium.name} fill className="object-cover" sizes="400px" />
         </div>
       )}
 

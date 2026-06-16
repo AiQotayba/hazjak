@@ -9,6 +9,7 @@ import {
   stadiumFiltersSchema,
   adminStadiumListQuerySchema,
   addStadiumImageSchema,
+  reorderStadiumImagesSchema,
 } from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
@@ -22,6 +23,8 @@ function redactPublicContacts<T extends { contactPhone?: string | null; contactW
   const { contactPhone: _p, contactWhatsapp: _w, ...rest } = stadium;
   return { ...rest, showContact: false };
 }
+
+const IMAGE_ORDER = { orderBy: { sortOrder: "asc" as const } };
 
 export async function listStadiums(req: AuthRequest, res: Response) {
   const filters = stadiumFiltersSchema.parse(req.query);
@@ -57,7 +60,7 @@ export async function listStadiums(req: AuthRequest, res: Response) {
       take: limit,
       orderBy,
       include: {
-        images: { take: 3 },
+        images: { take: 3, ...IMAGE_ORDER },
         reviews: { select: { rating: true } },
         _count: { select: { reviews: true } },
       },
@@ -92,7 +95,7 @@ export async function myStadiums(req: AuthRequest, res: Response) {
     where,
     orderBy: { createdAt: "desc" },
     include: {
-      images: true,
+      images: IMAGE_ORDER,
       _count: { select: { bookings: true, reviews: true } },
     },
   });
@@ -161,7 +164,7 @@ export async function getStadium(req: AuthRequest, res: Response) {
       isActive: true,
     },
     include: {
-      images: true,
+      images: IMAGE_ORDER,
       owner: { select: { id: true, firstName: true, lastName: true } },
       reviews: {
         include: { user: { select: { firstName: true, lastName: true, avatar: true } } },
@@ -207,7 +210,7 @@ export async function createStadium(req: AuthRequest, res: Response) {
 
   const stadium = await prisma.stadium.create({
     data: { ...body, slug, ownerId: req.user!.id },
-    include: { images: true },
+    include: { images: IMAGE_ORDER },
   });
   return sendSuccess(res, stadium, "تم إنشاء الملعب", 201);
 }
@@ -257,7 +260,7 @@ export async function updateStadium(req: AuthRequest, res: Response) {
       },
       include: {
         owner: { select: { id: true, firstName: true, lastName: true, email: true } },
-        images: true,
+        images: IMAGE_ORDER,
         _count: { select: { bookings: true, reviews: true } },
       },
     });
@@ -268,7 +271,7 @@ export async function updateStadium(req: AuthRequest, res: Response) {
   const updated = await prisma.stadium.update({
     where: { id },
     data: body,
-    include: { images: true },
+    include: { images: IMAGE_ORDER },
   });
   return sendSuccess(res, updated, "تم تحديث الملعب");
 }
@@ -391,10 +394,48 @@ export async function addStadiumImage(req: AuthRequest, res: Response) {
   if (req.user!.role !== "ADMIN" && stadium.ownerId !== req.user!.id) {
     return sendError(res, "غير مصرح", 403);
   }
+  const maxOrder = await prisma.stadiumImage.aggregate({
+    where: { stadiumId: id },
+    _max: { sortOrder: true },
+  });
   const image = await prisma.stadiumImage.create({
-    data: { stadiumId: id, imageUrl },
+    data: { stadiumId: id, imageUrl, sortOrder: (maxOrder._max.sortOrder ?? -1) + 1 },
   });
   return sendSuccess(res, image, "تمت إضافة الصورة", 201);
+}
+
+export async function reorderStadiumImages(req: AuthRequest, res: Response) {
+  const id = param(req, "id");
+  const { imageIds } = reorderStadiumImagesSchema.parse(req.body);
+  const stadium = await prisma.stadium.findUnique({ where: { id } });
+  if (!stadium) return sendError(res, "الملعب غير موجود", 404);
+  if (req.user!.role !== "ADMIN" && stadium.ownerId !== req.user!.id) {
+    return sendError(res, "غير مصرح", 403);
+  }
+
+  const existing = await prisma.stadiumImage.findMany({
+    where: { stadiumId: id },
+    select: { id: true },
+  });
+  const existingIds = new Set(existing.map((i) => i.id));
+  if (imageIds.length !== existing.length || !imageIds.every((i) => existingIds.has(i))) {
+    return sendError(res, "قائمة الصور غير صالحة", 400);
+  }
+
+  await prisma.$transaction(
+    imageIds.map((imageId, index) =>
+      prisma.stadiumImage.update({
+        where: { id: imageId },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  const images = await prisma.stadiumImage.findMany({
+    where: { stadiumId: id },
+    orderBy: { sortOrder: "asc" },
+  });
+  return sendSuccess(res, images, "تم تحديث ترتيب الصور");
 }
 
 export async function deleteStadiumImage(req: AuthRequest, res: Response) {

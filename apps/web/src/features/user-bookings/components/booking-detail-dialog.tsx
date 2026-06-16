@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { MediaImage } from "@/components/ui/media-image";
 import { CalendarDays, Clock, ExternalLink, FileText, MapPin, MessageCircle, Phone, Wallet } from "lucide-react";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -151,7 +151,7 @@ function BookingDetailBody({
     <>
       <div className="relative aspect-[9/6] bg-muted">
         {booking.stadium.coverImage ? (
-          <Image
+          <MediaImage
             src={booking.stadium.coverImage}
             alt={booking.stadium.name}
             fill

@@ -68,7 +68,7 @@ function statusIcon(ok) {
 }
 
 function main() {
-  console.log("── فحص متغيرات البيئة ──\n");
+  console.info("── فحص متغيرات البيئة ──\n");
 
   const wrongPaths = [
     { label: "جذر المشروع (المطلوب)", path: envPath },
@@ -76,13 +76,13 @@ function main() {
     { label: "apps/web/.env (للواجهة فقط — Vercel)", path: resolve(repoRoot, "apps/web/.env") },
   ];
 
-  console.log("مسارات الملفات:");
+  console.info("مسارات الملفات:");
   for (const { label, path } of wrongPaths) {
     const exists = existsSync(path);
-    console.log(`  ${exists ? "✅" : "○ "} ${label}`);
-    console.log(`     ${path}`);
+    console.info(`  ${exists ? "✅" : "○ "} ${label}`);
+    console.info(`     ${path}`);
   }
-  console.log();
+  console.info();
 
   if (!existsSync(envPath)) {
     console.error(`❌ ملف .env غير موجود في جذر المشروع:\n   ${envPath}`);
@@ -98,28 +98,28 @@ function main() {
 
   config({ path: envPath, override: true });
 
-  console.log(`مصدر التحميل: ${envPath}\n`);
-  console.log("── مطلوب ──");
+  console.info(`مصدر التحميل: ${envPath}\n`);
+  console.info("── مطلوب ──");
   let failed = false;
   for (const key of REQUIRED) {
     const value = process.env[key]?.trim() ?? "";
     const ok = value.length > 0;
     if (!ok) failed = true;
-    console.log(`  ${statusIcon(ok)} ${key}: ${mask(key, value)}`);
+    console.info(`  ${statusIcon(ok)} ${key}: ${mask(key, value)}`);
   }
 
-  console.log("\n── موصى به (إنتاج) ──");
+  console.info("\n── موصى به (إنتاج) ──");
   for (const key of RECOMMENDED) {
     const value = process.env[key]?.trim() ?? "";
     const ok = value.length > 0;
-    console.log(`  ${statusIcon(ok)} ${key}: ${mask(key, value)}`);
+    console.info(`  ${statusIcon(ok)} ${key}: ${mask(key, value)}`);
   }
 
-  console.log("\n── اختياري ──");
+  console.info("\n── اختياري ──");
   for (const key of OPTIONAL) {
     const value = process.env[key]?.trim() ?? "";
     const ok = value.length > 0;
-    console.log(`  ${ok ? "✅" : "○ "} ${key}: ${mask(key, value)}`);
+    console.info(`  ${ok ? "✅" : "○ "} ${key}: ${mask(key, value)}`);
   }
 
   const provider = process.env.DATABASE_PROVIDER?.trim().toLowerCase();
@@ -137,7 +137,7 @@ function main() {
     failed = true;
   }
 
-  console.log(`
+    console.info(`
 ── كيف يقرأ الـ API المتغيرات ──
 
   PM2 / production:
@@ -166,7 +166,7 @@ function main() {
     console.warn("   الأفضل: SMTP_FROM=" + smtpUser);
   }
 
-  console.log("✅ المتغيرات المطلوبة موجودة في المكان الصحيح");
+  console.info("✅ المتغيرات المطلوبة موجودة في المكان الصحيح");
 }
 
 main();

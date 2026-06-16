@@ -27,7 +27,8 @@ export default function AdminReportsPage() {
           { label: "الحجوزات", key: "totalBookings" },
           { label: "مؤكدة", key: "confirmedBookings" },
           { label: "قيد الانتظار", key: "pendingBookings" },
-          { label: "الإيرادات", key: "revenue", money: true },
+          { label: "الإيرادات (منتهية)", key: "revenue", money: true },
+          { label: "إيرادات متوقعة", key: "upcomingRevenue", money: true },
           { label: "إلغاء %", key: "cancellationRate", suffix: "%" },
         ].map(({ label, key, money, suffix }) => (
           <Card key={key} className="p-3">

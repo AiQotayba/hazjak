@@ -10,7 +10,7 @@ function mask(url: string) {
 }
 
 function readGeneratedSchemaProvider() {
-  const path = resolve(apiRoot, "prisma/.schema.generated.prisma");
+  const path = resolve(apiRoot, ".prisma/schema");
   if (!existsSync(path)) return null;
   const match = readFileSync(path, "utf8").match(/provider\s*=\s*"(mysql|postgresql)"/);
   return match?.[1] ?? null;
@@ -20,7 +20,7 @@ async function main() {
   const url = process.env.DATABASE_URL?.trim();
   const providerEnv = process.env.DATABASE_PROVIDER?.trim();
 
-  console.log("── تشخيص قاعدة البيانات ──\n");
+  console.info("── تشخيص قاعدة البيانات ──\n");
 
   if (!url) {
     console.error("❌ DATABASE_URL غير معرّف في .env (جذر المشروع)");
@@ -30,10 +30,10 @@ async function main() {
   const provider = resolveDatabaseProvider(url, providerEnv);
   const schemaProvider = readGeneratedSchemaProvider();
 
-  console.log(`DATABASE_PROVIDER: ${providerEnv ?? "(غير معرّف — يُستنتج من الرابط)"}`);
-  console.log(`المزوّد المستخدم:    ${provider}`);
-  console.log(`Prisma schema:       ${schemaProvider ?? "(لم يُولَّد — شغّل pnpm run generate)"}`);
-  console.log(`DATABASE_URL:        ${mask(url)}`);
+  console.info(`DATABASE_PROVIDER: ${providerEnv ?? "(غير معرّف — يُستنتج من الرابط)"}`);
+  console.info(`المزوّد المستخدم:    ${provider}`);
+  console.info(`Prisma schema:       ${schemaProvider ?? "(لم يُولَّد — شغّل pnpm run generate)"}`);
+  console.info(`DATABASE_URL:        ${mask(url)}`);
 
   if (schemaProvider && schemaProvider !== provider) {
     console.error(`
@@ -49,18 +49,18 @@ async function main() {
   }
   if (provider === "mysql") {
     const cfg = parseMysqlUrl(url);
-    console.log(`MySQL host:          ${cfg.host}:${cfg.port}`);
-    console.log(`MySQL database:      ${cfg.database}`);
-    console.log(`MySQL user:          ${cfg.user}`);
+    console.info(`MySQL host:          ${cfg.host}:${cfg.port}`);
+    console.info(`MySQL database:      ${cfg.database}`);
+    console.info(`MySQL user:          ${cfg.user}`);
   }
 
-  console.log("\nجاري الاتصال عبر Prisma...\n");
+  console.info("\nجاري الاتصال عبر Prisma...\n");
 
   const prisma = createPrismaClient(url);
 
   try {
     await prisma.$queryRaw`SELECT 1`;
-    console.log("✅ SELECT 1 — ناجح");
+    console.info("✅ SELECT 1 — ناجح");
 
     if (provider === "mysql") {
       const tables = await prisma.$queryRaw<Array<{ cnt: bigint }>>`
@@ -69,17 +69,17 @@ async function main() {
         WHERE table_schema = DATABASE()
       `;
       const count = Number(tables[0]?.cnt ?? 0);
-      console.log(`✅ جداول في قاعدة beeplay: ${count}`);
+      console.info(`✅ جداول في قاعدة beeplay: ${count}`);
 
       if (count === 0) {
-        console.log("\n⚠️  القاعدة فارغة — شغّل: pnpm run push && pnpm run seed");
+        console.info("\n⚠️  القاعدة فارغة — شغّل: pnpm run push && pnpm run seed");
       }
     } else {
       const users = await prisma.user.count();
-      console.log(`✅ جدول User — ${users} مستخدم`);
+      console.info(`✅ جدول User — ${users} مستخدم`);
     }
 
-    console.log("\n✅ الاتصال سليم — المشكلة ليست في credentials أو الشبكة.");
+    console.info("\n✅ الاتصال سليم — المشكلة ليست في credentials أو الشبكة.");
     process.exit(0);
   } catch (error) {
     console.error("\n❌ فشل الاتصال:\n");

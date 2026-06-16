@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
-import { Banknote, CalendarCheck, ClipboardList, Percent } from "lucide-react";
+import { Banknote, CalendarCheck, ClipboardList, Clock, Percent } from "lucide-react";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
@@ -44,11 +44,19 @@ const STAT_ITEMS = [
   },
   {
     label: "الإيرادات (ل.س)",
-    description: "إجمالي الدخل المؤكّد",
+    description: "يُحتسب بعد انتهاء وقت اللعب",
     key: "revenue",
     format: true,
     href: "/owner/bookings?status=CONFIRMED",
     icon: Banknote,
+  },
+  {
+    label: "إيرادات متوقعة",
+    description: "حجوزات مؤكدة لم ينتهِ وقتها بعد",
+    key: "upcomingRevenue",
+    format: true,
+    href: "/owner/bookings?status=CONFIRMED",
+    icon: Clock,
   },
   {
     label: "نسبة الإلغاء",
@@ -118,9 +126,9 @@ export default function OwnerDashboardPage() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
         {loading
-          ? [1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-[5.5rem] rounded-2xl" />)
+          ? [1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[5.5rem] rounded-2xl" />)
           : STAT_ITEMS.map((item) => (
               <StatCard
                 key={item.key}

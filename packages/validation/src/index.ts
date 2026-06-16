@@ -49,6 +49,11 @@ export const createStadiumSchema = z.object({
     .optional()
     .transform((s) => (s?.trim() ? s.trim() : undefined))
     .refine((s) => !s || z.string().url().safeParse(s).success, "رابط الصورة غير صالح"),
+  videoUrl: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined))
+    .refine((s) => !s || z.string().url().safeParse(s).success, "رابط الفيديو غير صالح"),
   sportType: z
     .enum(["FOOTBALL", "FUTSAL", "BASKETBALL", "BASEBALL", "OTHER"])
     .optional(),
@@ -112,6 +117,10 @@ export const createBlockedDaySchema = z.object({
 
 export const addStadiumImageSchema = z.object({
   imageUrl: z.string().url("رابط الصورة غير صالح"),
+});
+
+export const reorderStadiumImagesSchema = z.object({
+  imageIds: z.array(z.string().uuid()).min(1, "قائمة الصور مطلوبة"),
 });
 
 export const ownerManualBookingSchema = z.object({

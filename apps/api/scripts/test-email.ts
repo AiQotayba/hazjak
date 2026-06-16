@@ -86,8 +86,8 @@ async function verifySmtpConnection(): Promise<CheckResult> {
     };
   }
 
-  if (env.smtpFrom && env.smtpUser && env.smtpFrom !== env.smtpUser) {
-    console.log(
+  if (env.smtpFrom && env.smtpFrom.trim() !== env.smtpUser.trim()) {
+    console.info(
       `  ⚠️  SMTP_FROM (${env.smtpFrom}) يختلف عن SMTP_USER (${env.smtpUser}) — Gmail قد يرفض الإرسال`
     );
   }
@@ -95,7 +95,7 @@ async function verifySmtpConnection(): Promise<CheckResult> {
   const transporter = smtpTransport();
 
   try {
-    console.log("  … جاري الاتصال بـ SMTP (حتى 20 ثانية)");
+    console.info("  … جاري الاتصال بـ SMTP (حتى 20 ثانية)");
     await withTimeout(transporter.verify(), 20_000, "اتصال SMTP");
     return { name: "اتصال SMTP (verify)", ok: true, detail: `${env.smtpHost}:${env.smtpPort}` };
   } catch (error) {
@@ -134,14 +134,14 @@ async function main() {
     process.env.SMTP_USER?.trim() ||
     "";
 
-  console.log("── اختبار البريد الإلكتروني (Hazjak API) ──\n");
+  console.info("── اختبار البريد الإلكتروني (Hazjak API) ──\n");
 
   const envChecks = checkEnv();
-  console.log("── متغيرات SMTP ──");
+  console.info("── متغيرات SMTP ──");
   for (const c of envChecks) {
-    console.log(`  ${status(c.ok)} ${c.name}: ${c.detail}`);
+    console.info(`  ${status(c.ok)} ${c.name}: ${c.detail}`);
   }
-  console.log();
+  console.info();
 
   const envOk = envChecks.every((c) => c.ok);
   if (!envOk) {
@@ -152,9 +152,9 @@ async function main() {
   const verify = quick
     ? { name: "اتصال SMTP (verify)", ok: true, detail: "تخطي (--quick)" }
     : await verifySmtpConnection();
-  console.log(`── ${verify.name} ──`);
-  console.log(`  ${status(verify.ok)} ${verify.detail}`);
-  console.log();
+  console.info(`── ${verify.name} ──`);
+  console.info(`  ${status(verify.ok)} ${verify.detail}`);
+  console.info();
 
   if (!verify.ok) {
     console.error(`
@@ -178,7 +178,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`── إرسال قوالب الاختبار إلى: ${to} ──\n`);
+  console.info(`── إرسال قوالب الاختبار إلى: ${to} ──\n`);
 
   const templates: Array<{ label: string; tpl: { subject: string; text: string; html: string } }> = [
     { label: "رمز التحقق (تسجيل)", tpl: verificationOtpEmail(TEST_OTP) },
@@ -208,17 +208,17 @@ async function main() {
   for (const { label, tpl } of templates) {
     const result = await sendTemplate(label, to, tpl);
     results.push(result);
-    console.log(`  ${status(result.ok)} ${result.name}${result.detail ? ` — ${result.detail}` : ""}`);
+    console.info(`  ${status(result.ok)} ${result.name}${result.detail ? ` — ${result.detail}` : ""}`);
   }
 
-  console.log();
+  console.info();
   const failed = results.filter((r) => !r.ok);
   if (failed.length > 0) {
     console.error(`❌ فشل ${failed.length} من ${results.length} رسائل`);
     process.exit(1);
   }
 
-  console.log(`✅ نجح الاختبار — ${results.length} رسائل أُرسلت. تحقق من صندوق الوارد (والـ Spam).`);
+  console.info(`✅ نجح الاختبار — ${results.length} رسائل أُرسلت. تحقق من صندوق الوارد (والـ Spam).`);
   process.exit(0);
 }
 

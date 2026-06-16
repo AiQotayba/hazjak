@@ -1,8 +1,8 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
@@ -14,21 +14,32 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
+import { redirectAfterLogin, useRedirectIfAuthenticated } from "@/features/auth";
 import type { AuthUser } from "@hazjak/types";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   const setVerificationPending = useAuthStore((s) => s.setVerificationPending);
+  const { hydrated, isAuthenticated } = useRedirectIfAuthenticated();
   const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginInput>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
+
+  if (!hydrated || isAuthenticated) {
+    return null;
+  }
 
   async function onSubmit(data: LoginInput) {
     setError("");
@@ -53,10 +64,7 @@ export default function LoginPage() {
     }
 
     setAuth(res.data.accessToken, res.data.user);
-    const role = res.data.user.role;
-    if (role === "STADIUM_OWNER") router.push("/owner");
-    else if (role === "ADMIN") router.push(process.env.NEXT_PUBLIC_ADMIN_URL ?? "/");
-    else router.push("/user/bookings");
+    redirectAfterLogin(router, res.data.user.role, searchParams.get("next"));
   }
 
   return (

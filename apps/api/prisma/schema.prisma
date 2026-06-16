@@ -1,3 +1,5 @@
+// Edit this file. Prisma CLI materializes it to apps/api/.prisma/schema on generate/push/migrate.
+
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
@@ -91,6 +93,7 @@ model Stadium {
   shamCashId        String?
   shamCashQrImage   String?
   coverImage        String?
+  videoUrl          String?
   sportType         SportType          @default(FOOTBALL)
   isActive          Boolean            @default(true)
   isSuspended       Boolean            @default(false)
@@ -111,9 +114,12 @@ model StadiumImage {
   id        String   @id @default(uuid())
   stadiumId String
   imageUrl  String
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
   stadium Stadium @relation(fields: [stadiumId], references: [id], onDelete: Cascade)
+
+  @@index([stadiumId, sortOrder])
 }
 
 model AvailabilitySlot {

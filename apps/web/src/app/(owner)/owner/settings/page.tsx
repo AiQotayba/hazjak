@@ -1,14 +1,16 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { MediaImage } from "@/components/ui/media-image";
 import {
   ExternalLink,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   ImageIcon,
   MapPin,
   Phone,
+  Play,
   User,
   Wallet,
 } from "lucide-react";
@@ -34,6 +36,8 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { OwnerAvailabilityTab } from "@/features/owner-stadium/components/owner-availability-tab";
 import { ImageUpload } from "@/components/ui/image-upload";
+import Link from "next/link";
+import Image from "next/image";
 
 type StadiumData = {
   id: string;
@@ -53,10 +57,11 @@ type StadiumData = {
   shamCashId: string | null;
   shamCashQrImage: string | null;
   coverImage: string | null;
+  videoUrl: string | null;
   sportType?: string;
   isActive?: boolean;
   isSuspended?: boolean;
-  images?: { id: string; imageUrl: string }[];
+  images?: { id: string; imageUrl: string; sortOrder?: number }[];
 };
 
 const inputClass = "border-0 bg-secondary/60 shadow-none rounded-2xl h-11";
@@ -89,13 +94,12 @@ function StadiumHeader({ stadium }: { stadium: StadiumData }) {
     <>
       {stadium.coverImage && (
         <div className="relative aspect-[9/6] bg-muted">
-          <Image
+          <MediaImage
             src={stadium.coverImage}
             alt={stadium.name}
             fill
             className="object-cover"
             sizes="(max-width:672px) 100vw, 672px"
-            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-heading/60 to-transparent" />
           <div className="absolute bottom-3 start-3 end-3">
@@ -133,7 +137,7 @@ export default function OwnerSettingsPage() {
     phone: user?.phone ?? "",
   });
   const [stadium, setStadium] = useState<StadiumData | null>(null);
-  const [newImageUrl, setNewImageUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [msg, setMsg] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -171,6 +175,7 @@ export default function OwnerSettingsPage() {
       shamCashId: s.shamCashId || undefined,
       shamCashQrImage: s.shamCashQrImage || undefined,
       coverImage: s.coverImage || undefined,
+      videoUrl: s.videoUrl || undefined,
       sportType: s.sportType,
     };
   }
@@ -200,18 +205,43 @@ export default function OwnerSettingsPage() {
     }
   }
 
-  async function addImage() {
-    if (!stadium || !newImageUrl.trim()) return;
+  async function addImage(imageUrl: string) {
+    if (!stadium || !imageUrl.trim()) return;
+    setUploadingImage(true);
     await api(`/stadiums/${stadium.id}/images`, {
       method: "POST",
       token: token!,
-      body: JSON.stringify({ imageUrl: newImageUrl.trim() }),
+      body: JSON.stringify({ imageUrl: imageUrl.trim() }),
     });
     const res = await api<StadiumData[]>("/stadiums/mine", { token: token! });
     const s = res.data?.[0];
     if (s) setStadium(s);
-    setNewImageUrl("");
+    setUploadingImage(false);
     setMsg("تمت إضافة الصورة");
+  }
+
+  async function moveImage(imageId: string, direction: "up" | "down") {
+    if (!stadium?.images?.length) return;
+    const sorted = [...stadium.images].sort(
+      (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    );
+    const index = sorted.findIndex((i) => i.id === imageId);
+    if (index < 0) return;
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= sorted.length) return;
+
+    const reordered = [...sorted];
+    [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+
+    const res = await api(`/stadiums/${stadium.id}/images/reorder`, {
+      method: "POST",
+      token: token!,
+      body: JSON.stringify({ imageIds: reordered.map((i) => i.id) }),
+    });
+    if (res.success && res.data) {
+      setStadium((s) => s && { ...s, images: res.data as StadiumData["images"] });
+      setMsg("تم تحديث ترتيب الصور");
+    }
   }
 
   async function removeImage(imageId: string) {
@@ -562,7 +592,7 @@ export default function OwnerSettingsPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  saveStadium("تم حفظ صورة الغلاف");
+                  saveStadium("تم حفظ صورة الغلاف والفيديو");
                 }}
                 className="space-y-4"
               >
@@ -571,57 +601,58 @@ export default function OwnerSettingsPage() {
                   صورة الغلاف
                 </p>
 
-                {stadium.coverImage && (
-                  <div className="relative aspect-[9/6] rounded-2xl overflow-hidden bg-muted">
-                    <Image
-                      src={stadium.coverImage}
-                      alt="غلاف الملعب"
-                      fill
-                      className="object-cover"
-                      sizes="400px"
-                      unoptimized
-                    />
-                  </div>
-                )}
+                <ImageUpload
+                  value={stadium.coverImage ?? ""}
+                  onChange={(url) =>
+                    setStadium((s) => s && { ...s, coverImage: url || null })
+                  }
+                  token={token ?? undefined}
+                  inputClassName={inputClass}
+                  disabled={saving}
+                />
 
-                <Field label="رابط الصورة">
+                <p className="text-sm font-bold text-heading flex items-center gap-2 pt-2 border-t border-border/40">
+                  <Play className="h-4 w-4 text-primary" />
+                  فيديو الملعب
+                </p>
+                <p className="text-[11px] text-muted-foreground -mt-2">
+                  رابط YouTube أو Vimeo أو ملف فيديو مباشر
+                </p>
+                <Field label="رابط الفيديو">
                   <Input
                     className={inputClass}
-                    value={stadium.coverImage ?? ""}
+                    value={stadium.videoUrl ?? ""}
                     onChange={(e) =>
-                      setStadium((s) => s && { ...s, coverImage: e.target.value })
+                      setStadium((s) => s && { ...s, videoUrl: e.target.value || null })
                     }
                     dir="ltr"
-                    placeholder="https://..."
+                    placeholder="https://youtube.com/watch?v=..."
                   />
                 </Field>
 
-                <SaveButton saving={saving} label="حفظ الغلاف" />
+                <SaveButton saving={saving} label="حفظ الغلاف والفيديو" />
               </form>
 
               <div className="pt-4 border-t border-border/40 space-y-3">
                 <p className="text-sm font-bold text-heading">معرض الصور</p>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="https://..."
-                    className={cn(inputClass, "flex-1")}
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    dir="ltr"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="rounded-xl shrink-0 h-11"
-                    onClick={addImage}
-                  >
-                    إضافة
-                  </Button>
-                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  ارفع الصور ورتّبها — الترتيب يظهر في صفحة الملعب
+                </p>
+
+                <ImageUpload
+                  value=""
+                  onChange={(url) => {
+                    if (url) void addImage(url);
+                  }}
+                  token={token ?? undefined}
+                  disabled={uploadingImage}
+                />
 
                 {stadium.images && stadium.images.length > 0 ? (
                   <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {stadium.images.map((img) => (
+                    {[...stadium.images]
+                      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                      .map((img, index, arr) => (
                       <li
                         key={img.id}
                         className="relative aspect-[9/6] rounded-xl overflow-hidden bg-muted group"
@@ -634,15 +665,38 @@ export default function OwnerSettingsPage() {
                           sizes="160px"
                           unoptimized
                         />
-                        <button
-                          type="button"
-                          className="absolute inset-0 flex items-end justify-center bg-heading/0 group-hover:bg-heading/50 transition-colors pb-2"
-                          onClick={() => removeImage(img.id)}
-                        >
-                          <span className="text-[10px] font-bold text-white opacity-0 group-hover:opacity-100">
+                        <div className="absolute inset-x-0 top-0 flex justify-between p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              className="flex h-6 w-6 items-center justify-center rounded-md bg-heading/70 text-white disabled:opacity-30"
+                              onClick={() => moveImage(img.id, "up")}
+                              aria-label="تحريك لأعلى"
+                            >
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === arr.length - 1}
+                              className="flex h-6 w-6 items-center justify-center rounded-md bg-heading/70 text-white disabled:opacity-30"
+                              onClick={() => moveImage(img.id, "down")}
+                              aria-label="تحريك لأسفل"
+                            >
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="flex h-6 items-center rounded-md bg-destructive/90 px-2 text-[10px] font-bold text-white"
+                            onClick={() => removeImage(img.id)}
+                          >
                             حذف
-                          </span>
-                        </button>
+                          </button>
+                        </div>
+                        <span className="absolute bottom-1 start-1 rounded bg-heading/60 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          {index + 1}
+                        </span>
                       </li>
                     ))}
                   </ul>

@@ -15,10 +15,10 @@ const pass = process.env.SMTP_PASS?.trim();
 const from = process.env.SMTP_FROM?.trim() || user;
 const to = process.argv[2]?.trim() || user;
 
-console.log("── SMTP probe ──");
-console.log(`host: ${host}:${port}`);
-console.log(`from: ${from}`);
-console.log(`to:   ${to}`);
+console.info("── SMTP probe ──");
+console.info(`host: ${host}:${port}`);
+console.info(`from: ${from}`);
+console.info(`to:   ${to}`);
 
 if (!host || !user || !pass) {
   console.error("❌ SMTP_HOST / SMTP_USER / SMTP_PASS مطلوبة");
@@ -37,7 +37,7 @@ const transporter = nodemailer.createTransport({
 
 try {
   await transporter.verify();
-  console.log("✅ verify OK");
+  console.info("✅ verify OK");
 } catch (error) {
   console.error("❌ verify failed:", error instanceof Error ? error.message : error);
   process.exit(1);
@@ -51,7 +51,7 @@ try {
     text: `اختبار بريد من السيرفر — ${new Date().toISOString()}`,
     html: `<p dir="rtl">اختبار بريد Hazjak من السيرفر — ${new Date().toISOString()}</p>`,
   });
-  console.log("✅ sent:", info.messageId);
+  console.info("✅ sent:", info.messageId);
 } catch (error) {
   console.error("❌ send failed:", error instanceof Error ? error.message : error);
   process.exit(1);

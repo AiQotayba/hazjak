@@ -2,6 +2,12 @@
 import { prisma } from "../../db";
 import { isMorningSlot } from "@hazjak/utils";
 import type { AuthRequest } from "../../middlewares/auth";
+import {
+  isConfirmedBooking,
+  isRevenueEligible,
+  sumEligibleRevenue,
+  sumUpcomingRevenue,
+} from "../../utils/revenue";
 import { sendSuccess } from "../../utils/response";
 
 export async function dashboard(req: AuthRequest, res: Response) {
@@ -14,21 +20,22 @@ export async function dashboard(req: AuthRequest, res: Response) {
 
   const bookings = await prisma.booking.findMany({
     where: { stadiumId: { in: stadiumIds } },
-    select: { status: true, totalPrice: true, startTime: true },
+    select: { status: true, totalPrice: true, startTime: true, endTime: true },
   });
 
-  const confirmed = bookings.filter((b) =>
-    ["CONFIRMED", "COMPLETED"].includes(b.status)
-  );
-  const revenue = confirmed.reduce((s, b) => s + b.totalPrice, 0);
-  const morning = confirmed.filter((b) => isMorningSlot(b.startTime)).length;
-  const evening = confirmed.length - morning;
+  const now = new Date();
+  const revenueEligible = bookings.filter((b) => isRevenueEligible(b, now));
+  const revenue = sumEligibleRevenue(bookings, now);
+  const upcomingRevenue = sumUpcomingRevenue(bookings, now);
+  const confirmedBookings = bookings.filter((b) => isConfirmedBooking(b.status)).length;
+  const morning = revenueEligible.filter((b) => isMorningSlot(b.startTime)).length;
+  const evening = revenueEligible.length - morning;
   const cancelled = bookings.filter((b) => b.status === "CANCELLED").length;
   const cancellationRate =
     bookings.length > 0 ? Math.round((cancelled / bookings.length) * 100) : 0;
 
   const hourMap: Record<number, number> = {};
-  confirmed.forEach((b) => {
+  revenueEligible.forEach((b) => {
     const h = b.startTime.getHours();
     hourMap[h] = (hourMap[h] ?? 0) + 1;
   });
@@ -44,9 +51,11 @@ export async function dashboard(req: AuthRequest, res: Response) {
 
   return sendSuccess(res, {
     totalBookings: bookings.length,
-    confirmedBookings: confirmed.length,
+    confirmedBookings,
+    revenueBookings: revenueEligible.length,
     pendingBookings: bookings.filter((b) => b.status === "PENDING").length,
     revenue,
+    upcomingRevenue,
     morningBookings: morning,
     eveningBookings: evening,
     cancellationRate,

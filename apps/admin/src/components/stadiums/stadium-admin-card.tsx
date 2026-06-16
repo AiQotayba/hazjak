@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import Image from "next/image";
+import { MediaImage } from "@/components/ui/media-image";
 import { MapPin } from "lucide-react";
 import { formatPrice } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ export function StadiumAdminCard({ stadium, selected, onSelect }: StadiumAdminCa
       <div className="flex gap-0 sm:gap-4 flex-col sm:flex-row">
         <div className="relative h-32 sm:h-auto sm:w-36 shrink-0 bg-bg-elevated">
           {stadium.coverImage ? (
-            <Image
+            <MediaImage
               src={stadium.coverImage}
               alt={stadium.name}
               fill

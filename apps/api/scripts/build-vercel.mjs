@@ -35,4 +35,4 @@ await esbuild.build({
   outfile: "dist/server.js",
 });
 
-console.log("API bundles written to api/index.js and dist/server.js");
+console.info("API bundles written to api/index.js and dist/server.js");

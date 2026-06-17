@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { APP_NAME_AR } from "@/lib/brand";
 import Image from "next/image";
 import { useAuthStore } from "@/features/auth/store/auth";
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { InstallAppButton } from "@/features/pwa/components/install-app-button";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -81,13 +82,16 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <InstallAppButton />
             {token && user ? (
               <>
+                {/* الإشعارات مخفية مؤقتاً
                 <Button variant="ghost" size="icon" asChild>
                   <Link href="/user/notifications" aria-label="الإشعارات">
                     <Bell className="h-4 w-4" />
                   </Link>
                 </Button>
+                */}
                 <Button variant="outline" size="sm" asChild>
                   <Link href={dashboardHref}>
                     <User className="h-3.5 w-3.5" />

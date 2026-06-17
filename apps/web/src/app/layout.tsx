@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   },
   description: defaultDescription,
   applicationName: APP_NAME_AR,
+  appleWebApp: {
+    capable: true,
+    title: APP_NAME_AR,
+    statusBarStyle: "default",
+  },
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000"),
   manifest: "/manifest.webmanifest",
   icons: {

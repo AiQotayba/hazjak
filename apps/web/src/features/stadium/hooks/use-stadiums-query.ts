@@ -23,10 +23,11 @@ export interface StadiumsFilters {
   city?: string;
   sortBy?: string;
   order?: string;
+  limit?: number;
 }
 
 export function buildStadiumsParams(filters: StadiumsFilters) {
-  const params: Record<string, string | number> = { limit: 20 };
+  const params: Record<string, string | number> = { limit: filters.limit ?? 20 };
 
   const q = filters.search?.trim();
   if (q) params.search = q;

@@ -13,9 +13,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
+import { useSnackbar } from "@/components/ui/snackbar";
 import {
   BOOKING_SLOT_MINUTES,
   buildBookingRange,
@@ -64,6 +66,7 @@ export function BookingDialog({
   user,
 }: BookingDialogProps) {
   const router = useRouter();
+  const showSnack = useSnackbar((s) => s.show);
   const minDate = useMemo(() => localDateInputValue(), []);
 
   const [date, setDate] = useState(minDate);
@@ -132,7 +135,7 @@ export function BookingDialog({
     }
 
     setSubmitting(true);
-    const res = await api("/bookings", {
+    const res = await api<{ id: string }>("/bookings", {
       method: "POST",
       token,
       body: JSON.stringify({
@@ -144,12 +147,16 @@ export function BookingDialog({
     });
     setSubmitting(false);
 
-    if (res.success) {
+    if (res.success && res.data?.id) {
       onOpenChange(false);
-      router.push("/user/bookings");
+      showSnack("تم إرسال طلب الحجز — بانتظار رد صاحب الملعب");
+      window.setTimeout(() => {
+        router.push(`/user/bookings?booking=${res.data!.id}`);
+      }, 1400);
       return;
     }
 
+    showSnack(res.message ?? "تعذّر إرسال الطلب", "error");
     setError(res.message ?? "تعذّر إرسال الطلب");
   }
 
@@ -161,11 +168,11 @@ export function BookingDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="w-[calc(100%-2rem)] sm:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
+        className="w-[calc(100%-2rem)] sm:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-hidden border-0 bg-transparent shadow-none flex flex-col"
         dir="rtl"
       >
-        <div className="overflow-hidden rounded-3xl bg-card shadow-card">
-          <div className="p-5 space-y-5">
+        <div className="flex flex-col overflow-hidden rounded-2xl bg-card shadow-card max-h-full">
+          <div className="shrink-0 p-5 pb-3 space-y-4">
             <DialogHeader className="text-start space-y-1 p-0">
               <DialogTitle className="text-xl font-bold text-heading">تفاصيل الحجز</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
@@ -180,80 +187,87 @@ export function BookingDialog({
                 }
               />
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
-                    التاريخ
-                  </Label>
-                  <DatePicker
-                    id="booking-date"
-                    value={date}
-                    onChange={setDate}
-                    minDate={minDate}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
+                  التاريخ
+                </Label>
+                <DatePicker
+                  id="booking-date"
+                  value={date}
+                  onChange={setDate}
+                  minDate={minDate}
+                />
+              </div>
+            )}
+          </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
-                    التوقيت ({formatCount(BOOKING_SLOT_MINUTES)} د)
-                  </Label>
+          {token && user && (
+            <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="shrink-0 border-y border-border/60 bg-secondary/30 px-5 py-3 space-y-2">
+                <Label className="text-xs font-bold text-heading">
+                  اختيار الموعد ({formatCount(BOOKING_SLOT_MINUTES)} د)
+                </Label>
 
-                  {loadingSlots ? (
-                    <p className="text-sm text-muted-foreground py-4 text-center">جاري تحميل المواعيد...</p>
-                  ) : (
-                    <div
-                      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-1"
-                      role="listbox"
-                      aria-label="توقيت الحجز"
-                    >
-                      {daySlots.map((slot) => {
-                        const isSelected = timeSlot === slot.value;
-                        return (
-                          <button
-                            key={slot.value}
-                            type="button"
-                            role="option"
-                            aria-selected={isSelected}
-                            disabled={!slot.available || dayBlocked}
-                            onClick={() => slot.available && setTimeSlot(slot.value)}
-                            className={cn(
-                              "rounded-xl border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight",
-                              getSlotColorClasses(
-                                { available: slot.available, reason: slot.reason as SlotReason | undefined },
-                                isSelected
-                              )
-                            )}
-                          >
-                            {slot.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap gap-3 pt-1">
-                    {SLOT_LEGEND.map((item) => (
-                      <span key={item.key} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                        <span className={cn("h-2 w-2 rounded-full shrink-0", item.className)} />
-                        {item.label}
-                      </span>
-                    ))}
+                {loadingSlots ? (
+                  <BookingSlotsSkeleton />
+                ) : (
+                  <div
+                    className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto p-0.5"
+                    role="listbox"
+                    aria-label="توقيت الحجز"
+                  >
+                    {daySlots.map((slot) => {
+                      const isSelected = timeSlot === slot.value;
+                      return (
+                        <button
+                          key={slot.value}
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          disabled={!slot.available || dayBlocked}
+                          onClick={() => slot.available && setTimeSlot(slot.value)}
+                          className={cn(
+                            "rounded-lg border px-2 py-2.5 text-[11px] font-medium transition-all text-center leading-tight",
+                            getSlotColorClasses(
+                              { available: slot.available, reason: slot.reason as SlotReason | undefined },
+                              isSelected
+                            )
+                          )}
+                        >
+                          {slot.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
+                )}
 
+                <div className="flex flex-wrap gap-3">
+                  {SLOT_LEGEND.map((item) => (
+                    <span key={item.key} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", item.className)} />
+                      {item.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
                 {dayBlocked && (
-                  <p className="text-sm text-destructive rounded-2xl bg-destructive/10 px-3 py-2">
+                  <p className="text-sm text-destructive rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2">
                     الملعب مغلق في هذا اليوم — اختر تاريخاً آخر
                   </p>
                 )}
 
                 <div className="space-y-1.5">
+                  <Label htmlFor="booking-notes" className="text-xs text-muted-foreground">
+                    ملاحظات (مباراة ودية، عدد اللاعبين...)
+                  </Label>
                   <textarea
                     id="booking-notes"
-                    className="w-full min-h-[80px] rounded-2xl border-0 bg-secondary/60 px-4 py-3 text-sm text-heading placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    className="w-full min-h-[88px] rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-heading placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="مباراة ودية، عدد اللاعبين..."
+                    placeholder="مثال: مباراة ودية 7 ضد 7"
                     maxLength={500}
                   />
                 </div>
@@ -266,16 +280,16 @@ export function BookingDialog({
                 />
 
                 {error && (
-                  <p className="text-sm text-destructive rounded-2xl bg-destructive/10 px-3 py-2">
+                  <p className="text-sm text-destructive rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2">
                     {error}
                   </p>
                 )}
 
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-2xl h-11 border-0 bg-secondary hover:bg-secondary/80"
+                    className="h-11"
                     onClick={() => onOpenChange(false)}
                     disabled={submitting}
                   >
@@ -283,18 +297,32 @@ export function BookingDialog({
                   </Button>
                   <Button
                     type="submit"
-                    className="rounded-2xl h-11 shadow-soft"
+                    className="h-11 shadow-soft"
                     disabled={submitting || dayBlocked || !selectedSlot?.available}
                   >
                     {submitting ? "جاري الإرسال..." : "تأكيد الطلب"}
                   </Button>
                 </div>
-              </form>
-            )}
-          </div>
+              </div>
+            </form>
+          )}
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BookingSlotsSkeleton() {
+  return (
+    <div
+      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-1"
+      aria-busy="true"
+      aria-label="جاري تحميل المواعيد"
+    >
+      {FALLBACK_SLOTS.map((slot) => (
+        <Skeleton key={slot.value} className="h-11 w-full rounded-lg" />
+      ))}
+    </div>
   );
 }
 

@@ -3,3 +3,5 @@ test-results
 node_modules
 .next
 .turbo
+
+certificates

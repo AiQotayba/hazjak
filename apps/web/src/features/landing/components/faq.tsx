@@ -9,9 +9,9 @@ import {
 import { Section, SectionHeading } from "./section";
 import { landingFaqs } from "../data/faq-data";
 
-export function LandingFaq() {
+export function LandingFaq({ compact = false }: { compact?: boolean }) {
   return (
-    <Section id="faq">
+    <Section id="faq" className={compact ? "py-10 md:py-14" : undefined}>
       <SectionHeading title="أسئلة شائعة" centered />
       <Accordion
         type="single"

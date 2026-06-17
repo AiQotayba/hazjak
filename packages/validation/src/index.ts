@@ -90,6 +90,7 @@ export const updateBookingStatusSchema = z.object({
     "NO_SHOW",
   ]),
   cancelledReason: z.string().optional(),
+  requireDeposit: z.boolean().optional(),
 });
 
 export const createReviewSchema = z.object({

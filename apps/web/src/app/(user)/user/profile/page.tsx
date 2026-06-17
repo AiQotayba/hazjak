@@ -61,14 +61,13 @@ export default function UserProfilePage() {
   return (
     <>
       <UserProfileHero user={user} />
-      <ProfileBookingStats stats={stats} loading={statsLoading} />
 
       <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="text-sm font-bold text-heading">بيانات الحساب</h2>
         <Button
           variant="outline"
           size="sm"
-          className="gap-1.5 shadow-soft border-0 h-8 text-xs"
+          className="gap-1.5 h-8 text-xs"
           onClick={() => setEditOpen(true)}
         >
           <Pencil className="h-3.5 w-3.5" />
@@ -77,17 +76,17 @@ export default function UserProfilePage() {
       </div>
 
       {savedMsg && (
-        <p className="text-sm text-primary font-medium mb-3 rounded-xl bg-primary/10 px-3 py-2">
+        <p className="text-sm text-primary font-medium mb-3 rounded-lg bg-primary/10 px-3 py-2">
           {savedMsg}
         </p>
       )}
 
-      <Card className="border-0 shadow-card">
+      <Card className="border border-border/60 shadow-soft mb-5">
         <CardContent className="p-4 space-y-2">
           {rows.map((row) => (
             <div
               key={row.label}
-              className="flex items-center justify-between gap-3 text-sm rounded-xl bg-secondary/60 px-3 py-2.5"
+              className="flex items-center justify-between gap-3 text-sm rounded-lg border border-border/50 bg-background px-3 py-2.5"
             >
               <span className="flex items-center gap-2 text-muted-foreground shrink-0">
                 <row.icon className="h-4 w-4 text-primary" />
@@ -98,6 +97,8 @@ export default function UserProfilePage() {
           ))}
         </CardContent>
       </Card>
+
+      <ProfileBookingStats stats={stats} loading={statsLoading} />
 
       <EditProfileDialog
         open={editOpen}

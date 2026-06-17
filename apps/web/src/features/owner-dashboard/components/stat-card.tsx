@@ -36,18 +36,18 @@ export function StatCard({
           )}
           <div className="min-w-0">
             <p className="text-xs font-bold text-heading">{label}</p>
-            {description && (
+            {/* {description && (
               <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{description}</p>
-            )}
+            )} */}
             <p className="text-lg md:text-xl font-bold text-primary mt-1.5 truncate">{value}</p>
           </div>
         </div>
-        {href && (
+        {/* {href && (
           <ChevronLeft
             className="h-5 w-5 shrink-0 text-muted-foreground/50 group-hover:text-primary transition-colors"
             aria-hidden
           />
-        )}
+        )} */}
       </CardContent>
     </Card>
   );

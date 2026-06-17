@@ -18,6 +18,7 @@ import {
   bookingRejectedEmail,
   depositRequestEmail,
 } from "../../services/email/templates";
+import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { calculatePrice } from "../stadiums/stadiums.controller";
 import {
   computeDaySlots,
@@ -117,10 +118,7 @@ export async function createBooking(req: AuthRequest, res: Response) {
     start
   );
 
-  const depositReferenceCode =
-    stadium.depositAmount && stadium.depositAmount > 0
-      ? generateDepositReferenceCode()
-      : null;
+  const depositReferenceCode = null;
 
   const booking = await prisma.booking.create({
     data: {
@@ -149,14 +147,7 @@ export async function createBooking(req: AuthRequest, res: Response) {
   );
 
   if (booking.depositAmount && booking.depositAmount > 0 && booking.depositReferenceCode) {
-    const tpl = depositRequestEmail({
-      stadiumName: booking.stadium.name,
-      depositAmount: booking.depositAmount,
-      referenceCode: booking.depositReferenceCode,
-      shamCashId: booking.stadium.shamCashId,
-      shamCashQrImage: booking.stadium.shamCashQrImage,
-    });
-    sendEmail({ to: booking.user.email, ...tpl });
+    // يُرسل طلب العربون عند قبول المالك مع طلب عربون — وليس عند إنشاء الطلب.
   }
 
   return sendSuccess(res, booking, "تم إرسال طلب الحجز", 201);
@@ -325,11 +316,23 @@ export async function getBooking(req: AuthRequest, res: Response) {
 }
 
 export async function updateStatus(req: AuthRequest, res: Response) {
-  const { status, cancelledReason } = updateBookingStatusSchema.parse(req.body);
+  const { status, cancelledReason, requireDeposit } = updateBookingStatusSchema.parse(req.body);
   const id = param(req, "id");
   const booking = await prisma.booking.findUnique({
     where: { id },
-    include: { stadium: true },
+    include: {
+      stadium: {
+        select: {
+          name: true,
+          ownerId: true,
+          depositAmount: true,
+          shamCashId: true,
+          shamCashQrImage: true,
+          contactWhatsapp: true,
+        },
+      },
+      user: { select: { email: true, phone: true } },
+    },
   });
   if (!booking) return sendError(res, "الحجز غير موجود", 404);
 
@@ -342,6 +345,52 @@ export async function updateStatus(req: AuthRequest, res: Response) {
   }
   if (["CONFIRMED", "REJECTED", "COMPLETED", "NO_SHOW"].includes(status) && !isOwner && !isAdmin) {
     return sendError(res, "غير مصرح", 403);
+  }
+
+  if (requireDeposit) {
+    if (!isOwner && !isAdmin) return sendError(res, "غير مصرح", 403);
+    if (booking.status !== "PENDING") {
+      return sendError(res, "لا يمكن طلب عربون لهذا الحجز", 400);
+    }
+    const depositAmount = booking.stadium.depositAmount;
+    if (!depositAmount || depositAmount <= 0) {
+      return sendError(res, "لا يوجد عربون مُعرّف للملعب", 400);
+    }
+
+    const depositReferenceCode =
+      booking.depositReferenceCode ?? generateDepositReferenceCode();
+
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: {
+        status: "PENDING",
+        depositAmount,
+        depositReferenceCode,
+      },
+      include: {
+        stadium: {
+          select: { name: true, shamCashId: true, shamCashQrImage: true, contactWhatsapp: true },
+        },
+        user: { select: { email: true, phone: true } },
+      },
+    });
+
+    await notifyBookingStatus(booking.userId, updated.stadium.name, "PENDING", booking.id);
+
+    const tpl = depositRequestEmail({
+      stadiumName: updated.stadium.name,
+      depositAmount,
+      referenceCode: depositReferenceCode,
+      shamCashId: updated.stadium.shamCashId,
+      shamCashQrImage: updated.stadium.shamCashQrImage,
+    });
+    sendEmail({ to: updated.user.email, ...tpl });
+
+    return sendSuccess(
+      res,
+      updated,
+      `تم طلب العربون — لدى اللاعب ${BOOKING_EXPIRATION_MIN} دقيقة لإتمام الدفع`
+    );
   }
 
   const updated = await prisma.booking.update({

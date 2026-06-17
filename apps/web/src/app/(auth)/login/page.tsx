@@ -12,10 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { redirectAfterLogin, useRedirectIfAuthenticated } from "@/features/auth";
-import type { AuthUser } from "@hazjak/types";
 
 export default function LoginPage() {
   return (
@@ -28,12 +26,13 @@ export default function LoginPage() {
 function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const setAuth = useAuthStore((s) => s.setAuth);
-  const setVerificationPending = useAuthStore((s) => s.setVerificationPending);
+  const login = useAuthStore((s) => s.login);
+  const loginError = useAuthStore((s) => s.loginError);
+  const isLoggingIn = useAuthStore((s) => s.isLoggingIn);
+  const clearLoginError = useAuthStore((s) => s.clearLoginError);
   const { hydrated, isAuthenticated } = useRedirectIfAuthenticated();
-  const [error, setError] = useState("");
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginInput>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -42,35 +41,23 @@ function LoginPageContent() {
   }
 
   async function onSubmit(data: LoginInput) {
-    setError("");
-    const res = await api<{ accessToken: string; user: AuthUser } | { verificationToken: string; user: AuthUser }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    clearLoginError();
+    const result = await login(data);
 
-    if (!res.success) {
-      if (res.code === "EMAIL_NOT_VERIFIED" && res.data && "verificationToken" in res.data) {
-        setVerificationPending(res.data.verificationToken, res.data.user);
-        router.push("/verify-email");
-        return;
-      }
-      setError(res.message);
+    if (result.ok === false && result.reason === "verify") {
+      router.push("/verify-email");
       return;
     }
 
-    if (!res.data || !("accessToken" in res.data)) {
-      setError("تعذّر تسجيل الدخول");
-      return;
-    }
+    if (result.ok === false) return;
 
-    setAuth(res.data.accessToken, res.data.user);
-    redirectAfterLogin(router, res.data.user.role, searchParams.get("next"));
+    redirectAfterLogin(router, result.user.role, searchParams.get("next"));
   }
 
   return (
-    <div className="rounded-3xl bg-card p-6 sm:p-8 shadow-card">
+    <div className="rounded-2xl bg-card p-6 sm:p-8 shadow-card">
       <div className="mb-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 mb-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/12 mb-4">
           <LogIn className="h-6 w-6 text-primary" />
         </div>
         <h1 className="font-display text-2xl font-bold text-heading">مرحباً بعودتك</h1>
@@ -85,7 +72,7 @@ function LoginPageContent() {
             type="email"
             autoComplete="email"
             placeholder="name@example.com"
-            className="rounded-2xl border-0 shadow-soft bg-secondary/80 h-11"
+            className="h-11"
             {...register("email")}
           />
           {errors.email && (
@@ -105,20 +92,20 @@ function LoginPageContent() {
           <PasswordInput
             id="password"
             autoComplete="current-password"
-            className="rounded-2xl border-0 shadow-soft bg-secondary/80 h-11"
+            className="h-11"
             {...register("password")}
           />
           {errors.password && (
             <p className="text-xs text-destructive">{errors.password.message}</p>
           )}
         </div>
-        {error && (
-          <p className="text-sm text-destructive text-center rounded-xl bg-destructive/10 py-2.5 px-3">
-            {error}
+        {loginError && (
+          <p className="text-sm text-destructive text-center rounded-lg bg-destructive/10 py-2.5 px-3">
+            {loginError}
           </p>
         )}
-        <Button type="submit" className="w-full rounded-2xl h-11 shadow-soft gap-2" disabled={isSubmitting}>
-          {isSubmitting ? "جاري الدخول..." : "تسجيل الدخول"}
+        <Button type="submit" className="w-full h-11 shadow-soft gap-2" disabled={isLoggingIn}>
+          {isLoggingIn ? "جاري الدخول..." : "تسجيل الدخول"}
         </Button>
       </form>
 

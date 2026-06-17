@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Banknote, CalendarCheck, ClipboardList, Clock, Percent } from "lucide-react";
+
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
@@ -74,7 +75,6 @@ export default function OwnerDashboardPage() {
   const [pending, setPending] = useState<OwnerBooking[]>([]);
   const [confirmed, setConfirmed] = useState<OwnerBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [actionId, setActionId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -98,17 +98,6 @@ export default function OwnerDashboardPage() {
     load();
   }, [load]);
 
-  async function updateStatus(id: string, status: "CONFIRMED" | "REJECTED") {
-    setActionId(id);
-    await api(`/bookings/${id}/status`, {
-      method: "PATCH",
-      token: token!,
-      body: JSON.stringify({ status }),
-    });
-    setActionId(null);
-    load();
-  }
-
   function openDetail(id: string) {
     setDetailId(id);
     setDetailOpen(true);
@@ -120,11 +109,26 @@ export default function OwnerDashboardPage() {
         title="الإحصائيات"
         description={`مرحباً ${user?.firstName ?? ""} — نظرة على ملعبك`}
         action={
-          <Button size="sm" className="shadow-soft rounded-full" asChild>
-            <Link href="/owner/settings">إعدادات الملعب</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/owner/stadium">الملعب</Link>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/owner/profile">حسابي</Link>
+            </Button>
+          </div>
         }
       />
+
+      <section className="mb-6 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-card to-secondary p-5 shadow-soft">
+        <p className="text-xs font-bold text-primary">لوحة التحكم</p>
+        <h2 className="font-display text-xl font-bold text-heading mt-1">
+          أهلاً {user?.firstName ?? "بك"}
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+          راجع الطلبات الجديدة، أكّد الحجوزات، أو اطلب عربوناً عبر شام كاش من صفحة التفاصيل.
+        </p>
+      </section>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
         {loading
@@ -154,13 +158,9 @@ export default function OwnerDashboardPage() {
         bookings={pending}
         emptyTitle="لا طلبات حالياً"
         emptyDescription="ستظهر الطلبات الجديدة هنا فور وصولها"
-        emptyActionLabel="التقويم"
-        emptyHref="/owner/calendar"
+        emptyActionLabel="كل الحجوزات"
+        emptyHref="/owner/bookings"
         listHref="/owner/bookings?status=PENDING"
-        showActions
-        actionId={actionId}
-        onConfirm={(id) => updateStatus(id, "CONFIRMED")}
-        onReject={(id) => updateStatus(id, "REJECTED")}
         onOpenDetail={openDetail}
       />
 
@@ -198,10 +198,6 @@ function BookingSection({
   emptyActionLabel,
   emptyHref,
   listHref,
-  showActions,
-  actionId,
-  onConfirm,
-  onReject,
   onOpenDetail,
   className,
 }: {
@@ -214,10 +210,6 @@ function BookingSection({
   emptyActionLabel: string;
   emptyHref: string;
   listHref: string;
-  showActions?: boolean;
-  actionId?: string | null;
-  onConfirm?: (id: string) => void;
-  onReject?: (id: string) => void;
   onOpenDetail?: (id: string) => void;
   className?: string;
 }) {
@@ -256,72 +248,52 @@ function BookingSection({
           />
         ) : (
           <ul className="space-y-2">
-            {bookings.map((b) => {
-              const busy = actionId === b.id;
-              return (
-                <li
-                  key={b.id}
-                  className="rounded-2xl bg-secondary/60 p-3 sm:p-4 flex flex-wrap items-start justify-between gap-3"
-                >
-                  <button
-                    type="button"
-                    className="text-start min-w-0 flex-1"
-                    onClick={() => onOpenDetail?.(b.id)}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <StatusBadge status={b.status} className="text-[10px]" />
-                    </div>
-                    <p className="font-bold text-heading text-sm">{b.stadium.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {b.user.firstName} {b.user.lastName}
-                      {b.user.phone ? (
-                        <span dir="ltr" className="inline-block ms-1">
-                          · {b.user.phone}
+            {bookings.map((b) => (
+              <li
+                key={b.id}
+                className="rounded-2xl bg-secondary/60 p-3 sm:p-4 flex flex-wrap items-start justify-between gap-3"
+              >
+                <div className="text-start min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <StatusBadge status={b.status} className="text-[10px]" />
+                  </div>
+                  <p className="font-bold text-heading text-sm">{b.stadium.name}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {b.user.firstName} {b.user.lastName}
+                    {b.user.phone ? (
+                      <span dir="ltr" className="inline-block ms-1">
+                        · {b.user.phone}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatDate(b.startTime, { dateStyle: "medium" })}
+                    {b.endTime && (
+                      <>
+                        {" · "}
+                        <span dir="ltr">
+                          {formatTime(b.startTime)} — {formatTime(b.endTime)}
                         </span>
-                      ) : null}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatDate(b.startTime, { dateStyle: "medium" })}
-                      {b.endTime && (
-                        <>
-                          {" · "}
-                          <span dir="ltr">
-                            {formatTime(b.startTime)} — {formatTime(b.endTime)}
-                          </span>
-                        </>
-                      )}
-                    </p>
-                    {b.totalPrice != null && (
-                      <p className="text-xs font-bold text-primary mt-1">
-                        {formatPrice(b.totalPrice)}
-                      </p>
+                      </>
                     )}
-                  </button>
-
-                  {showActions && (
-                    <div className="flex gap-2 shrink-0 w-full sm:w-auto">
-                      <Button
-                        size="sm"
-                        className="flex-1 sm:flex-none rounded-xl shadow-soft"
-                        disabled={busy}
-                        onClick={() => onConfirm?.(b.id)}
-                      >
-                        {busy ? "..." : "قبول"}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 sm:flex-none rounded-xl"
-                        disabled={busy}
-                        onClick={() => onReject?.(b.id)}
-                      >
-                        رفض
-                      </Button>
-                    </div>
+                  </p>
+                  {b.totalPrice != null && (
+                    <p className="text-xs font-bold text-primary mt-1">
+                      {formatPrice(b.totalPrice)}
+                    </p>
                   )}
-                </li>
-              );
-            })}
+                </div>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0 rounded-xl"
+                  onClick={() => onOpenDetail?.(b.id)}
+                >
+                  تفاصيل
+                </Button>
+              </li>
+            ))}
           </ul>
         )}
       </CardContent>

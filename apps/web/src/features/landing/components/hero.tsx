@@ -20,7 +20,7 @@ const enter = (delay: number) => ({
   transition: { delay, duration: 0.45 },
 });
 
-export function LandingHero() {
+export function LandingHero({ browseHref = "/stadiums" }: { browseHref?: string }) {
   const cities = APP_CITIES.join(" و");
 
   return (
@@ -38,7 +38,7 @@ export function LandingHero() {
         aria-hidden
       />
 
-      <div className="relative z-10 mx-auto max-w-6xl w-full px-4 py-12 md:py-20">
+      <div className="relative z-10 mx-auto max-w-6xl w-full px-4 pt-12 pb-16 md:pt-16 md:pb-20">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div className="text-center lg:text-start order-2 lg:order-1">
             <motion.p
@@ -79,13 +79,13 @@ export function LandingHero() {
               {...enter(0.24)}
               className="mt-8 flex flex-wrap justify-center lg:justify-start gap-3"
             >
-              <Button size="lg" className="rounded-full shadow-soft" asChild>
-                <Link href="/stadiums">تصفح الملاعب</Link>
+              <Button size="lg" className="shadow-soft" asChild>
+                <Link href={browseHref}>تصفح الملاعب</Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="rounded-full border-0 bg-card gap-2 shadow-soft"
+                className="bg-card gap-2 shadow-soft"
                 asChild
               >
                 <Link href="/#how-it-works">
@@ -101,7 +101,7 @@ export function LandingHero() {
               {perks.map(({ icon: Icon, label }) => (
                 <li
                   key={label}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-card/90 px-3 py-1.5 text-xs font-bold text-heading shadow-soft backdrop-blur-sm"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-card/90 px-3 py-1.5 text-xs font-bold text-heading shadow-soft backdrop-blur-sm"
                 >
                   <Icon className="h-3.5 w-3.5 text-primary" aria-hidden />
                   {label}

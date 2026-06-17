@@ -1,3 +1,4 @@
+export { LandingStadiumsSection } from "./components/landing-stadiums-section";
 export { LandingHero } from "./components/hero";
 export { LandingValueStrip } from "./components/value-strip";
 export { LandingProblem } from "./components/problem";

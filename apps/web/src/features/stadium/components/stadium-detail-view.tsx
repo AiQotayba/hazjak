@@ -123,7 +123,7 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
     null;
 
   return (
-    <div className="mx-auto max-w-6xl pb-12">
+    <div className="mx-auto max-w-6xl pb-24 lg:pb-12">
       <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
         <motion.div {...enter(0.06)} className="space-y-4">
           <StadiumGallery
@@ -188,10 +188,10 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
 
           <StadiumFeaturesGrid features={features} />
 
-          <div className="grid gap-2 grid-cols-1">
+          <div className="hidden lg:grid gap-2 grid-cols-1">
             <Button
               size="lg"
-              className="rounded-2xl h-12 shadow-soft text-base gap-2"
+              className="h-12 shadow-soft text-base gap-2"
               onClick={() => setBookingOpen(true)}
             >
               {token ? "اختر الموعد وأكمل الحجز" : "سجّل للحجز"}
@@ -218,6 +218,16 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
         token={token}
         user={user}
       />
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-card/95 p-4 backdrop-blur-md lg:hidden">
+        <Button
+          size="lg"
+          className="h-12 w-full shadow-soft text-base"
+          onClick={() => setBookingOpen(true)}
+        >
+          {token ? "اختيار الموعد والحجز" : "سجّل للحجز"}
+        </Button>
+      </div>
     </div>
   );
 }

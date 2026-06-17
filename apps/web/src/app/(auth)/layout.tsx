@@ -12,7 +12,7 @@ const highlights = [
   {
     icon: CalendarDays,
     title: "حجز فوري",
-    description: "اختر الموعد وأكّد Hazjak في دقائق",
+    description: "اختر الموعد وأكّد حجزك في دقائق",
   },
   {
     icon: ShieldCheck,

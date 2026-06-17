@@ -47,9 +47,9 @@ try {
   const info = await transporter.sendMail({
     from,
     to,
-    subject: "Hazjak — اختبار SMTP",
+    subject: "حجزك — اختبار SMTP",
     text: `اختبار بريد من السيرفر — ${new Date().toISOString()}`,
-    html: `<p dir="rtl">اختبار بريد Hazjak من السيرفر — ${new Date().toISOString()}</p>`,
+    html: `<p dir="rtl">اختبار بريد حجزك من السيرفر — ${new Date().toISOString()}</p>`,
   });
   console.info("✅ sent:", info.messageId);
 } catch (error) {

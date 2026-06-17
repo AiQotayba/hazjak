@@ -27,22 +27,22 @@ export async function notifyBookingStatus(
   const map: Record<string, { title: string; message: string; type: NotificationType }> = {
     PENDING: {
       title: "حجز قيد الانتظار",
-      message: `تم إرسال طلب Hazjak لملعب ${stadiumName}. بانتظار تأكيد الملعب.`,
+      message: `تم إرسال طلب حجزك لملعب ${stadiumName}. بانتظار تأكيد الملعب.`,
       type: "BOOKING_PENDING",
     },
     CONFIRMED: {
       title: "تم تأكيد الحجز",
-      message: `تم تأكيد Hazjak في ${stadiumName}. نراك في الموعد!`,
+      message: `تم تأكيد حجزك في ${stadiumName}. نراك في الموعد!`,
       type: "BOOKING_CONFIRMED",
     },
     REJECTED: {
       title: "تم رفض الحجز",
-      message: `عذراً، تم رفض Hazjak في ${stadiumName}.`,
+      message: `عذراً، تم رفض حجزك في ${stadiumName}.`,
       type: "BOOKING_REJECTED",
     },
     CANCELLED: {
       title: "تم إلغاء الحجز",
-      message: `تم إلغاء Hazjak في ${stadiumName}.`,
+      message: `تم إلغاء حجزك في ${stadiumName}.`,
       type: "BOOKING_CANCELLED",
     },
   };

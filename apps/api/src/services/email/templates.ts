@@ -3,7 +3,7 @@ import { env } from "@hazjak/config";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 
 /** الاسم الظاهر في الواجهة (apps/web) */
-const BRAND = "Hazjak";
+const BRAND = "حجزك";
 
 const COLORS = {
   primary: "#df6951",
@@ -182,10 +182,10 @@ export function bookingConfirmedEmail(input: {
   const price = escapeHtml(formatPrice(input.totalPrice));
 
   return {
-    subject: `${BRAND} — تم تأكيد Hazjak`,
-    text: `تم تأكيد Hazjak في ${input.stadiumName} يوم ${when}. المبلغ: ${formatPrice(input.totalPrice)}`,
+    subject: `${BRAND} — تم تأكيد حجزك`,
+    text: `تم تأكيد حجزك في ${input.stadiumName} يوم ${when}. المبلغ: ${formatPrice(input.totalPrice)}`,
     html: emailLayout({
-      title: "تم تأكيد Hazjak",
+      title: "تم تأكيد حجزك",
       intro: "صاحب الملعب قبل طلبك. تفاصيل الحجز:",
       bodyHtml: infoTable(
         infoRow("الملعب", stadium) +
@@ -202,7 +202,7 @@ export function bookingRejectedEmail(stadiumName: string) {
 
   return {
     subject: `${BRAND} — تم رفض طلب الحجز`,
-    text: `عذراً، تم رفض طلب Hazjak في ${stadiumName}.`,
+    text: `عذراً، تم رفض طلب حجزك في ${stadiumName}.`,
     html: emailLayout({
       title: "تم رفض طلب الحجز",
       intro: `عذراً، لم يتم قبول طلبك في <strong style="color:${COLORS.heading}">${stadium}</strong>.`,
@@ -236,10 +236,10 @@ export function depositRequestEmail(input: {
 
   return {
     subject: `${BRAND} — طلب دفع العربون`,
-    text: `لتأكيد Hazjak في ${input.stadiumName}: ادفع ${formatPrice(input.depositAmount)} عبر شام كاش.${input.shamCashId ? ` الحساب: ${input.shamCashId}.` : ""} ضع الكود ${input.referenceCode} في ملاحظة التحويل.${qrTextNote}`,
+    text: `لتأكيد حجزك في ${input.stadiumName}: ادفع ${formatPrice(input.depositAmount)} عبر شام كاش.${input.shamCashId ? ` الحساب: ${input.shamCashId}.` : ""} ضع الكود ${input.referenceCode} في ملاحظة التحويل.${qrTextNote}`,
     html: emailLayout({
       title: "طلب دفع العربون",
-      intro: `لتأكيد Hazjak في <strong style="color:${COLORS.heading}">${stadium}</strong>:`,
+      intro: `لتأكيد حجزك في <strong style="color:${COLORS.heading}">${stadium}</strong>:`,
       bodyHtml:
         infoTable(
           infoRow("المبلغ", amount) +

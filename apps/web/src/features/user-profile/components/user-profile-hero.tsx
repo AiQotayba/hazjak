@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { Bell, Plus, ShieldCheck, Sparkles } from "lucide-react";
-import { APP_MOTTO_AR, APP_TAGLINE_AR } from "@hazjak/constants";
+import { Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AuthUser } from "@hazjak/types";
 import { cn } from "@/lib/utils";
@@ -18,35 +17,33 @@ export function UserProfileHero({ user }: UserProfileHeroProps) {
     "?";
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/12 via-secondary to-accent/40 p-5 mb-4 shadow-soft">
-      <div className="pointer-events-none absolute -top-10 -end-10 h-32 w-32 rounded-full bg-primary/15 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-8 -start-6 h-24 w-24 rounded-full bg-accent-gold/20 blur-xl" />
-
+    <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-card to-secondary p-5 mb-4 shadow-soft">
       <div className="relative flex items-start gap-4">
         <div
           className={cn(
-            "flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl",
-            "bg-card text-primary font-display text-xl font-bold shadow-card ring-2 ring-primary/20"
+            "flex h-16 w-16 shrink-0 items-center justify-center rounded-xl",
+            "bg-card text-primary font-display text-xl font-bold shadow-soft ring-2 ring-primary/15"
           )}
         >
           {user?.avatar ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatar} alt="" className="h-full w-full rounded-2xl object-cover" />
+            <img src={user.avatar} alt="" className="h-full w-full rounded-xl object-cover" />
           ) : (
             initials
           )}
         </div>
-        <div className="min-w-0 flex-1 pt-0.5">
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" />
-            {APP_MOTTO_AR}
-          </p>
-          <h1 className="font-display text-2xl font-bold text-heading mt-1">
-            {user ? `أهلاً، ${user.firstName}` : "الملف الشخصي"}
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-bold text-heading">
+            {user ? `${user.firstName} ${user.lastName}` : "الملف الشخصي"}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{APP_TAGLINE_AR}</p>
+          <p className="text-sm text-muted-foreground mt-1 break-all">{user?.email}</p>
+          {user?.phone && (
+            <p className="text-sm text-muted-foreground mt-0.5" dir="ltr">
+              {user.phone}
+            </p>
+          )}
           {user?.isEmailVerified && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-card/80 px-2 py-0.5 text-[10px] font-bold text-primary">
+            <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
               <ShieldCheck className="h-3 w-3" />
               بريد موثّق
             </span>
@@ -54,21 +51,15 @@ export function UserProfileHero({ user }: UserProfileHeroProps) {
         </div>
       </div>
 
-      <div className="relative mt-4 flex flex-wrap items-center gap-2">
-        <Button size="sm" className="rounded-full h-9 gap-1.5 shadow-soft" asChild>
+      <div className="relative mt-4 flex flex-wrap gap-2">
+        <Button size="sm" className="h-9 gap-1.5 shadow-soft" asChild>
           <Link href="/stadiums">
             <Plus className="h-4 w-4" />
             حجز جديد
           </Link>
         </Button>
-        <Button size="sm" variant="secondary" className="rounded-full h-9 gap-1.5 shadow-soft" asChild>
+        <Button size="sm" variant="outline" className="h-9" asChild>
           <Link href="/user/bookings">حجوزاتي</Link>
-        </Button>
-        <Button size="sm" variant="outline" className="rounded-full h-9 gap-1.5 border-0 bg-card/80 ms-auto" asChild>
-          <Link href="/user/notifications">
-            <Bell className="h-4 w-4" />
-            الإشعارات
-          </Link>
         </Button>
       </div>
     </section>

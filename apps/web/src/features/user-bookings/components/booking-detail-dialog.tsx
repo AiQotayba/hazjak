@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MediaImage } from "@/components/ui/media-image";
 import { CalendarDays, Clock, ExternalLink, FileText, MapPin, MessageCircle, Phone, Wallet } from "lucide-react";
+import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export interface BookingSummary {
   totalPrice: number;
   notes?: string | null;
   depositAmount?: number | null;
+  depositReferenceCode?: string | null;
   stadium: {
     name: string;
     slug: string;
@@ -220,6 +222,35 @@ function BookingDetailBody({
             </div>
           )}
         </div>
+
+        {booking.status === "PENDING" &&
+          booking.depositReferenceCode &&
+          booking.depositAmount != null &&
+          booking.depositAmount > 0 && (
+            <div className="rounded-lg border border-accent-gold/40 bg-accent/50 px-4 py-3 space-y-2">
+              <p className="text-sm font-bold text-heading">مطلوب دفع العربون</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ادفع {formatPrice(booking.depositAmount)} عبر شام كاش خلال {BOOKING_EXPIRATION_MIN}{" "}
+                دقيقة. ضع الكود{" "}
+                <span className="font-bold text-heading">{booking.depositReferenceCode}</span> في
+                ملاحظة التحويل.
+              </p>
+              {booking.stadium.contactWhatsapp && (
+                <Button size="sm" className="h-9 gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white" asChild>
+                  <a
+                    href={`https://wa.me/${booking.stadium.contactWhatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+                      `مرحباً، أرسلت عربون الحجز. الكود: ${booking.depositReferenceCode}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    إرسال إثبات عبر واتساب
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
 
         {booking.notes && (
           <div className="rounded-2xl bg-secondary/70 px-4 py-3">

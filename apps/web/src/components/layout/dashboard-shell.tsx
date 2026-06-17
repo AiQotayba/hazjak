@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu, type LucideIcon } from "lucide-react";
@@ -61,10 +62,12 @@ function UserFooter({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="p-4">
-      <p className="truncate text-sm font-bold text-heading">
-        {user?.firstName} {user?.lastName}
-      </p>
-      <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+      <Link href="/owner/profile" className="block hover:opacity-90 transition-opacity">
+        <p className="truncate text-sm font-bold text-heading">
+          {user?.firstName} {user?.lastName}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+      </Link>
       <Button
         variant="ghost"
         size="sm"
@@ -105,16 +108,20 @@ export function DashboardShell({
   }
 
   return (
-    <div className="flex min-h-dvh bg-section-alt">
-      <aside className="hidden w-56 shrink-0 flex-col border-e border-border bg-card shadow-soft md:flex">
+    <div className="flex h-dvh overflow-hidden bg-section-alt">
+      <aside className="hidden w-56 shrink-0 flex-col border-e border-border bg-card shadow-soft md:flex md:h-dvh md:sticky md:top-0">
         <div className="px-4 py-4">
-          <Link
-            href="/"
-            className="font-display text-lg font-bold text-heading hover:text-primary transition-colors"
-          >
-            {APP_NAME_AR}
+          <Link href="/" className="inline-flex items-center hover:opacity-90 transition-opacity">
+            <Image
+              src="/logo.png"
+              alt={APP_NAME_AR}
+              width={120}
+              height={36}
+              className="h-9 w-auto"
+              priority
+            />
           </Link>
-          <p className="text-xs text-muted-foreground mt-0.5">{title}</p>
+          <p className="text-xs text-muted-foreground mt-1.5">{title}</p>
         </div>
         <Separator />
         <SidebarNav nav={nav} pathname={pathname} />
@@ -122,7 +129,7 @@ export function DashboardShell({
         <UserFooter onLogout={handleLogout} />
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b border-border bg-card px-3 py-3 md:hidden shadow-soft">
           <Button
             type="button"
@@ -135,10 +142,16 @@ export function DashboardShell({
             <Menu className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex-1">
-            <Link href="/" className="font-display text-sm font-bold text-heading block truncate">
-              {APP_NAME_AR}
+            <Link href="/" className="inline-flex items-center">
+              <Image
+                src="/logo.png"
+                alt={APP_NAME_AR}
+                width={96}
+                height={28}
+                className="h-7 w-auto"
+              />
             </Link>
-            <p className="text-[10px] text-muted-foreground truncate">{title}</p>
+            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{title}</p>
           </div>
         </header>
 
@@ -156,12 +169,18 @@ export function DashboardShell({
             <div className="px-4 py-4">
               <Link
                 href="/"
-                className="font-display text-lg font-bold text-heading"
+                className="inline-flex items-center"
                 onClick={() => setMenuOpen(false)}
               >
-                {APP_NAME_AR}
+                <Image
+                  src="/logo.png"
+                  alt={APP_NAME_AR}
+                  width={120}
+                  height={36}
+                  className="h-9 w-auto"
+                />
               </Link>
-              <p className="text-xs text-muted-foreground mt-0.5">{title}</p>
+              <p className="text-xs text-muted-foreground mt-1.5">{title}</p>
             </div>
             <Separator />
             <SidebarNav nav={nav} pathname={pathname} onNavigate={() => setMenuOpen(false)} />
@@ -170,7 +189,7 @@ export function DashboardShell({
           </DialogContent>
         </Dialog>
 
-        <main className="flex-1 overflow-auto bg-background md:rounded-ss-3xl md:border-s md:border-t border-border">
+        <main className="min-h-0 flex-1 overflow-y-auto bg-background md:rounded-ss-3xl md:border-s md:border-t border-border">
           <div
             className={cn(
               "mx-auto w-full px-4 py-6 md:px-8 md:py-8",

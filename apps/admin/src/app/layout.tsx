@@ -9,7 +9,7 @@ const tajawal = Tajawal({
 });
 
 export const metadata = {
-  title: "Hazjak | لوحة الإدارة",
+  title: "حجزك | لوحة الإدارة",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

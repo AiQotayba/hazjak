@@ -19,13 +19,13 @@ const steps = [
     icon: Trophy,
     color: "bg-accent-teal/30 text-teal-700",
     title: "العب بثقة",
-    description: "بعد التأكيد: رقم التواصل والعربون في صفحة Hazjak. تذكير قبل المباراة.",
+    description: "بعد التأكيد: رقم التواصل والعربون في صفحة حجزك. تذكير قبل المباراة.",
   },
 ];
 
-export function LandingHowItWorks() {
+export function LandingHowItWorks({ compact = false }: { compact?: boolean }) {
   return (
-    <Section id="how-it-works" alt>
+    <Section id="how-it-works" alt className={compact ? "py-10 md:py-14" : undefined}>
       <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
         <div>
           <SectionHeading

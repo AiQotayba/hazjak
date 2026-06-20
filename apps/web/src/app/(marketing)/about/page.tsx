@@ -25,7 +25,7 @@ export default function AboutPage() {
       title="من نحن"
       description={`${APP_NAME_AR} — حجز ملاعب كرة القدم في حلب وإدلب`}
     >
-      <Card className="border-0 shadow-soft max-w-2xl">
+      <Card className="surface-card max-w-2xl">
         <CardContent className="p-6 md:p-8 space-y-4 text-muted-foreground leading-relaxed">
           <p>
             {APP_NAME_AR} منصة لحجز ملاعب كرة القدم في حلب وإدلب. نربط اللاعبين بأصحاب

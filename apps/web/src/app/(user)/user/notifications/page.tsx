@@ -1,10 +1,13 @@
 ﻿"use client";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageShell } from "@/components/layout/page-shell";
+import { ListCardsSkeleton } from "@/components/layout/page-skeletons";
 import { formatDate } from "@hazjak/utils";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
@@ -27,14 +30,11 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      router.push("/login");
-      return;
-    }
+    if (!token) return;
     api<{ notifications: Notification[] }>("/notifications", { token })
       .then((res) => setItems(res.data?.notifications ?? []))
       .finally(() => setLoading(false));
-  }, [token, router]);
+  }, [token]);
 
   async function handleNotificationClick(n: Notification) {
     if (!token) return;
@@ -50,27 +50,27 @@ export default function NotificationsPage() {
   }
 
   return (
-    <>
-      <h1 className="font-display text-xl font-bold text-heading mb-4">الإشعارات</h1>
+    <PageShell title="الإشعارات" description="سننبهك عند تحديث حجوزاتك">
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl" />
-          ))}
-        </div>
+        <ListCardsSkeleton count={4} />
       ) : items.length === 0 ? (
-        <EmptyState title="لا إشعارات" description="ستصلك إشعارات عند تحديث حجوزاتك" />
+        <EmptyState title="لا إشعارات" description="سننبهك عند تحديث حجوزاتك" />
       ) : (
-        <ul className="space-y-3">
-          {items.map((n) => {
+        <ul className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          {items.map((n, i) => {
             const navigable = !!n.bookingId;
             return (
-              <li key={n.id}>
+              <motion.li
+                key={n.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.2), duration: 0.3 }}
+              >
                 <Card
                   className={cn(
-                    "border-0 shadow-soft overflow-hidden transition-colors",
+                    "surface-card overflow-hidden transition-colors",
                     !n.isRead && "ring-2 ring-primary/25",
-                    navigable && "cursor-pointer hover:bg-secondary/40 active:scale-[0.99]"
+                    navigable && "cursor-pointer hover:bg-accent/50 active:scale-[0.99]"
                   )}
                   onClick={navigable ? () => handleNotificationClick(n) : undefined}
                   onKeyDown={
@@ -86,24 +86,24 @@ export default function NotificationsPage() {
                   role={navigable ? "button" : undefined}
                   tabIndex={navigable ? 0 : undefined}
                 >
-                  <CardContent className="p-4 flex items-start gap-2">
+                  <CardContent className="flex items-start gap-2 p-4">
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-sm text-heading">{n.title}</p>
-                      <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{n.message}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-sm font-bold text-heading">{n.title}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{n.message}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">
                         {formatDate(n.createdAt, { dateStyle: "medium", timeStyle: "short" })}
                       </p>
                     </div>
                     {navigable && (
-                      <ChevronLeft className="h-5 w-5 shrink-0 text-primary mt-0.5" aria-hidden />
+                      <ChevronLeft className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
                     )}
                   </CardContent>
                 </Card>
-              </li>
+              </motion.li>
             );
           })}
         </ul>
       )}
-    </>
+    </PageShell>
   );
 }

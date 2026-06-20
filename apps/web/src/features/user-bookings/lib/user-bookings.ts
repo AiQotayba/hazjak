@@ -17,6 +17,15 @@ export interface BookingStats {
   cancelled: number;
   totalSpent: number;
   nextBooking: BookingListItemData | null;
+  recentBookings: BookingListItemData[];
+}
+
+export function formatUpcomingBookingsLabel(count: number): string {
+  if (count === 0) return "لا حجوزات قادمة";
+  if (count === 1) return "حجز قادم واحد";
+  if (count === 2) return "حجزان قادمان";
+  if (count >= 3 && count <= 10) return `${count} حجوزات قادمة`;
+  return `${count} حجزًا قادمًا`;
 }
 
 export function computeBookingStats(
@@ -47,5 +56,9 @@ export function computeBookingStats(
       .filter((b) => b.status === "COMPLETED")
       .reduce((sum, b) => sum + (b.totalPrice ?? 0), 0),
     nextBooking,
+    recentBookings: bookings
+      .slice()
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+      .slice(0, 3),
   };
 }

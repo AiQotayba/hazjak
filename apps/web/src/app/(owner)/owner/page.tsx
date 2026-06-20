@@ -106,8 +106,8 @@ export default function OwnerDashboardPage() {
   return (
     <>
       <PageHeader
-        title="الإحصائيات"
-        description={`مرحباً ${user?.firstName ?? ""} — نظرة على ملعبك`}
+        title="لوحة التحكم"
+        description={`أهلاً ${user?.firstName ?? ""} — راجع الطلبات وأكّد الحجوزات`}
         action={
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" asChild>
@@ -120,13 +120,9 @@ export default function OwnerDashboardPage() {
         }
       />
 
-      <section className="mb-6 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-card to-secondary p-5 shadow-soft">
-        <p className="text-xs font-bold text-primary">لوحة التحكم</p>
-        <h2 className="font-display text-xl font-bold text-heading mt-1">
-          أهلاً {user?.firstName ?? "بك"}
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-          راجع الطلبات الجديدة، أكّد الحجوزات، أو اطلب عربوناً عبر شام كاش من صفحة التفاصيل.
+      <section className="mb-6 overflow-hidden rounded-2xl border border-border bg-accent/50 p-5 shadow-soft">
+        <p className="text-sm text-muted-foreground max-w-lg">
+          من صفحة تفاصيل الحجز يمكنك القبول، الرفض، أو طلب عربون عبر شام كاش.
         </p>
       </section>
 

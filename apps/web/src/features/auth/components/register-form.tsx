@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Building2, UserPlus } from "lucide-react";
 import { registerSchema, type RegisterInput } from "@hazjak/validation";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import {
   AuthError,
   AuthFormShell,
@@ -50,6 +51,7 @@ export function RegisterForm({ variant }: RegisterFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({
@@ -60,6 +62,7 @@ export function RegisterForm({ variant }: RegisterFormProps) {
     setError("");
     const payload = {
       ...data,
+      phone: data.phone?.trim() || undefined,
       role: role === "STADIUM_OWNER" ? ("STADIUM_OWNER" as const) : undefined,
     };
     const res = await api<{ verificationToken: string; user: AuthUser }>("/auth/register", {
@@ -143,13 +146,17 @@ export function RegisterForm({ variant }: RegisterFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="phone">الهاتف (اختياري)</Label>
-          <Input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            className={authInputClass}
-            dir="ltr"
-            {...register("phone")}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <PhoneNumberInput
+                id="phone"
+                value={field.value}
+                onChange={field.onChange}
+                className={authInputClass}
+              />
+            )}
           />
         </div>
 
@@ -175,15 +182,6 @@ export function RegisterForm({ variant }: RegisterFormProps) {
         >
           {isSubmitting ? "جاري التسجيل..." : submitLabel}
         </Button>
-
-        {variant === "player" && (
-          <p className="text-center text-xs text-muted-foreground">
-            صاحب ملعب؟{" "}
-            <Link href="/register/owner" className="font-bold text-primary hover:underline">
-              سجّل ملعبك
-            </Link>
-          </p>
-        )}
       </form>
     </AuthFormShell>
   );

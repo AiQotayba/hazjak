@@ -82,7 +82,7 @@ export function BookingsFilters() {
   const selectValue = bookingStatusSelectValue(status);
 
   return (
-    <div className="flex flex-row gap-2 mb-4">
+    <div className="flex flex-col gap-2 mb-4 sm:flex-row">
       <div className="relative min-w-0 flex-1">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
@@ -95,8 +95,8 @@ export function BookingsFilters() {
 
       <Select value={selectValue} onValueChange={handleStatusChange}>
         <SelectTrigger
-          className="w-[9.5rem] sm:w-44 h-10 border-0"
-          aria-label="فلتر الحالة"
+          className="w-full sm:w-44 h-10 border-0"
+          aria-label="تصفية الحالة"
           dir="rtl"
         >
           <SelectValue placeholder="الحالة" />

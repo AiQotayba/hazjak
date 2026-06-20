@@ -16,11 +16,11 @@ export function Section({
       id={id}
       className={cn(
         "py-16 md:py-20",
-        alt ? "bg-section-alt" : "bg-background",
+        alt ? "bg-muted/40" : "bg-background",
         className
       )}
     >
-      <div className="mx-auto max-w-6xl px-4">{children}</div>
+      <div className="page-container">{children}</div>
     </section>
   );
 }

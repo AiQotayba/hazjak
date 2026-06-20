@@ -42,9 +42,9 @@ function SidebarNav({
             href={href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
               active
-                ? "bg-primary/12 text-primary font-bold"
+                ? "bg-primary/10 text-primary font-bold border-e-4 border-primary"
                 : "text-muted-foreground hover:bg-muted hover:text-heading"
             )}
           >
@@ -57,16 +57,30 @@ function SidebarNav({
   );
 }
 
-function UserFooter({ onLogout }: { onLogout: () => void }) {
+function UserFooter({
+  onLogout,
+  profileHref = "/owner/profile",
+}: {
+  onLogout: () => void;
+  profileHref?: string;
+}) {
   const { user } = useAuthStore();
 
   return (
     <div className="p-4">
-      <Link href="/owner/profile" className="block hover:opacity-90 transition-opacity">
-        <p className="truncate text-sm font-bold text-heading">
-          {user?.firstName} {user?.lastName}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+      <Link
+        href={profileHref}
+        className="flex items-center gap-3 rounded-2xl bg-section-alt p-3 hover:bg-muted transition-colors"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary ring-2 ring-primary/20">
+          {user?.firstName?.charAt(0) ?? "?"}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-heading">
+            {user?.firstName} {user?.lastName}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+        </div>
       </Link>
       <Button
         variant="ghost"
@@ -86,11 +100,13 @@ export function DashboardShell({
   nav,
   children,
   contentClassName,
+  profileHref = "/owner/profile",
 }: {
   title: string;
   nav: NavItem[];
   children: React.ReactNode;
   contentClassName?: string;
+  profileHref?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -108,9 +124,9 @@ export function DashboardShell({
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-section-alt">
-      <aside className="hidden w-56 shrink-0 flex-col border-e border-border bg-card shadow-soft md:flex md:h-dvh md:sticky md:top-0">
-        <div className="px-4 py-4">
+    <div className="flex h-dvh overflow-hidden bg-section-alt p-0 md:p-3 md:ps-0">
+      <aside className="hidden w-60 shrink-0 flex-col rounded-3xl border border-border/60 bg-card shadow-soft md:m-3 md:me-0 md:flex md:h-[calc(100dvh-1.5rem)]">
+        <div className="px-5 py-5">
           <Link href="/" className="inline-flex items-center hover:opacity-90 transition-opacity">
             <Image
               src="/logo.png"
@@ -126,7 +142,7 @@ export function DashboardShell({
         <Separator />
         <SidebarNav nav={nav} pathname={pathname} />
         <Separator />
-        <UserFooter onLogout={handleLogout} />
+        <UserFooter onLogout={handleLogout} profileHref={profileHref} />
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -185,11 +201,11 @@ export function DashboardShell({
             <Separator />
             <SidebarNav nav={nav} pathname={pathname} onNavigate={() => setMenuOpen(false)} />
             <Separator />
-            <UserFooter onLogout={handleLogout} />
+            <UserFooter onLogout={handleLogout} profileHref={profileHref} />
           </DialogContent>
         </Dialog>
 
-        <main className="min-h-0 flex-1 overflow-y-auto bg-background md:rounded-ss-3xl md:border-s md:border-t border-border">
+        <main className="min-h-0 flex-1 overflow-y-auto bg-card md:m-3 md:rounded-3xl md:border md:border-border/60 md:shadow-soft">
           <div
             className={cn(
               "mx-auto w-full px-4 py-6 md:px-8 md:py-8",

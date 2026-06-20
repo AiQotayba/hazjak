@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { Label } from "@/components/ui/label";
 import { api, apiUpload } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
@@ -96,7 +97,7 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
     setUploadingAvatar(false);
 
     if (!res.success || !res.data) {
-      setError(res.message || "فشل رفع الصورة");
+      setError(res.message || "تعذّر رفع الصورة");
       setAvatarPreview(user?.avatar ?? null);
       URL.revokeObjectURL(localPreview);
       return;
@@ -153,7 +154,7 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
     });
     setSaving(false);
     if (!res.success || !res.data) {
-      setError(res.message || "فشل حفظ التعديلات");
+      setError(res.message || "تعذّر حفظ التعديلات");
       if (res.errors) {
         const mapped: Record<string, string> = {};
         Object.entries(res.errors).forEach(([k, v]) => {
@@ -173,11 +174,11 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm sm:max-w-md">
         <DialogHeader>
           <DialogTitle>تعديل الملف الشخصي</DialogTitle>
           <DialogDescription>
-            حدّث صورتك واسمك وبيانات التواصل. البريد الإلكتروني لا يمكن تغييره هنا.
+            حدّث صورتك واسمك ورقم هاتفك. البريد الإلكتروني لا يمكن تغييره هنا.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -285,23 +286,19 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="phone">الهاتف</Label>
-            <Input
+            <Label htmlFor="phone">رقم الهاتف</Label>
+            <PhoneNumberInput
               id="phone"
-              type="tel"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-              placeholder="+970599000000"
-              dir="ltr"
-              className="text-start"
-              autoComplete="tel"
+              onChange={(phone) => setForm((f) => ({ ...f, phone }))}
               disabled={busy}
+              className="rounded-xl border border-border bg-background px-2 focus-within:ring-2 focus-within:ring-ring"
             />
             {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
           </div>
           <div className="space-y-1.5">
             <Label>البريد الإلكتروني</Label>
-            <Input value={user?.email ?? ""} disabled className="opacity-60" dir="ltr" />
+            <Input value={user?.email ?? ""} disabled className="opacity-60 text-left" dir="ltr" />
           </div>
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
           <DialogFooter className="gap-2 sm:gap-2 pt-2">

@@ -38,7 +38,7 @@ export default function ContactPage() {
       title="تواصل معنا"
       description={`فريق الدعم في ${APP_CITIES.join(" و")} — نرد خلال يوم عمل`}
     >
-      <Card className="max-w-lg border-0 shadow-card">
+      <Card className="surface-card max-w-lg">
         <CardContent className="p-6 space-y-5">
           <CardTitle className="font-display text-heading">فريق الدعم</CardTitle>
           <p className="flex items-center gap-3 text-muted-foreground">

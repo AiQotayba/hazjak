@@ -72,8 +72,8 @@ function UserBookingsContent() {
         </div>
       ) : bookings.length === 0 ? (
         <EmptyState
-          title="لا توجد حجوزات"
-          description="جرّب فلتراً آخر أو احجز ملعبك القادم"
+          title="لا حجوزات بعد"
+          description="جرّب تصفية أخرى أو احجز ملعبك التالي"
           actionLabel="تصفح الملاعب"
           actionHref="/stadiums"
         />
@@ -82,7 +82,7 @@ function UserBookingsContent() {
           {upcoming.length > 0 && (
             <section>
               <p className="text-xs font-bold text-primary mb-2">قادمة</p>
-              <ul className="space-y-3">
+              <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
                 {upcoming.map((b) => (
                   <li key={b.id}>
                     <BookingListItem booking={b} onPress={() => openDetail(b.id)} />
@@ -94,7 +94,7 @@ function UserBookingsContent() {
           {past.length > 0 && (
             <section>
               <p className="text-xs font-bold text-muted-foreground mb-2">سابقة</p>
-              <ul className="space-y-3">
+              <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
                 {past.map((b) => (
                   <li key={b.id}>
                     <BookingListItem booking={b} onPress={() => openDetail(b.id)} />

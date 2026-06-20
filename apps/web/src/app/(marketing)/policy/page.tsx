@@ -23,7 +23,7 @@ export default function PolicyPage() {
       title="سياسة الإلغاء والعربون"
       description="قواعد واضحة قبل ما ترسل طلب الحجز"
     >
-      <Card className="border-0 shadow-soft max-w-2xl">
+      <Card className="surface-card max-w-2xl">
         <CardContent className="p-6 md:p-8 space-y-5 text-muted-foreground leading-relaxed text-sm">
           <p>
             يمكنك إلغاء الحجز قبل <strong className="text-heading">24 ساعة</strong> على الأقل

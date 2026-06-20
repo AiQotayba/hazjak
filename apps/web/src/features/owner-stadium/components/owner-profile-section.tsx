@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -85,11 +86,10 @@ export function OwnerProfileSection({
           </Field>
 
           <Field label="الهاتف">
-            <Input
-              className={ownerInputClass}
+            <PhoneNumberInput
               value={profile.phone}
-              onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))}
-              dir="ltr"
+              onChange={(phone) => setProfile((p) => ({ ...p, phone }))}
+              className={ownerInputClass}
             />
           </Field>
 

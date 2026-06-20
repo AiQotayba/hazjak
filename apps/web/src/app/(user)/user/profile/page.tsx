@@ -1,8 +1,8 @@
 ﻿"use client";
+
 import { useEffect, useState } from "react";
-import { LogOut, Mail, Pencil, Phone, UserRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { EditProfileDialog } from "@/features/user-profile/components/edit-profile-dialog";
 import { ProfileBookingStats } from "@/features/user-profile/components/profile-booking-stats";
+import { ProfileQuickLinks } from "@/features/user-profile/components/profile-quick-links";
+import { ProfileRecentBookings } from "@/features/user-profile/components/profile-recent-bookings";
 import { UserProfileHero } from "@/features/user-profile/components/user-profile-hero";
 import type { BookingListItemData } from "@/features/user-bookings/components/booking-list-item";
 import { api } from "@/lib/api";
@@ -46,12 +48,6 @@ export default function UserProfilePage() {
       .finally(() => setStatsLoading(false));
   }, [token, router]);
 
-  const rows = [
-    { label: "الاسم الكامل", value: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim(), icon: UserRound },
-    { label: "البريد الإلكتروني", value: user?.email, icon: Mail },
-    { label: "رقم الهاتف", value: user?.phone || "—", icon: Phone },
-  ];
-
   function handleLogout() {
     logout();
     setLogoutOpen(false);
@@ -60,83 +56,35 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <UserProfileHero user={user} />
+      <div className="lg:grid lg:grid-cols-[minmax(260px,300px)_1fr] lg:items-start lg:gap-8">
+        {/* يمين — كارد الملف ثابت بدون scroll */}
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <UserProfileHero user={user} onEdit={() => setEditOpen(true)} />
+        </aside>
 
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <h2 className="text-sm font-bold text-heading">بيانات الحساب</h2>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 h-8 text-xs"
-          onClick={() => setEditOpen(true)}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-          تعديل
-        </Button>
+        {/* يسار — المحتوى التكميلي مع scroll */}
+        <div className="mt-6 space-y-6 lg:mt-0 lg:min-h-0 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pe-1">
+          {savedMsg && (
+            <p className="text-sm font-medium text-primary rounded-lg bg-primary/10 px-3 py-2">
+              {savedMsg}
+            </p>
+          )}
+
+          <ProfileQuickLinks upcomingCount={stats?.upcoming} />
+          <ProfileBookingStats stats={stats} loading={statsLoading} />
+          <ProfileRecentBookings bookings={stats?.recentBookings ?? []} loading={statsLoading} />
+
+        </div>
       </div>
-
-      {savedMsg && (
-        <p className="text-sm text-primary font-medium mb-3 rounded-lg bg-primary/10 px-3 py-2">
-          {savedMsg}
-        </p>
-      )}
-
-      <Card className="border border-border/60 shadow-soft mb-5">
-        <CardContent className="p-4 space-y-2">
-          {rows.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-center justify-between gap-3 text-sm rounded-lg border border-border/50 bg-background px-3 py-2.5"
-            >
-              <span className="flex items-center gap-2 text-muted-foreground shrink-0">
-                <row.icon className="h-4 w-4 text-primary" />
-                {row.label}
-              </span>
-              <span className="font-medium text-heading text-end break-all">{row.value}</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <ProfileBookingStats stats={stats} loading={statsLoading} />
 
       <EditProfileDialog
         open={editOpen}
         onOpenChange={setEditOpen}
         onSaved={() => {
-          setSavedMsg("تم تحديث الملف الشخصي");
+          setSavedMsg("حدّثت ملفك الشخصي");
           setTimeout(() => setSavedMsg(""), 3000);
         }}
       />
-
-      <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full mt-6 gap-2 text-destructive shadow-soft border-0 bg-destructive/5"
-          >
-            <LogOut className="h-4 w-4" />
-            تسجيل الخروج
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>تسجيل الخروج</DialogTitle>
-            <DialogDescription>
-              هل تريد تسجيل الخروج من حسابك؟ ستحتاج لتسجيل الدخول مجدداً للوصول إلى حجوزاتك.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-2 flex flex-row *:w-full">
-            <Button variant="outline" onClick={() => setLogoutOpen(false)}>
-              إلغاء
-            </Button>
-            <Button variant="destructive" className="gap-2" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-              تأكيد الخروج
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

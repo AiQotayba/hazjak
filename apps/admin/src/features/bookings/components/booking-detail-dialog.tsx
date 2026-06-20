@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MediaImage } from "@/components/ui/media-image";
-import { CalendarDays, MapPin, User } from "lucide-react";
+import { CalendarDays, MapPin, Phone, User } from "lucide-react";
 import { formatDate, formatPrice } from "@hazjak/utils";
 import {
   Dialog,
@@ -116,6 +116,9 @@ export function BookingDetailDialog({
                 value={`${booking.user.firstName} ${booking.user.lastName}`}
                 sub={booking.user.email}
               />
+              {booking.user.phone && (
+                <Row icon={Phone} label="الهاتف" value={booking.user.phone} ltr />
+              )}
               <Row
                 icon={CalendarDays}
                 label="الموعد"
@@ -165,18 +168,26 @@ function Row({
   label,
   value,
   sub,
+  ltr,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   sub?: string;
+  ltr?: boolean;
 }) {
   return (
     <div className="flex gap-3">
       <Icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-      <div>
+      <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="font-medium">{value}</p>
+        {ltr ? (
+          <a href={`tel:${value}`} className="font-medium tabular-nums" dir="ltr">
+            {value}
+          </a>
+        ) : (
+          <p className="font-medium">{value}</p>
+        )}
         {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </div>
     </div>

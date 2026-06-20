@@ -87,7 +87,7 @@ export function BookingDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-[calc(100%-0.5rem)] sm:max-w-md max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
+        className="w-[calc(100%-0.5rem)] sm:max-w-md md:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
         dir="rtl"
       >
         <div className="overflow-hidden rounded-3xl bg-card shadow-card">

@@ -42,8 +42,8 @@ export function StadiumCard({
 
   return (
     <Link href={`/stadiums/${slug}`} aria-label={name} className="group block h-full">
-      <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-card shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
-        <div className="relative aspect-[9/6] overflow-hidden bg-muted">
+      <article className="flex h-full flex-col overflow-hidden rounded-xl bg-card border border-border transition-all duration-200 hover:shadow-card">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted rounded-t-xl">
           {coverImage ? (
             <MediaImage
               src={coverImage}
@@ -54,7 +54,7 @@ export function StadiumCard({
             />
           ) : (
             <>
-              <div className="absolute inset-0 bg-gradient-to-br from-[#fff4e6] via-secondary to-[#fde8e3]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary to-accent" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="font-display text-5xl font-bold text-primary/25">{initial}</span>
               </div>

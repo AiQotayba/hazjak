@@ -2,56 +2,24 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowDownUp, MapPin, Search, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { APP_CITIES } from "@hazjak/constants";
+import { PageHeader } from "@/components/layout/page-header";
 import { StadiumCard } from "@/features/stadium/components/stadium-card";
 import {
+  ALL_CITIES,
   DEFAULT_SORT,
   SORT_OPTIONS,
   sortToApi,
-} from "@/features/stadium/components/stadiums-filters";
+} from "@/features/stadium/components/stadiums-filters-constants";
 import { useStadiumsQuery } from "@/features/stadium/hooks/use-stadiums-query";
+import { StadiumsFiltersBar } from "@/features/stadium/components/stadiums-filters-bar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
-import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 const SEARCH_DEBOUNCE_MS = 400;
-
-function CityChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition-all",
-        active
-          ? "border-primary bg-primary text-primary-foreground shadow-soft"
-          : "border-border/60 bg-background text-muted-foreground hover:border-primary/30 hover:text-heading"
-      )}
-    >
-      {label}
-    </button>
-  );
-}
 
 export function LandingStadiumsSection() {
   const [city, setCity] = useState("");
@@ -82,7 +50,6 @@ export function LandingStadiumsSection() {
   const stadiums = data?.stadiums ?? [];
   const total = data?.total ?? 0;
   const hasMore = stadiums.length < total;
-  const hasActiveFilters = !!(search || city || sort !== DEFAULT_SORT);
 
   const stadiumsHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -103,122 +70,76 @@ export function LandingStadiumsSection() {
     setSort(DEFAULT_SORT);
   }
 
+  const hasActiveFilters = !!(search || city || sort !== DEFAULT_SORT);
+
   return (
-    <section id="stadiums" className="bg-background pb-12 md:pb-16">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="relative z-10 -mt-8 md:-mt-10">
-          <div className="rounded-3xl border border-border/50 bg-card p-4 shadow-card md:p-5">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    className="h-12 rounded-2xl border-border/60 bg-background ps-11 text-base shadow-none"
-                    placeholder="ابحث باسم الملعب أو الحي..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    aria-label="بحث الملاعب"
-                  />
-                </div>
+    <section id="stadiums" className="border-t border-border bg-muted/30 py-10 md:py-14">
+      <div className="page-container">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <PageHeader
+            title="الملاعب المتاحة"
+            description={`تصفّح ملاعب ${APP_CITIES.join(" و")} واحجز موعدك`}
+            action={
+              <Button variant="outline" className="rounded-full" asChild>
+                <Link href={stadiumsHref}>عرض الكل</Link>
+              </Button>
+            }
+          />
 
-                <Select value={sort} onValueChange={setSort}>
-                  <SelectTrigger
-                    className="h-12 w-full rounded-2xl border-border/60 bg-background shadow-none sm:w-48"
-                    aria-label="الترتيب"
-                    dir="rtl"
-                  >
-                    <ArrowDownUp className="h-4 w-4 shrink-0 text-primary" />
-                    <SelectValue placeholder="الترتيب" />
-                  </SelectTrigger>
-                  <SelectContent align="start" className="text-start">
-                    {SORT_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <StadiumsFiltersBar
+            searchInput={searchInput}
+            onSearchInputChange={setSearchInput}
+            city={city}
+            onCityChange={(value) => setCity(value === ALL_CITIES ? "" : value)}
+            sort={sort}
+            onSortChange={setSort}
+            total={!isLoading ? total : undefined}
+            isFetching={isFetching && !isLoading}
+            hasActiveFilters={hasActiveFilters}
+            onClearFilters={clearFilters}
+          />
 
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-muted-foreground ps-1">المدينة</span>
-                <CityChip label="الكل" active={!city} onClick={() => setCity("")} />
-                {APP_CITIES.map((c) => (
-                  <CityChip key={c} label={c} active={city === c} onClick={() => setCity(c)} />
-                ))}
-                {hasActiveFilters && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="me-auto h-8 gap-1 rounded-full text-xs text-primary"
-                    onClick={clearFilters}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    مسح
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="font-display text-xl font-bold text-heading md:text-2xl">
-              الملاعب المتاحة
-            </h2>
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 shrink-0 text-primary" />
-              {isLoading && total === 0 ? (
-                <Skeleton className="inline-block h-4 w-32" />
-              ) : (
-                <>
-                  <span className="font-bold text-heading">{total}</span>
-                  ملعب
-                  {city ? ` في ${city}` : ` في ${APP_CITIES.join(" و")}`}
-                </>
-              )}
-            </p>
-          </div>
-          <Link
-            href={stadiumsHref}
-            className="text-sm font-bold text-primary hover:underline"
-          >
-            عرض الكل →
-          </Link>
-        </div>
-
-        <div className="mt-6">
           {isLoading ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-[22rem] rounded-3xl" />
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-72 rounded-xl" />
               ))}
             </div>
           ) : stadiums.length === 0 ? (
-            <EmptyState
-              title="لا توجد ملاعب"
-              description="جرّب مدينة أخرى أو عدّل كلمات البحث"
-              actionLabel="عرض كل الملاعب"
-              actionHref="/stadiums"
-            />
+            <div className="mt-6">
+              <EmptyState
+                title="لا توجد ملاعب"
+                description="جرّب مدينة أخرى أو عدّل كلمات البحث"
+                actionLabel="عرض كل الملاعب"
+                actionHref="/stadiums"
+              />
+            </div>
           ) : (
             <>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {stadiums.map((stadium) => (
-                  <StadiumCard key={stadium.id} {...stadium} />
+              <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {stadiums.map((stadium, i) => (
+                  <motion.div
+                    key={stadium.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.04, 0.25), duration: 0.3 }}
+                  >
+                    <StadiumCard {...stadium} />
+                  </motion.div>
                 ))}
               </div>
 
               {(hasMore || stadiums.length > 0) && (
-                <div className="mt-10 flex flex-col items-center gap-3">
+                <div className="mt-8 flex flex-col items-center gap-2">
                   {hasMore && (
                     <Button
                       type="button"
-                      size="lg"
                       variant="outline"
-                      className="min-w-[220px] rounded-full border-border/60"
+                      className="rounded-full"
                       onClick={() => setLimit((current) => current + PAGE_SIZE)}
                       disabled={isFetching}
                     >
@@ -232,7 +153,7 @@ export function LandingStadiumsSection() {
               )}
             </>
           )}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

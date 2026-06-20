@@ -1,10 +1,11 @@
 import type { LucideIcon } from "lucide-react";
+import { AuthBrand } from "@/features/auth/components/auth-brand";
 
 export const authInputClass =
   "rounded-2xl border-0 shadow-soft bg-secondary/80 h-11";
 
 type AuthFormShellProps = {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   title: string;
   description?: string;
   children: React.ReactNode;
@@ -19,15 +20,22 @@ export function AuthFormShell({
   footer,
 }: AuthFormShellProps) {
   return (
-    <div className="rounded-3xl bg-card p-6 sm:p-8 shadow-card">
+    <div className="surface-card p-6 sm:p-8">
       <div className="mb-6">
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12">
-          <Icon className="h-6 w-6 text-primary" />
+        <AuthBrand size="sm" showTagline={false} className="mb-5" />
+        <div className="flex flex-col items-center gap-3 text-center">
+          {Icon && (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+              <Icon className="h-6 w-6 text-primary" />
+            </div>
+          )}
+          <div>
+            <h1 className="font-display text-2xl font-bold text-heading">{title}</h1>
+            {description && (
+              <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
+            )}
+          </div>
         </div>
-        <h1 className="font-display text-2xl font-bold text-heading">{title}</h1>
-        {description && (
-          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
-        )}
       </div>
       {children}
       {footer}

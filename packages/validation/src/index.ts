@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+/** يحوّل "" و null إلى undefined — مهم لحقول النماذج الجزئية */
+function emptyToUndefined<T extends z.ZodTypeAny>(schema: T) {
+  return z.preprocess((val) => (val === "" || val === null ? undefined : val), schema);
+}
+
 const phoneField = z
   .string()
   .min(9, "رقم الهاتف مطلوب")
@@ -58,9 +63,9 @@ export const createStadiumSchema = z.object({
     .optional()
     .transform((s) => (s?.trim() ? s.trim() : undefined))
     .refine((s) => !s || z.string().url().safeParse(s).success, "رابط الفيديو غير صالح"),
-  sportType: z
-    .enum(["FOOTBALL", "FUTSAL", "BASKETBALL", "BASEBALL", "OTHER"])
-    .optional(),
+  sportType: emptyToUndefined(
+    z.enum(["FOOTBALL", "FUTSAL", "BASKETBALL", "BASEBALL", "OTHER"]).optional()
+  ),
 });
 
 export const updateStadiumSchema = createStadiumSchema.partial();

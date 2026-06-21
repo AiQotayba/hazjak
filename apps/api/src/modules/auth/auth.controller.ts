@@ -43,7 +43,14 @@ async function findUserByPhone(rawPhone: string) {
 }
 
 async function sendOtp(phone: string, otp: string, purpose: "verify" | "reset") {
-  await sendWhatsAppMessage(phone, otpWhatsAppMessage(otp, purpose));
+  try {
+    const result = await sendWhatsAppMessage(phone, otpWhatsAppMessage(otp, purpose));
+    if (!result.ok && !result.skipped) {
+      console.warn("[auth] WhatsApp OTP not delivered to", phone);
+    }
+  } catch (err) {
+    console.error("[auth] WhatsApp OTP error:", err);
+  }
 }
 
 export async function register(req: AuthRequest, res: Response) {

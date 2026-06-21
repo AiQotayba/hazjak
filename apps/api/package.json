@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "start": "node --env-file=../../.env dist/server.js",
     "generate": "node scripts/with-root-env.mjs generate",
-    "push": "node scripts/with-root-env.mjs db push",
+    "push": "node scripts/run-backfill-phone.mjs && node scripts/with-root-env.mjs db push",
     "migrate": "node scripts/with-root-env.mjs migrate dev",
     "seed": "node scripts/run-seed.mjs",
     "studio": "node scripts/with-root-env.mjs studio",

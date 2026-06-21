@@ -1,6 +1,7 @@
 ﻿import type { Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../../db";
+import { omitPassword, normalizePhone } from "@hazjak/utils";
 import {
   registerSchema,
   loginSchema,
@@ -8,21 +9,17 @@ import {
   verifyOtpSchema,
   resetPasswordSchema,
 } from "@hazjak/validation";
-import { omitPassword } from "@hazjak/utils";
 import type { AuthRequest } from "../../middlewares/auth";
 import { signAccessToken, signRefreshToken, signVerificationToken } from "../../utils/jwt";
 import { sendError, sendSuccess } from "../../utils/response";
-import { sendEmail } from "../../services/email/email.service";
-import {
-  passwordResetOtpEmail,
-  verificationOtpEmail,
-} from "../../services/email/templates";
+import { sendWhatsAppMessage } from "../../services/whatsapp/whatsapp.service";
+import { otpWhatsAppMessage } from "../../services/whatsapp/messages";
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-async function issueSession(user: { id: string; email: string; role: string }) {
+async function issueSession(user: { id: string; phone: string; role: string }) {
   const safe = omitPassword(
     await prisma.user.findUniqueOrThrow({ where: { id: user.id } })
   );
@@ -40,49 +37,57 @@ async function issueSession(user: { id: string; email: string; role: string }) {
   return { accessToken, refreshToken, user: safe };
 }
 
-async function sendOtpEmail(email: string, otp: string) {
-  const tpl = verificationOtpEmail(otp);
-  sendEmail({ to: email, ...tpl });
+async function findUserByPhone(rawPhone: string) {
+  const phone = normalizePhone(rawPhone);
+  return prisma.user.findUnique({ where: { phone } });
+}
+
+async function sendOtp(phone: string, otp: string, purpose: "verify" | "reset") {
+  await sendWhatsAppMessage(phone, otpWhatsAppMessage(otp, purpose));
 }
 
 export async function register(req: AuthRequest, res: Response) {
   const body = registerSchema.parse(req.body);
-  const exists = await prisma.user.findUnique({ where: { email: body.email } });
-  if (exists) return sendError(res, "البريد الإلكتروني مستخدم مسبقاً", 409);
+  const phone = normalizePhone(body.phone);
+  const exists = await prisma.user.findUnique({ where: { phone } });
+  if (exists) return sendError(res, "رقم الهاتف مستخدم مسبقاً", 409);
 
-  const { role, ...profile } = body;
+  const { role, phone: _p, ...profile } = body;
   const otp = generateOtp();
   const hashed = await bcrypt.hash(profile.password, 12);
   const user = await prisma.user.create({
     data: {
       ...profile,
+      phone,
       password: hashed,
       role: role === "STADIUM_OWNER" ? "STADIUM_OWNER" : "USER",
       otpCode: otp,
       otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
     },
   });
-  sendOtpEmail(user.email, otp);
+
+  await sendOtp(phone, otp, "verify");
   const safe = omitPassword(user);
-  const verificationToken = signVerificationToken(user.id, user.email);
+  const verificationToken = signVerificationToken(user.id, user.phone);
   return sendSuccess(
     res,
     { verificationToken, user: safe, otpSent: true },
-    "تم التسجيل. تحقق من بريدك الإلكتروني",
+    "تم التسجيل — تحقق من واتساب",
     201
   );
 }
 
 export async function login(req: AuthRequest, res: Response) {
-  const { email, password } = loginSchema.parse(req.body);
-  const user = await prisma.user.findUnique({ where: { email } });
+  const { phone: rawPhone, password } = loginSchema.parse(req.body);
+  const phone = normalizePhone(rawPhone);
+  const user = await prisma.user.findUnique({ where: { phone } });
   if (!user || user.isBanned) {
     return sendError(res, "بيانات الدخول غير صحيحة", 401);
   }
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) return sendError(res, "بيانات الدخول غير صحيحة", 401);
 
-  if (!user.isEmailVerified) {
+  if (!user.isPhoneVerified) {
     const otp = generateOtp();
     await prisma.user.update({
       where: { id: user.id },
@@ -91,13 +96,13 @@ export async function login(req: AuthRequest, res: Response) {
         otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    sendOtpEmail(user.email, otp);
+    await sendOtp(user.phone, otp, "verify");
 
     const safe = omitPassword(user);
-    return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403, {
-      code: "EMAIL_NOT_VERIFIED",
+    return sendError(res, "يجب التحقق من رقم هاتفك أولاً", 403, {
+      code: "PHONE_NOT_VERIFIED",
       data: {
-        verificationToken: signVerificationToken(user.id, user.email),
+        verificationToken: signVerificationToken(user.id, user.phone),
         user: safe,
       },
     });
@@ -121,8 +126,8 @@ export async function me(req: AuthRequest, res: Response) {
 }
 
 export async function verifyOtp(req: AuthRequest, res: Response) {
-  const { email, otp } = verifyOtpSchema.parse(req.body);
-  const user = await prisma.user.findUnique({ where: { email } });
+  const { phone: rawPhone, otp } = verifyOtpSchema.parse(req.body);
+  const user = await findUserByPhone(rawPhone);
   if (!user || user.otpCode !== otp) {
     return sendError(res, "رمز التحقق غير صحيح", 400);
   }
@@ -132,7 +137,7 @@ export async function verifyOtp(req: AuthRequest, res: Response) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { isEmailVerified: true, otpCode: null, otpExpiresAt: null },
+    data: { isPhoneVerified: true, otpCode: null, otpExpiresAt: null },
   });
 
   const session = await issueSession(user);
@@ -143,12 +148,12 @@ export async function verifyOtp(req: AuthRequest, res: Response) {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  return sendSuccess(res, session, "تم التحقق من البريد الإلكتروني");
+  return sendSuccess(res, session, "تم التحقق من رقم الهاتف");
 }
 
 export async function resetPassword(req: AuthRequest, res: Response) {
-  const { email, otp, password } = resetPasswordSchema.parse(req.body);
-  const user = await prisma.user.findUnique({ where: { email } });
+  const { phone: rawPhone, otp, password } = resetPasswordSchema.parse(req.body);
+  const user = await findUserByPhone(rawPhone);
   if (!user || user.otpCode !== otp) {
     return sendError(res, "رمز التحقق غير صحيح", 400);
   }
@@ -166,8 +171,8 @@ export async function resetPassword(req: AuthRequest, res: Response) {
 }
 
 export async function forgotPassword(req: AuthRequest, res: Response) {
-  const { email } = forgotPasswordSchema.parse(req.body);
-  const user = await prisma.user.findUnique({ where: { email } });
+  const { phone: rawPhone } = forgotPasswordSchema.parse(req.body);
+  const user = await findUserByPhone(rawPhone);
   if (user) {
     const otp = generateOtp();
     await prisma.user.update({
@@ -177,10 +182,9 @@ export async function forgotPassword(req: AuthRequest, res: Response) {
         otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    const tpl = passwordResetOtpEmail(otp);
-    sendEmail({ to: email, ...tpl });
+    await sendOtp(user.phone, otp, "reset");
   }
-  return sendSuccess(res, null, "إذا كان البريد مسجلاً، ستصلك رسالة قريباً");
+  return sendSuccess(res, null, "إذا كان الرقم مسجلاً، ستصلك رسالة واتساب قريباً");
 }
 
 export async function logout(req: AuthRequest, res: Response) {

@@ -13,7 +13,7 @@ type AdminNotification = {
   message: string;
   isRead: boolean;
   createdAt: string;
-  user: { firstName: string; lastName: string; email: string };
+  user: { firstName: string; lastName: string; phone: string };
 };
 
 export default function AdminNotificationsPage() {
@@ -37,7 +37,7 @@ export default function AdminNotificationsPage() {
             <Card key={n.id} className="p-4">
               <p className="font-bold text-sm">{n.title}</p>
               <p className="text-xs text-text-muted mt-1">
-                {n.user.firstName} {n.user.lastName} · {n.user.email}
+                {n.user.firstName} {n.user.lastName} · {n.user.phone}
               </p>
               <p className="text-sm text-text-muted mt-2">{n.message}</p>
               <p className="text-[10px] text-text-subtle mt-2">

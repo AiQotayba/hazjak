@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { BOOKING_STATUS_FILTER_ALL, BOOKING_STATUS_FILTER_OPTIONS } from "@hazjak/constants";
 import { formatPrice, formatDate, formatTime } from "@hazjak/utils";
+import { getOwnerBookingDepositHint } from "@/features/user-bookings/lib/user-bookings";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +24,10 @@ type BookingRow = {
   endTime: string;
   totalPrice: number;
   notes?: string | null;
-  user: { firstName: string; lastName: string; email: string; phone?: string | null };
+  depositAmount?: number | null;
+  depositReferenceCode?: string | null;
+  depositPaidAt?: string | null;
+  user: { firstName: string; lastName: string; phone: string };
   stadium: { name: string };
 };
 
@@ -103,7 +107,9 @@ export default function OwnerBookingsPage() {
         <EmptyState title="لا حجوزات" description="جرّب فلتراً آخر أو انتظر طلبات جديدة" />
       ) : (
         <ul className="space-y-3">
-          {bookings.map((b) => (
+          {bookings.map((b) => {
+            const depositHint = getOwnerBookingDepositHint(b);
+            return (
             <li key={b.id}>
               <button
                 type="button"
@@ -113,7 +119,18 @@ export default function OwnerBookingsPage() {
                 <Card className="border-0 shadow-soft hover:shadow-card transition-shadow">
                   <CardContent className="p-4 flex flex-wrap justify-between gap-4">
                     <div className="min-w-0">
-                      <StatusBadge status={b.status} />
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusBadge
+                          status={b.status}
+                          depositReferenceCode={b.depositReferenceCode}
+                          depositPaidAt={b.depositPaidAt}
+                        />
+                        {depositHint && (
+                          <span className="text-[10px] font-bold rounded-md bg-accent-gold/20 text-heading px-2 py-0.5">
+                            {depositHint}
+                          </span>
+                        )}
+                      </div>
                       <p className="font-bold text-heading mt-2">
                         {b.user.firstName} {b.user.lastName}
                       </p>
@@ -130,7 +147,8 @@ export default function OwnerBookingsPage() {
                 </Card>
               </button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 

@@ -25,6 +25,7 @@ router.post(
 router.get("/:id", ctrl.getBooking);
 router.post("/", validate(createBookingSchema), ctrl.createBooking);
 router.post("/:id/rebook", ctrl.rebook);
+router.post("/:id/confirm-deposit", ctrl.confirmDeposit);
 router.patch(
   "/:id/status",
   validate(updateBookingStatusSchema),

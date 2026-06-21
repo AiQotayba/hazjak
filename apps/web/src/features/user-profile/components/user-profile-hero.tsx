@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import Image from "next/image";
-import { LogOut, Mail, Pencil, Phone, ShieldCheck } from "lucide-react";
+import { LogOut, Pencil, Phone, ShieldCheck } from "lucide-react";
+import { formatPhoneDisplay } from "@hazjak/utils";
 import { Button } from "@/components/ui/button";
 import type { AuthUser } from "@hazjak/types";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ export function UserProfileHero({ user, onEdit }: UserProfileHeroProps) {
   const { logout } = useAuthStore();
   const initials =
     `${user?.firstName?.charAt(0) ?? ""}${user?.lastName?.charAt(0) ?? ""}`.trim() ||
-    user?.email?.charAt(0)?.toUpperCase() ||
+    user?.phone?.slice(-2) ||
     "?";
 
   const fullName = user ? `${user.firstName} ${user.lastName}` : "الملف الشخصي";
@@ -42,19 +43,18 @@ export function UserProfileHero({ user, onEdit }: UserProfileHeroProps) {
       <h1 className="font-display mt-4 text-xl font-bold text-heading">{fullName}</h1>
 
       <div className="mt-5 w-full space-y-3">
-        <ProfileField icon={Mail} label="البريد الإلكتروني" value={user?.email ?? "—"} ltr />
         <ProfileField
           icon={Phone}
           label="رقم الهاتف"
-          value={user?.phone || "غير مضاف"}
-          ltr={!!user?.phone}
+          value={user?.phone ? formatPhoneDisplay(user.phone) : "—"}
+          ltr
         />
       </div>
 
-      {user?.isEmailVerified && (
+      {user?.isPhoneVerified && (
         <p className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
           <ShieldCheck className="h-3.5 w-3.5" />
-          بريد موثّق
+          رقم موثّق
         </p>
       )}
       <div className="flex flex-col w-full gap-2">

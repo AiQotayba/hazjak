@@ -25,7 +25,7 @@ type OwnerOption = {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  phone: string;
 };
 
 type FormState = {
@@ -278,7 +278,7 @@ export function StadiumFormSheet({
                     <SelectContent>
                       {owners.map((o) => (
                         <SelectItem key={o.id} value={o.id}>
-                          {o.firstName} {o.lastName} — {o.email}
+                          {o.firstName} {o.lastName} — {o.phone}
                         </SelectItem>
                       ))}
                     </SelectContent>

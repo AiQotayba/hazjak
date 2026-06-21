@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { ownerInputClass } from "../types";
 
 function Field({
@@ -32,14 +31,12 @@ type OwnerProfile = {
 type OwnerProfileSectionProps = {
   profile: OwnerProfile;
   setProfile: React.Dispatch<React.SetStateAction<OwnerProfile>>;
-  email: string;
   saveProfile: (e: React.FormEvent) => Promise<void>;
 };
 
 export function OwnerProfileSection({
   profile,
   setProfile,
-  email,
   saveProfile,
 }: OwnerProfileSectionProps) {
   return (
@@ -76,16 +73,7 @@ export function OwnerProfileSection({
             </Field>
           </div>
 
-          <Field label="البريد">
-            <Input
-              className={cn(ownerInputClass, "opacity-70")}
-              value={email}
-              disabled
-              dir="ltr"
-            />
-          </Field>
-
-          <Field label="الهاتف">
+          <Field label="رقم الهاتف (واتساب)">
             <PhoneNumberInput
               value={profile.phone}
               onChange={(phone) => setProfile((p) => ({ ...p, phone }))}

@@ -98,4 +98,5 @@ export function omitPassword<T extends { password?: string }>(
   return rest;
 }
 
-export { normalizeMediaUrl, isApiUploadUrl } from "./media-url";
+export { normalizeMediaUrl, isApiUploadUrl, resolvePublicMediaUrl } from "./media-url";
+export { normalizePhone, formatPhoneDisplay } from "./phone";

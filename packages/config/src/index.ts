@@ -62,6 +62,10 @@ export const env = {
   smtpUser: process.env.SMTP_USER ?? "",
   smtpPass: process.env.SMTP_PASS ?? "",
   smtpFrom: process.env.SMTP_FROM ?? "noreply@hazjak.sy",
+  apiPublicUrl: process.env.API_PUBLIC_URL ?? `http://localhost:${Number(process.env.API_PORT ?? 4000)}`,
+  whatsappApiKey: process.env.WHATSAPP_API_KEY ?? "",
+  whatsappSender: process.env.WHATSAPP_SENDER ?? "",
+  whatsappApiBase: process.env.WHATSAPP_API_BASE ?? "https://metaphilia.com",
   trustProxy:
     process.env.TRUST_PROXY === "false" || process.env.TRUST_PROXY === "0"
       ? false

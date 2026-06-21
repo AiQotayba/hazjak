@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { fillRegisterForm } from "../helpers/auth-forms";
-import { TEST_PASSWORD, TEST_USER, uniqueTestEmail } from "../helpers/test-users";
+import { TEST_PASSWORD, TEST_USER, uniqueTestPhone } from "../helpers/test-users";
 
 test.describe("Auth — /register", () => {
   test.beforeEach(async ({ page }) => {
@@ -19,35 +19,35 @@ test.describe("Auth — /register", () => {
 
     await expect(page.getByText("الاسم الأول مطلوب")).toBeVisible();
     await expect(page.getByText("اسم العائلة مطلوب")).toBeVisible();
-    await expect(page.getByText("البريد الإلكتروني غير صالح")).toBeVisible();
+    await expect(page.getByText("رقم الهاتف مطلوب")).toBeVisible();
   });
 
-  test("بريد مستخدم مسبقاً يعرض خطأ", async ({ page }) => {
+  test("رقم مستخدم مسبقاً يعرض خطأ", async ({ page }) => {
     await fillRegisterForm(page, {
       firstName: "اختبار",
       lastName: "مستخدم",
-      email: TEST_USER.email,
+      phone: TEST_USER.phone,
       password: TEST_PASSWORD,
     });
     await page.getByRole("button", { name: "تسجيل" }).click();
 
-    await expect(page.getByText("البريد الإلكتروني مستخدم مسبقاً")).toBeVisible();
+    await expect(page.getByText("رقم الهاتف مستخدم مسبقاً")).toBeVisible();
   });
 
   test("تسجيل ناجح ينقل لصفحة التحقق", async ({ page }) => {
-    const email = uniqueTestEmail("player");
+    const phone = uniqueTestPhone();
 
     await fillRegisterForm(page, {
       firstName: "لاعب",
       lastName: "اختبار",
-      email,
+      phone,
       password: TEST_PASSWORD,
     });
     await page.getByRole("button", { name: "تسجيل" }).click();
 
     await expect(page).toHaveURL(/\/verify-email/, { timeout: 15_000 });
-    await expect(page.getByRole("heading", { name: "تحقق من بريدك" })).toBeVisible();
-    await expect(page.getByText(email)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "تحقق من واتساب" })).toBeVisible();
+    await expect(page.getByText(/\+963/)).toBeVisible();
   });
 
   test("روابط الدخول وتسجيل صاحب الملعب", async ({ page }) => {

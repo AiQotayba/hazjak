@@ -1,34 +1,34 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
 import { createPrismaClient } from "../src/db/create-prisma-client";
+import { normalizePhone } from "@hazjak/utils";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-dotenv.config({ path: path.join(repoRoot, ".env"), override: true });
+const prisma = createPrismaClient();
 
 async function main() {
-  const email = process.argv[2];
-  if (!email) {
-    console.error("Usage: tsx scripts/get-user-otp.ts <email>");
+  const rawPhone = process.argv[2];
+  if (!rawPhone) {
+    console.error("Usage: tsx scripts/get-user-otp.ts <phone>");
     process.exit(1);
   }
 
-  const prisma = createPrismaClient();
+  const phone = normalizePhone(rawPhone);
+  const user = await prisma.user.findUnique({
+    where: { phone },
+    select: { otpCode: true, otpExpiresAt: true },
+  });
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { otpCode: true },
-    });
-
-    if (!user?.otpCode) {
-      process.exit(1);
-    }
-
-    process.stdout.write(user.otpCode);
-  } finally {
-    await prisma.$disconnect();
+  if (!user?.otpCode) {
+    console.error("No OTP found for this phone");
+    process.exit(1);
   }
+
+  if (user.otpExpiresAt && user.otpExpiresAt < new Date()) {
+    console.error("OTP expired");
+    process.exit(1);
+  }
+
+  console.log(user.otpCode);
 }
 
-main().catch(() => process.exit(1));
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect());

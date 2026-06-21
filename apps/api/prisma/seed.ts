@@ -8,43 +8,41 @@ async function main() {
   const password = await bcrypt.hash("Password123!", 12);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@hazjak.sy" },
+    where: { phone: "963900000001" },
     update: {},
     create: {
       firstName: "مدير",
       lastName: "النظام",
-      email: "admin@hazjak.sy",
+      phone: "963900000001",
       password,
       role: Role.ADMIN,
-      isEmailVerified: true,
+      isPhoneVerified: true,
     },
   });
 
   const owner = await prisma.user.upsert({
-    where: { email: "owner@hazjak.sy" },
+    where: { phone: "963599000001" },
     update: {},
     create: {
       firstName: "أحمد",
       lastName: "الملعب",
-      email: "owner@hazjak.sy",
-      phone: "+970599000001",
+      phone: "963599000001",
       password,
       role: Role.STADIUM_OWNER,
-      isEmailVerified: true,
+      isPhoneVerified: true,
     },
   });
 
   const user = await prisma.user.upsert({
-    where: { email: "user@hazjak.sy" },
+    where: { phone: "963599000002" },
     update: {},
     create: {
       firstName: "محمد",
       lastName: "لاعب",
-      email: "user@hazjak.sy",
-      phone: "+970599000002",
+      phone: "963599000002",
       password,
       role: Role.USER,
-      isEmailVerified: true,
+      isPhoneVerified: true,
     },
   });
 
@@ -143,7 +141,7 @@ async function main() {
     },
   });
 
-  console.info("Seed completed:", { admin: admin.email, owner: owner.email, user: user.email });
+  console.info("Seed completed:", { admin: admin.phone, owner: owner.phone, user: user.phone });
 }
 
 main()

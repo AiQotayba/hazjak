@@ -113,7 +113,7 @@ export function BookingDialog({
       return;
     }
 
-    if (!user.isEmailVerified) {
+    if (!user.isPhoneVerified) {
       router.push("/verify-email");
       return;
     }
@@ -149,7 +149,7 @@ export function BookingDialog({
 
     if (res.success && res.data?.id) {
       onOpenChange(false);
-      showSnack("تم إرسال طلب الحجز — بانتظار رد صاحب الملعب");
+      showSnack(res.message ?? "تم إرسال طلب الحجز");
       window.setTimeout(() => {
         router.push(`/user/bookings?booking=${res.data!.id}`);
       }, 1400);

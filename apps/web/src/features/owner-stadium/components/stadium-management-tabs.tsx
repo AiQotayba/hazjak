@@ -380,7 +380,7 @@ export function StadiumManagementTabs({
                 شام كاش
               </p>
               <p className="text-[11px] text-muted-foreground -mt-2">
-                يُرسل للاعب مع كود العربون عند طلب الحجز
+                يُرسل للاعب تلقائياً مع كود العربون فور الحجز
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="معرّف شام كاش">

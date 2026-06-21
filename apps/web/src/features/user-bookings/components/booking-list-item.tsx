@@ -1,9 +1,11 @@
 ﻿"use client";
 
 import { MediaImage } from "@/components/ui/media-image";
-import { CalendarDays, Clock, MapPin } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Wallet } from "lucide-react";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
+import { isAwaitingDeposit, getBookingStatusHint } from "@/features/user-bookings/lib/user-bookings";
+import { ConfirmDepositButton } from "./confirm-deposit-button";
 import { StatusBadge } from "./StatusBadge";
 
 export interface BookingListItemData {
@@ -12,6 +14,9 @@ export interface BookingListItemData {
   startTime: string;
   endTime: string;
   totalPrice: number;
+  depositAmount?: number | null;
+  depositReferenceCode?: string | null;
+  depositPaidAt?: string | null;
   stadium: {
     name: string;
     coverImage?: string | null;
@@ -23,6 +28,7 @@ export interface BookingListItemData {
 interface BookingListItemProps {
   booking: BookingListItemData;
   onPress: () => void;
+  onDepositConfirmed?: () => void;
 }
 
 const ARCHIVED_STATUSES = ["COMPLETED", "CANCELLED", "REJECTED", "EXPIRED", "NO_SHOW"];
@@ -83,26 +89,38 @@ function AmenityChip({
   );
 }
 
-export function BookingListItem({ booking, onPress }: BookingListItemProps) {
+export function BookingListItem({
+  booking,
+  onPress,
+  onDepositConfirmed,
+}: BookingListItemProps) {
   const isArchived = ARCHIVED_STATUSES.includes(booking.status);
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
   const timeLabel = `${formatTime(start)} – ${formatTime(end)}`;
   const dateLabel = formatDate(start, { weekday: "short", day: "numeric", month: "short" });
   const location = [booking.stadium.area, booking.stadium.city].filter(Boolean).join("، ");
+  const awaitingDeposit = isAwaitingDeposit(booking);
+  const statusHint = getBookingStatusHint(booking);
+  const needsDeposit = awaitingDeposit;
 
   return (
+    <div
+      className={cn(
+        "rounded-2xl bg-card p-3 transition-all duration-200",
+        isArchived ? "opacity-85" : "shadow-soft",
+        !isArchived && needsDeposit && "ring-2 ring-accent-gold/50"
+      )}
+    >
     <button
       type="button"
       onClick={onPress}
       className={cn(
-        "group flex w-full items-start gap-3 rounded-2xl bg-card p-3 text-start transition-all duration-200",
+        "group flex w-full items-start gap-3 text-start transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
         "active:scale-[0.99]",
         "items-center",
-        isArchived
-          ? "opacity-85 shadow-none"
-          : "shadow-soft hover:shadow-card hover:ring-2 hover:ring-primary/20"
+        !isArchived && !needsDeposit && "hover:ring-2 hover:ring-primary/20 rounded-xl"
       )}
     >
       {/* صورة الملعب — يمين في RTL */}
@@ -115,6 +133,8 @@ export function BookingListItem({ booking, onPress }: BookingListItemProps) {
         <div className="absolute bottom-2 start-2">
           <StatusBadge
             status={booking.status}
+            depositReferenceCode={booking.depositReferenceCode}
+            depositPaidAt={booking.depositPaidAt}
             className="text-[10px] px-2 py-0.5 shadow-soft bg-card/95 backdrop-blur-sm"
           />
         </div>
@@ -136,6 +156,19 @@ export function BookingListItem({ booking, onPress }: BookingListItemProps) {
             <AmenityChip icon={CalendarDays} label={dateLabel} />
             <AmenityChip icon={Clock} label={timeLabel} />
           </div>
+          {statusHint && (
+            <p
+              className={cn(
+                "mt-2 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold leading-snug",
+                needsDeposit
+                  ? "bg-accent-gold/15 text-heading"
+                  : "bg-primary/10 text-primary"
+              )}
+            >
+              {needsDeposit && <Wallet className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+              {statusHint}
+            </p>
+          )}
         </div>
 
         <div className="mt-auto pt-2 self-end text-start">
@@ -152,5 +185,14 @@ export function BookingListItem({ booking, onPress }: BookingListItemProps) {
         </div>
       </div>
     </button>
+
+      {awaitingDeposit && (
+        <ConfirmDepositButton
+          bookingId={booking.id}
+          onSuccess={onDepositConfirmed}
+          className="mt-3 h-10 rounded-xl"
+        />
+      )}
+    </div>
   );
 }

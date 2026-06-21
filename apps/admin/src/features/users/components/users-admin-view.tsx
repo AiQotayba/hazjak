@@ -28,8 +28,8 @@ const columns: TableColumn<AdminUserRow>[] = [
     ),
   },
   {
-    key: "email",
-    label: "البريد",
+    key: "phone",
+    label: "الهاتف",
     render: (v) => <span className="text-muted-foreground">{String(v)}</span>,
   },
   {
@@ -79,13 +79,13 @@ export function UsersAdminView() {
       <AdminPageHero
         title="المستخدمون"
         description="إدارة الحسابات والأدوار والحظر."
-        perks={[{ icon: Users, label: "بحث بالاسم والبريد" }]}
+        perks={[{ icon: Users, label: "بحث بالاسم والهاتف" }]}
       />
 
       <DataTable<AdminUserRow>
         apiEndpoint="/users"
         columns={columns}
-        searchPlaceholder="بحث بالاسم أو البريد..."
+        searchPlaceholder="بحث بالاسم أو الهاتف..."
         emptyMessage="لا يوجد مستخدمون"
         enableDelete={false}
         enableEdit={false}

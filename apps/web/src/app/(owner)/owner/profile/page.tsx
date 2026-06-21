@@ -19,7 +19,6 @@ export default function OwnerProfilePage() {
       <OwnerProfileSection
         profile={profile}
         setProfile={setProfile}
-        email={user?.email ?? ""}
         saveProfile={saveProfile}
       />
     </>

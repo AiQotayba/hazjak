@@ -5,6 +5,7 @@ import { ChevronLeft, Clock } from "lucide-react";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/features/user-bookings/components/StatusBadge";
+import { isAwaitingDeposit } from "@/features/user-bookings/lib/user-bookings";
 import type { BookingListItemData } from "@/features/user-bookings/components/booking-list-item";
 
 interface ProfileRecentBookingsProps {
@@ -49,9 +50,14 @@ export function ProfileRecentBookings({ bookings, loading }: ProfileRecentBookin
                 {booking.stadium.name.trim().charAt(0) || "م"}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-bold text-heading truncate">{booking.stadium.name}</p>
                   <StatusBadge status={booking.status} className="text-[9px] px-1.5 py-0 shrink-0" />
+                  {isAwaitingDeposit(booking) && (
+                    <span className="text-[10px] font-bold rounded-md bg-accent-gold/20 text-heading px-2 py-0.5 shrink-0">
+                      أكّد العربون
+                    </span>
+                  )}
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-0.5 inline-flex items-center gap-1">
                   <Clock className="h-3 w-3 text-primary" />

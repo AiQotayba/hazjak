@@ -34,7 +34,7 @@ const columns: TableColumn<AdminBookingRow>[] = [
         <p>
           {row.user.firstName} {row.user.lastName}
         </p>
-        <p className="text-xs text-muted-foreground">{row.user.email}</p>
+        <p className="text-xs text-muted-foreground">{row.user.phone}</p>
       </div>
     ),
   },

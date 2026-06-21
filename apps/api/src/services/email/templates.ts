@@ -1,6 +1,6 @@
 ﻿import { APP_TAGLINE_AR } from "@hazjak/constants";
 import { env } from "@hazjak/config";
-import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
+import { formatDate, formatPrice, formatTime, resolvePublicMediaUrl } from "@hazjak/utils";
 
 /** الاسم الظاهر في الواجهة (apps/web) */
 const BRAND = "حجزك";
@@ -28,12 +28,9 @@ function escapeHtml(value: string): string {
 }
 
 function absoluteImageUrl(url: string): string {
-  const trimmed = url.trim();
-  if (!trimmed) return "";
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
   const base =
     process.env.API_PUBLIC_URL?.replace(/\/$/, "") ?? `http://localhost:${env.apiPort}`;
-  return trimmed.startsWith("/") ? `${base}${trimmed}` : `${base}/${trimmed}`;
+  return resolvePublicMediaUrl(url, base) ?? url.trim();
 }
 
 function emailLayout(input: {
@@ -182,11 +179,11 @@ export function bookingConfirmedEmail(input: {
   const price = escapeHtml(formatPrice(input.totalPrice));
 
   return {
-    subject: `${BRAND} — تم تأكيد حجزك`,
-    text: `تم تأكيد حجزك في ${input.stadiumName} يوم ${when}. المبلغ: ${formatPrice(input.totalPrice)}`,
+    subject: `${BRAND} — حجزك مؤكد`,
+    text: `تم تأكيد حجزك في ${input.stadiumName} يوم ${when}. الإجمالي: ${formatPrice(input.totalPrice)}. جهّز حذاءك — نراك في الملعب!`,
     html: emailLayout({
-      title: "تم تأكيد حجزك",
-      intro: "صاحب الملعب قبل طلبك. تفاصيل الحجز:",
+      title: "حجزك مؤكد",
+      intro: "صاحب الملعب أكّد حجزك. تفاصيل الموعد:",
       bodyHtml: infoTable(
         infoRow("الملعب", stadium) +
           infoRow("الموعد", escapeHtml(when)) +
@@ -235,11 +232,11 @@ export function depositRequestEmail(input: {
     : "";
 
   return {
-    subject: `${BRAND} — طلب دفع العربون`,
-    text: `لتأكيد حجزك في ${input.stadiumName}: ادفع ${formatPrice(input.depositAmount)} عبر شام كاش.${input.shamCashId ? ` الحساب: ${input.shamCashId}.` : ""} ضع الكود ${input.referenceCode} في ملاحظة التحويل.${qrTextNote}`,
+    subject: `${BRAND} — الملعب متاح، ادفع العربون`,
+    text: `أخبار حلوة — ملعب ${input.stadiumName} متاح لحجزك. ادفع ${formatPrice(input.depositAmount)} عبر شام كاش خلال المهلة المحددة لإتمام الحجز.${input.shamCashId ? ` الحساب: ${input.shamCashId}.` : ""} ضع الكود ${input.referenceCode} في ملاحظة التحويل.${qrTextNote}`,
     html: emailLayout({
-      title: "طلب دفع العربون",
-      intro: `لتأكيد حجزك في <strong style="color:${COLORS.heading}">${stadium}</strong>:`,
+      title: "الملعب متاح — ادفع العربون",
+      intro: `صاحب الملعب قبل طلبك — <strong style="color:${COLORS.heading}">${stadium}</strong> جاهز لحجزك. ادفع العربون لإتمام الحجز:`,
       bodyHtml:
         infoTable(
           infoRow("المبلغ", amount) +
@@ -252,7 +249,7 @@ export function depositRequestEmail(input: {
               </td>
             </tr>`
         ) +
-        `<p style="margin:16px 0 0;font-size:13px;color:${COLORS.muted};line-height:1.6;text-align:right">ضع الكود في <strong>ملاحظة التحويل</strong> عند الدفع عبر شام كاش. بدونه قد يتأخر تأكيد الدفع.</p>`,
+        `<p style="margin:16px 0 0;font-size:13px;color:${COLORS.muted};line-height:1.6;text-align:right">ضع الكود في <strong>ملاحظة التحويل</strong> عند الدفع عبر شام كاش، ثم أكّد من حسابك في التطبيق.</p>`,
     }),
   };
 }

@@ -26,13 +26,13 @@ export async function notifyBookingStatus(
 ) {
   const map: Record<string, { title: string; message: string; type: NotificationType }> = {
     PENDING: {
-      title: "حجز قيد الانتظار",
-      message: `تم إرسال طلب حجزك لملعب ${stadiumName}. بانتظار تأكيد الملعب.`,
+      title: "طلبك قيد المراجعة",
+      message: `وصل طلب حجزك لملعب ${stadiumName}. صاحب الملعب سيرد عليك قريباً.`,
       type: "BOOKING_PENDING",
     },
     CONFIRMED: {
-      title: "تم تأكيد الحجز",
-      message: `تم تأكيد حجزك في ${stadiumName}. نراك في الموعد!`,
+      title: "حجزك مؤكد",
+      message: `تم تأكيد حجزك في ${stadiumName}. جهّز حذاءك — نراك في الموعد!`,
       type: "BOOKING_CONFIRMED",
     },
     REJECTED: {
@@ -43,6 +43,21 @@ export async function notifyBookingStatus(
     CANCELLED: {
       title: "تم إلغاء الحجز",
       message: `تم إلغاء حجزك في ${stadiumName}.`,
+      type: "BOOKING_CANCELLED",
+    },
+    COMPLETED: {
+      title: "اكتمل الحجز",
+      message: `شكراً لعبك في ${stadiumName}. نراك في المرة القادمة!`,
+      type: "BOOKING_CONFIRMED",
+    },
+    EXPIRED: {
+      title: "انتهت مهلة العربون",
+      message: `انتهت مهلة دفع العربون لحجز ${stadiumName}. يمكنك إرسال طلب جديد.`,
+      type: "BOOKING_CANCELLED",
+    },
+    NO_SHOW: {
+      title: "لم تحضر للمباراة",
+      message: `تم تسجيل عدم حضورك لحجز ${stadiumName}.`,
       type: "BOOKING_CANCELLED",
     },
   };

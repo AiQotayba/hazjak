@@ -1,31 +1,35 @@
 import { z } from "zod";
 
+const phoneField = z
+  .string()
+  .min(9, "رقم الهاتف مطلوب")
+  .max(20, "رقم الهاتف غير صالح");
+
 export const registerSchema = z.object({
   firstName: z.string().min(2, "الاسم الأول مطلوب"),
   lastName: z.string().min(2, "اسم العائلة مطلوب"),
-  email: z.string().email("البريد الإلكتروني غير صالح"),
-  phone: z.string().optional(),
+  phone: phoneField,
   password: z.string().min(8, "كلمة المرور 8 أحرف على الأقل"),
   role: z.enum(["USER", "STADIUM_OWNER"]).optional(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("البريد الإلكتروني غير صالح"),
+  phone: phoneField,
   password: z.string().min(1, "كلمة المرور مطلوبة"),
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("البريد الإلكتروني غير صالح"),
+  phone: phoneField,
 });
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email("البريد الإلكتروني غير صالح"),
+  phone: phoneField,
   otp: z.string().length(6, "رمز التحقق 6 أرقام"),
   password: z.string().min(8, "كلمة المرور 8 أحرف على الأقل"),
 });
 
 export const verifyOtpSchema = z.object({
-  email: z.string().email(),
+  phone: phoneField,
   otp: z.string().length(6, "رمز التحقق 6 أرقام"),
 });
 

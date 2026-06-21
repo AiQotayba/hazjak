@@ -64,7 +64,7 @@ export function StadiumDetailPanel({ stadium, onClose, onEdit, onPatch }: Stadiu
           <p className="font-bold">
             {stadium.owner.firstName} {stadium.owner.lastName}
           </p>
-          <p className="text-xs text-text-muted">{stadium.owner.email}</p>
+          <p className="text-xs text-text-muted">{stadium.owner.phone}</p>
         </div>
 
         {stadium.contactPhone && (

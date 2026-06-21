@@ -19,6 +19,6 @@ export type AdminStadiumRecord = {
   shamCashQrImage?: string | null;
   isActive: boolean;
   isSuspended: boolean;
-  owner: { id: string; firstName: string; lastName: string; email: string };
+  owner: { id: string; firstName: string; lastName: string; phone: string };
   _count: { bookings: number; reviews: number };
 };

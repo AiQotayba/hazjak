@@ -62,7 +62,6 @@ export function RegisterForm({ variant }: RegisterFormProps) {
     setError("");
     const payload = {
       ...data,
-      phone: data.phone?.trim() || undefined,
       role: role === "STADIUM_OWNER" ? ("STADIUM_OWNER" as const) : undefined,
     };
     const res = await api<{ verificationToken: string; user: AuthUser }>("/auth/register", {
@@ -129,23 +128,7 @@ export function RegisterForm({ variant }: RegisterFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">البريد الإلكتروني</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="name@example.com"
-            className={authInputClass}
-            dir="ltr"
-            {...register("email")}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phone">الهاتف (اختياري)</Label>
+          <Label htmlFor="phone">رقم الهاتف (واتساب)</Label>
           <Controller
             name="phone"
             control={control}
@@ -158,6 +141,9 @@ export function RegisterForm({ variant }: RegisterFormProps) {
               />
             )}
           />
+          {errors.phone && (
+            <p className="text-xs text-destructive">{errors.phone.message}</p>
+          )}
         </div>
 
         <div className="space-y-2">

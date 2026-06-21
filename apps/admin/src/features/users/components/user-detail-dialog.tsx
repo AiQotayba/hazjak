@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Mail, Phone, Shield, User } from "lucide-react";
+import { Phone, Shield, User } from "lucide-react";
 import { formatDate } from "@hazjak/utils";
 import {
   Dialog,
@@ -22,14 +22,13 @@ import type { Role } from "@hazjak/types";
 
 export type AdminUserRow = {
   id: string;
-  email: string;
+  phone: string;
   firstName: string;
   lastName: string;
   role: Role;
   isBanned: boolean;
-  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
   createdAt: string;
-  phone?: string | null;
 };
 
 const ROLES: Role[] = ["USER", "STADIUM_OWNER", "ADMIN"];
@@ -59,8 +58,8 @@ export function UserDetailDialog({
                 {user.firstName} {user.lastName}
               </DialogTitle>
               <DialogDescription className="flex items-center gap-1.5">
-                <Mail className="h-3.5 w-3.5 shrink-0" />
-                <span dir="ltr">{user.email}</span>
+                <Phone className="h-3.5 w-3.5 shrink-0" />
+                <span dir="ltr">{user.phone}</span>
               </DialogDescription>
             </DialogHeader>
 
@@ -78,18 +77,6 @@ export function UserDetailDialog({
                   </p>
                 </div>
               </div>
-
-              {user.phone && (
-                <div className="flex items-center gap-3 rounded-xl bg-secondary px-4 py-3">
-                  <Phone className="h-4 w-4 shrink-0 text-primary" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">الهاتف</p>
-                    <p className="font-medium" dir="ltr">
-                      {user.phone}
-                    </p>
-                  </div>
-                </div>
-              )}
 
               <div className="flex items-center gap-3 rounded-xl bg-secondary px-4 py-3">
                 <Shield className="h-4 w-4 shrink-0 text-primary" />
@@ -114,7 +101,7 @@ export function UserDetailDialog({
               </div>
 
               <p className="text-xs text-muted-foreground">
-                البريد {user.isEmailVerified ? "موثّق" : "غير موثّق"} · انضم{" "}
+                الهاتف {user.isPhoneVerified ? "موثّق" : "غير موثّق"} · انضم{" "}
                 {formatDate(user.createdAt, { dateStyle: "medium" })}
               </p>
             </dl>

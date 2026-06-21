@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LockKeyhole } from "lucide-react";
 import { resetPasswordSchema } from "@hazjak/validation";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import {
   AuthError,
   AuthFormShell,
@@ -30,12 +31,13 @@ function ResetPasswordForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      email: searchParams.get("email") ?? "",
+      phone: searchParams.get("phone") ?? "",
     },
   });
 
@@ -57,7 +59,7 @@ function ResetPasswordForm() {
     <AuthFormShell
       icon={LockKeyhole}
       title="إعادة تعيين كلمة المرور"
-      description="أدخل رمز التحقق وكلمة المرور الجديدة"
+      description="أدخل رمز التحقق من واتساب وكلمة المرور الجديدة"
       footer={
         <p className="mt-6 text-center text-sm text-muted-foreground">
           <Link href="/login" className="font-bold text-primary hover:underline">
@@ -71,17 +73,21 @@ function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className={authInputClass}
-              dir="ltr"
-              {...register("email")}
+            <Label htmlFor="phone">رقم الهاتف</Label>
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => (
+                <PhoneNumberInput
+                  id="phone"
+                  value={field.value}
+                  onChange={field.onChange}
+                  className={authInputClass}
+                />
+              )}
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+            {errors.phone && (
+              <p className="text-xs text-destructive">{errors.phone.message}</p>
             )}
           </div>
 

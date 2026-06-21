@@ -129,7 +129,7 @@ export async function adminListStadiums(req: AuthRequest, res: Response) {
             OR: [
               { firstName: icontains(search) },
               { lastName: icontains(search) },
-              { email: icontains(search) },
+              { phone: icontains(search) },
             ],
           },
         },
@@ -146,7 +146,7 @@ export async function adminListStadiums(req: AuthRequest, res: Response) {
         createdAt: "desc",
       }),
       include: {
-        owner: { select: { id: true, firstName: true, lastName: true, email: true } },
+        owner: { select: { id: true, firstName: true, lastName: true, phone: true } },
         _count: { select: { bookings: true, reviews: true } },
       },
     }),
@@ -228,7 +228,7 @@ export async function adminCreateStadium(req: AuthRequest, res: Response) {
   const stadium = await prisma.stadium.create({
     data: { ...rest, slug, ownerId },
     include: {
-      owner: { select: { id: true, firstName: true, lastName: true, email: true } },
+      owner: { select: { id: true, firstName: true, lastName: true, phone: true } },
       _count: { select: { bookings: true, reviews: true } },
     },
   });
@@ -259,7 +259,7 @@ export async function updateStadium(req: AuthRequest, res: Response) {
         ...(isSuspended !== undefined && { isSuspended }),
       },
       include: {
-        owner: { select: { id: true, firstName: true, lastName: true, email: true } },
+        owner: { select: { id: true, firstName: true, lastName: true, phone: true } },
         images: IMAGE_ORDER,
         _count: { select: { bookings: true, reviews: true } },
       },

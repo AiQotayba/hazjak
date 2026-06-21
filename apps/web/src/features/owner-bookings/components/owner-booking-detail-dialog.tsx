@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { useSnackbar } from "@/components/ui/snackbar";
+import { isAwaitingDeposit, isDepositPaidPendingOwner, isPendingOwnerReview } from "@/features/user-bookings/lib/user-bookings";
 
 export type OwnerBookingDetail = {
   id: string;
@@ -25,7 +26,8 @@ export type OwnerBookingDetail = {
   notes?: string | null;
   depositAmount?: number | null;
   depositReferenceCode?: string | null;
-  user: { firstName: string; lastName: string; email?: string; phone?: string | null };
+  depositPaidAt?: string | null;
+  user: { firstName: string; lastName: string; phone: string };
   stadium: { name: string; depositAmount?: number | null; contactWhatsapp?: string | null };
 };
 
@@ -78,10 +80,9 @@ export function OwnerBookingDetailDialog({
   }
 
   const stadiumDeposit = booking?.stadium.depositAmount ?? 0;
-  const awaitingDeposit =
-    booking?.status === "PENDING" &&
-    !!booking.depositReferenceCode &&
-    (booking.depositAmount ?? 0) > 0;
+  const awaitingDeposit = booking ? isAwaitingDeposit(booking) : false;
+  const depositPaidAwaitingConfirm = booking ? isDepositPaidPendingOwner(booking) : false;
+  const pendingOwnerReview = booking ? isPendingOwnerReview(booking) : false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -95,7 +96,11 @@ export function OwnerBookingDetailDialog({
             <DialogHeader className="text-start space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <DialogTitle className="text-heading">{booking.stadium.name}</DialogTitle>
-                <StatusBadge status={booking.status} />
+                <StatusBadge
+                  status={booking.status}
+                  depositReferenceCode={booking.depositReferenceCode}
+                  depositPaidAt={booking.depositPaidAt}
+                />
               </div>
             </DialogHeader>
 
@@ -117,39 +122,44 @@ export function OwnerBookingDetailDialog({
               {booking.depositReferenceCode && (
                 <Row icon={FileText} label="كود التحويل" value={booking.depositReferenceCode} />
               )}
+              {booking.depositPaidAt && (
+                <Row
+                  icon={Wallet}
+                  label="تأكيد العربون"
+                  value={formatDate(booking.depositPaidAt, { dateStyle: "medium", timeStyle: "short" })}
+                />
+              )}
               {booking.notes && <Row icon={FileText} label="ملاحظات" value={booking.notes} />}
             </dl>
 
             {awaitingDeposit && (
               <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
-                بانتظار دفع العربون عبر شام كاش خلال {BOOKING_EXPIRATION_MIN} دقيقة. بعد استلام
-                التحويل اضغط «تأكيد الحجز».
+                اللاعب حجز الموعد — بانتظار دفع العربون وتأكيده في التطبيق خلال{" "}
+                {BOOKING_EXPIRATION_MIN} دقيقة.
+              </p>
+            )}
+
+            {pendingOwnerReview && (
+              <p className="rounded-lg border border-border bg-secondary/50 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
+                طلب حجز جديد بدون عربون — يمكنك قبول الحجز أو رفضه.
+              </p>
+            )}
+
+            {depositPaidAwaitingConfirm && (
+              <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs text-heading leading-relaxed">
+                اللاعب أكّد دفع العربون. راجع التحويل في شام كاش ثم اضغط «تأكيد الحجز».
               </p>
             )}
 
             <div className="grid gap-2 pt-2">
-              {booking.status === "PENDING" && !awaitingDeposit && (
+              {pendingOwnerReview && (
                 <>
                   <Button
                     disabled={actionLoading}
-                    onClick={() => patchStatus({ status: "CONFIRMED" }, "تم قبول الحجز")}
+                    onClick={() => patchStatus({ status: "CONFIRMED" }, "تم تأكيد الحجز")}
                   >
-                    قبول الحجز
+                    تأكيد الحجز
                   </Button>
-                  {stadiumDeposit > 0 && (
-                    <Button
-                      variant="secondary"
-                      disabled={actionLoading}
-                      onClick={() =>
-                        patchStatus(
-                          { status: "PENDING", requireDeposit: true },
-                          "تم طلب العربون — أُرسلت التعليمات للاعب"
-                        )
-                      }
-                    >
-                      قبول مع طلب عربون ({formatPrice(stadiumDeposit)})
-                    </Button>
-                  )}
                   <Button
                     variant="destructive"
                     disabled={actionLoading}
@@ -159,13 +169,40 @@ export function OwnerBookingDetailDialog({
                   </Button>
                 </>
               )}
+              {booking.status === "PENDING" &&
+                !awaitingDeposit &&
+                !depositPaidAwaitingConfirm &&
+                !pendingOwnerReview &&
+                stadiumDeposit > 0 && (
+                  <Button
+                    variant="secondary"
+                    disabled={actionLoading}
+                    onClick={() =>
+                      patchStatus(
+                        { status: "PENDING", requireDeposit: true },
+                        "أُرسلت تعليمات العربون للاعب"
+                      )
+                    }
+                  >
+                    إرسال طلب عربون ({formatPrice(stadiumDeposit)})
+                  </Button>
+                )}
               {booking.status === "PENDING" && awaitingDeposit && (
+                <Button
+                  variant="destructive"
+                  disabled={actionLoading}
+                  onClick={() => patchStatus({ status: "REJECTED" }, "تم رفض الحجز")}
+                >
+                  رفض
+                </Button>
+              )}
+              {depositPaidAwaitingConfirm && (
                 <>
                   <Button
                     disabled={actionLoading}
-                    onClick={() => patchStatus({ status: "CONFIRMED" }, "تم تأكيد الحجز بعد العربون")}
+                    onClick={() => patchStatus({ status: "CONFIRMED" }, "تم تأكيد الحجز — نراك في الموعد!")}
                   >
-                    تأكيد بعد استلام العربون
+                    تأكيد الحجز
                   </Button>
                   <Button
                     variant="destructive"
@@ -180,9 +217,9 @@ export function OwnerBookingDetailDialog({
                 <Button
                   variant="outline"
                   disabled={actionLoading}
-                  onClick={() => patchStatus({ status: "COMPLETED" }, "تم إتمام الحجز")}
+                  onClick={() => patchStatus({ status: "COMPLETED" }, "تم إتمام الحجز بعد المباراة")}
                 >
-                  وضع علامة مكتمل
+                  إتمام الحجز (بعد المباراة)
                 </Button>
               )}
               {!["PENDING", "CONFIRMED"].includes(booking.status) && (

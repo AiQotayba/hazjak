@@ -21,7 +21,7 @@ export function useRedirectIfAuthenticated() {
   useEffect(() => {
     if (!hydrated || !token || !user) return;
 
-    if (!user.isEmailVerified) {
+    if (!user.isPhoneVerified) {
       router.replace("/verify-email");
       return;
     }

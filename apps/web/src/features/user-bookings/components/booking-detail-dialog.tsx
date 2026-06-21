@@ -7,11 +7,14 @@ import { CalendarDays, Clock, ExternalLink, FileText, MapPin, MessageCircle, Pho
 import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmAlert } from "@/components/ui/confirm-alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { StatusBadge } from "./StatusBadge";
+import { ConfirmDepositButton } from "./confirm-deposit-button";
+import { isAwaitingDeposit } from "@/features/user-bookings/lib/user-bookings";
 import { cn } from "@/lib/utils";
 
 export interface BookingSummary {
@@ -23,6 +26,7 @@ export interface BookingSummary {
   notes?: string | null;
   depositAmount?: number | null;
   depositReferenceCode?: string | null;
+  depositPaidAt?: string | null;
   stadium: {
     name: string;
     slug: string;
@@ -32,6 +36,8 @@ export interface BookingSummary {
     coverImage?: string | null;
     contactPhone?: string;
     contactWhatsapp?: string;
+    shamCashId?: string | null;
+    shamCashQrImage?: string | null;
   };
 }
 
@@ -40,6 +46,7 @@ interface BookingDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCancelled?: () => void;
+  onUpdated?: () => void;
 }
 
 const CANCELLABLE = ["PENDING", "CONFIRMED"];
@@ -49,11 +56,13 @@ export function BookingDetailDialog({
   open,
   onOpenChange,
   onCancelled,
+  onUpdated,
 }: BookingDetailDialogProps) {
   const { token } = useAuthStore();
   const [booking, setBooking] = useState<BookingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [cancelAlertOpen, setCancelAlertOpen] = useState(false);
 
   useEffect(() => {
     if (!open || !bookingId || !token) {
@@ -67,7 +76,7 @@ export function BookingDetailDialog({
   }, [open, bookingId, token]);
 
   async function cancelBooking() {
-    if (!booking || !token || !confirm("إلغاء هذا الحجز؟")) return;
+    if (!booking || !token) return;
     setActionLoading(true);
     await api(`/bookings/${booking.id}/status`, {
       method: "PATCH",
@@ -75,9 +84,19 @@ export function BookingDetailDialog({
       body: JSON.stringify({ status: "CANCELLED" }),
     });
     setActionLoading(false);
+    setCancelAlertOpen(false);
     onCancelled?.();
     onOpenChange(false);
   }
+
+  async function handleDepositConfirmed() {
+    if (!bookingId || !token) return;
+    const res = await api<BookingSummary>(`/bookings/${bookingId}`, { token });
+    if (res.data) setBooking(res.data);
+    onUpdated?.();
+  }
+
+  const awaitingDeposit = booking ? isAwaitingDeposit(booking) : false;
 
   const showContact =
     booking &&
@@ -100,11 +119,23 @@ export function BookingDetailDialog({
               booking={booking}
               showContact={!!showContact}
               actionLoading={actionLoading}
-              onCancel={cancelBooking}
+              awaitingDeposit={awaitingDeposit}
+              onCancel={() => setCancelAlertOpen(true)}
+              onDepositConfirmed={handleDepositConfirmed}
             />
           )}
         </div>
       </DialogContent>
+      <ConfirmAlert
+        open={cancelAlertOpen}
+        onOpenChange={setCancelAlertOpen}
+        title="إلغاء الحجز"
+        description="هل تريد إلغاء هذا الحجز؟ لا يمكن التراجع عن هذا الإجراء."
+        confirmLabel="إلغاء الحجز"
+        destructive
+        loading={actionLoading}
+        onConfirm={cancelBooking}
+      />
     </Dialog>
   );
 }
@@ -134,12 +165,16 @@ function BookingDetailBody({
   booking,
   showContact,
   actionLoading,
+  awaitingDeposit,
   onCancel,
+  onDepositConfirmed,
 }: {
   booking: BookingSummary;
   showContact: boolean;
   actionLoading: boolean;
+  awaitingDeposit: boolean;
   onCancel: () => void;
+  onDepositConfirmed: () => void;
 }) {
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
@@ -173,6 +208,8 @@ function BookingDetailBody({
         <div className="absolute bottom-3 start-3">
           <StatusBadge
             status={booking.status}
+            depositReferenceCode={booking.depositReferenceCode}
+            depositPaidAt={booking.depositPaidAt}
             className="text-[11px] px-2.5 py-1 shadow-soft bg-card/95 backdrop-blur-sm"
           />
         </div>
@@ -223,33 +260,51 @@ function BookingDetailBody({
           )}
         </div>
 
-        {booking.status === "PENDING" &&
-          booking.depositReferenceCode &&
-          booking.depositAmount != null &&
-          booking.depositAmount > 0 && (
-            <div className="rounded-lg border border-accent-gold/40 bg-accent/50 px-4 py-3 space-y-2">
-              <p className="text-sm font-bold text-heading">مطلوب دفع العربون</p>
+        {awaitingDeposit && (
+            <div className="rounded-lg border border-accent-gold/40 bg-accent/50 px-4 py-3 space-y-3">
+              <p className="text-sm font-bold text-heading">خطوة أخيرة — ادفع العربون</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                ادفع {formatPrice(booking.depositAmount)} عبر شام كاش خلال {BOOKING_EXPIRATION_MIN}{" "}
-                دقيقة. ضع الكود{" "}
+                تم حجز الملعب مؤقتاً. ادفع العربون
+                {(booking.depositAmount ?? 0) > 0
+                  ? ` (${formatPrice(booking.depositAmount!)})`
+                  : ""}{" "}
+                عبر شام كاش خلال {BOOKING_EXPIRATION_MIN} دقيقة لإتمام الحجز. ضع الكود{" "}
                 <span className="font-bold text-heading">{booking.depositReferenceCode}</span> في
                 ملاحظة التحويل.
               </p>
-              {booking.stadium.contactWhatsapp && (
-                <Button size="sm" className="h-9 gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white" asChild>
-                  <a
-                    href={`https://wa.me/${booking.stadium.contactWhatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
-                      `مرحباً، أرسلت عربون الحجز. الكود: ${booking.depositReferenceCode}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    إرسال إثبات عبر واتساب
-                  </a>
-                </Button>
+              {booking.stadium.shamCashId && (
+                <div className="rounded-lg bg-card/80 px-3 py-2 text-xs">
+                  <p className="text-muted-foreground">حساب شام كاش</p>
+                  <p className="font-bold text-heading mt-0.5 tabular-nums" dir="ltr">
+                    {booking.stadium.shamCashId}
+                  </p>
+                </div>
               )}
+              {booking.stadium.shamCashQrImage && (
+                <div className="relative mx-auto aspect-square w-full max-w-[200px] overflow-hidden rounded-xl border border-border bg-white">
+                  <MediaImage
+                    src={booking.stadium.shamCashQrImage}
+                    alt="رمز QR لشام كاش"
+                    fill
+                    className="object-contain p-2"
+                    sizes="200px"
+                  />
+                </div>
+              )}
+              <ConfirmDepositButton
+                bookingId={booking.id}
+                onSuccess={onDepositConfirmed}
+                className="h-10 rounded-xl"
+              />
             </div>
+          )}
+
+        {booking.status === "PENDING" &&
+          booking.depositReferenceCode &&
+          booking.depositPaidAt && (
+            <p className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+              تم تسجيل تأكيدك. صاحب الملعب سيراجع التحويل ويؤكد الحجز قريباً.
+            </p>
           )}
 
         {booking.notes && (

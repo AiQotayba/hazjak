@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoggingIn: false });
 
         if (!res.success) {
-          if (res.code === "EMAIL_NOT_VERIFIED" && res.data && "verificationToken" in res.data) {
+          if (res.code === "PHONE_NOT_VERIFIED" && res.data && "verificationToken" in res.data) {
             set({
               verificationToken: res.data.verificationToken,
               pendingUser: res.data.user,

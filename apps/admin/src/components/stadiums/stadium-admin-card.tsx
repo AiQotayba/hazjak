@@ -21,7 +21,7 @@ export type AdminStadiumRecord = {
   coverImage: string | null;
   isActive: boolean;
   isSuspended: boolean;
-  owner: { id: string; firstName: string; lastName: string; email: string };
+  owner: { id: string; firstName: string; lastName: string; phone: string };
   _count: { bookings: number; reviews: number };
 };
 
@@ -79,7 +79,7 @@ export function StadiumAdminCard({ stadium, selected, onSelect }: StadiumAdminCa
             </span>
           </div>
           <p className="mt-1 text-[10px] text-text-subtle truncate">
-            {stadium.owner.firstName} {stadium.owner.lastName} · {stadium.owner.email}
+            {stadium.owner.firstName} {stadium.owner.lastName} · {stadium.owner.phone}
           </p>
         </div>
       </div>

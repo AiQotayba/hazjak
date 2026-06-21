@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmAlert } from "@/components/ui/confirm-alert";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
 
@@ -79,7 +80,7 @@ function UserFooter({
           <p className="truncate text-sm font-bold text-heading">
             {user?.firstName} {user?.lastName}
           </p>
-          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+          <p className="truncate text-xs text-muted-foreground">{user?.phone}</p>
         </div>
       </Link>
       <Button
@@ -112,15 +113,16 @@ export function DashboardShell({
   const router = useRouter();
   const { logout } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutAlertOpen, setLogoutAlertOpen] = useState(false);
 
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
 
   function handleLogout() {
-    if (!confirm("تسجيل الخروج من حسابك؟")) return;
     logout();
     router.replace("/login");
+    setLogoutAlertOpen(false);
   }
 
   return (
@@ -142,7 +144,7 @@ export function DashboardShell({
         <Separator />
         <SidebarNav nav={nav} pathname={pathname} />
         <Separator />
-        <UserFooter onLogout={handleLogout} profileHref={profileHref} />
+        <UserFooter onLogout={() => setLogoutAlertOpen(true)} profileHref={profileHref} />
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -201,9 +203,18 @@ export function DashboardShell({
             <Separator />
             <SidebarNav nav={nav} pathname={pathname} onNavigate={() => setMenuOpen(false)} />
             <Separator />
-            <UserFooter onLogout={handleLogout} profileHref={profileHref} />
+            <UserFooter onLogout={() => setLogoutAlertOpen(true)} profileHref={profileHref} />
           </DialogContent>
         </Dialog>
+
+        <ConfirmAlert
+          open={logoutAlertOpen}
+          onOpenChange={setLogoutAlertOpen}
+          title="تسجيل الخروج"
+          description="هل تريد تسجيل الخروج من حسابك؟"
+          confirmLabel="خروج"
+          onConfirm={handleLogout}
+        />
 
         <main className="min-h-0 flex-1 overflow-y-auto bg-card md:m-3 md:rounded-3xl md:border md:border-border/60 md:shadow-soft">
           <div

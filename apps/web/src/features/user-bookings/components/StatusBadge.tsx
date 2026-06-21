@@ -10,18 +10,15 @@ import {
   CalendarX2,
   UserX,
   HelpCircle,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
-
-const statusLabel: Record<string, string> = {
-  PENDING: "قيد الانتظار",
-  CONFIRMED: "مؤكد",
-  COMPLETED: "مكتمل",
-  CANCELLED: "ملغى",
-  REJECTED: "مرفوض",
-  EXPIRED: "منتهي",
-  NO_SHOW: "لم يحضر",
-};
+import {
+  getBookingStatusLabel,
+  isAwaitingDeposit,
+  isDepositPaidPendingOwner,
+  type DepositFields,
+} from "@/features/user-bookings/lib/user-bookings";
 
 const statusVariant: Record<string, BadgeProps["variant"]> = {
   PENDING: "warning",
@@ -33,7 +30,6 @@ const statusVariant: Record<string, BadgeProps["variant"]> = {
   NO_SHOW: "secondary",
 };
 
-/** أيقونات تعبّر عن معنى كل حالة بدقة */
 const statusIcon: Record<string, LucideIcon> = {
   PENDING: Hourglass,
   CONFIRMED: ShieldCheck,
@@ -48,16 +44,35 @@ export function StatusBadge({
   status,
   className,
   icon = true,
+  depositReferenceCode,
+  depositPaidAt,
 }: {
   status: string;
   className?: string;
   icon?: boolean;
+  depositReferenceCode?: string | null;
+  depositPaidAt?: string | null;
 }) {
-  const Icon = statusIcon[status] ?? HelpCircle;
+  const depositCtx: DepositFields | undefined =
+    depositReferenceCode !== undefined || depositPaidAt !== undefined
+      ? { status, depositReferenceCode, depositPaidAt }
+      : undefined;
+
+  const label = getBookingStatusLabel(status, depositCtx);
+  const Icon =
+    status === "PENDING" && depositCtx && isAwaitingDeposit(depositCtx)
+      ? Wallet
+      : statusIcon[status] ?? HelpCircle;
+
+  const variant =
+    status === "PENDING" && depositCtx && isDepositPaidPendingOwner(depositCtx)
+      ? "success"
+      : statusVariant[status] ?? "outline";
+
   return (
-    <Badge variant={statusVariant[status] ?? "outline"} className={className}>
+    <Badge variant={variant} className={className}>
       {icon && <Icon className="h-3 w-3 shrink-0 opacity-90" aria-hidden />}
-      {statusLabel[status] ?? status}
+      {label}
     </Badge>
   );
 }

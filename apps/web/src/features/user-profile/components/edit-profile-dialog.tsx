@@ -33,7 +33,7 @@ function profileInitials(user: AuthUser | null) {
   const a = user?.firstName?.charAt(0) ?? "";
   const b = user?.lastName?.charAt(0) ?? "";
   const combined = `${a}${b}`.trim();
-  return combined || user?.email?.charAt(0)?.toUpperCase() || "?";
+  return combined || user?.phone?.slice(-1) || "?";
 }
 
 export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDialogProps) {
@@ -178,7 +178,7 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
         <DialogHeader>
           <DialogTitle>تعديل الملف الشخصي</DialogTitle>
           <DialogDescription>
-            حدّث صورتك واسمك ورقم هاتفك. البريد الإلكتروني لا يمكن تغييره هنا.
+            حدّث صورتك واسمك ورقم هاتفك.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -295,10 +295,6 @@ export function EditProfileDialog({ open, onOpenChange, onSaved }: EditProfileDi
               className="rounded-xl border border-border bg-background px-2 focus-within:ring-2 focus-within:ring-ring"
             />
             {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label>البريد الإلكتروني</Label>
-            <Input value={user?.email ?? ""} disabled className="opacity-60 text-left" dir="ltr" />
           </div>
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
           <DialogFooter className="gap-2 sm:gap-2 pt-2">

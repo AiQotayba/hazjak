@@ -20,6 +20,7 @@ import {
 import { arSA } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatTime } from "@hazjak/utils";
+import { getOwnerBookingDepositHint } from "@/features/user-bookings/lib/user-bookings";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +42,9 @@ export interface OwnerCalendarBooking {
   status: string;
   startTime: string;
   endTime: string;
+  depositAmount?: number | null;
+  depositReferenceCode?: string | null;
+  depositPaidAt?: string | null;
   user: { firstName: string; lastName: string };
 }
 
@@ -301,6 +305,7 @@ function BookingEventPill({
   compact?: boolean;
   onClick: () => void;
 }) {
+  const depositHint = getOwnerBookingDepositHint(booking);
   return (
     <button
       type="button"
@@ -308,6 +313,7 @@ function BookingEventPill({
       className={cn(
         "w-full text-start rounded-md transition-opacity hover:opacity-80",
         compact ? "px-1.5 py-0.5 text-[10px] font-medium truncate" : "px-3 py-2 text-xs font-medium",
+        depositHint ? "ring-1 ring-accent-gold/50" : "",
         EVENT_STYLES[booking.status] ?? "bg-secondary text-heading"
       )}
     >
@@ -317,6 +323,11 @@ function BookingEventPill({
       {!compact && " — "}
       {compact ? " " : null}
       {booking.user.firstName} {booking.user.lastName}
+      {depositHint && (
+        <span className={cn("block opacity-90", compact ? "text-[9px]" : "text-[10px] mt-0.5")}>
+          {depositHint}
+        </span>
+      )}
     </button>
   );
 }

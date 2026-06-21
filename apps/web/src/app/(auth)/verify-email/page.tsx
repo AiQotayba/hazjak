@@ -3,14 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MailCheck } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { verifyOtpSchema } from "@hazjak/validation";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
+import { formatPhoneDisplay } from "@hazjak/utils";
 import {
   AuthError,
   AuthFormShell,
@@ -32,12 +34,13 @@ export default function VerifyEmailPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<VerifyOtpInput>({
     resolver: zodResolver(verifyOtpSchema),
     defaultValues: {
-      email: pendingUser?.email ?? "",
+      phone: pendingUser?.phone ?? "",
     },
   });
 
@@ -60,16 +63,16 @@ export default function VerifyEmailPage() {
     }, 1200);
   }
 
-  const email = pendingUser?.email;
+  const phone = pendingUser?.phone;
 
   return (
     <AuthFormShell
-      icon={MailCheck}
-      title="تحقق من بريدك"
+      icon={MessageCircle}
+      title="تحقق من واتساب"
       description={
-        email
-          ? `أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى ${email}`
-          : "أدخل بريدك ورمز التحقق المرسل إليك"
+        phone
+          ? `أدخل رمز التحقق المكوّن من 6 أرقام المرسل إلى ${formatPhoneDisplay(phone)}`
+          : "أدخل رقم هاتفك ورمز التحقق المرسل عبر واتساب"
       }
       footer={
         !pendingUser && (
@@ -85,18 +88,23 @@ export default function VerifyEmailPage() {
         <AuthSuccess message="تم التحقق بنجاح — جاري التحويل..." />
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {!email && (
+          {!phone && (
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input
-                id="email"
-                type="email"
-                className={authInputClass}
-                dir="ltr"
-                {...register("email")}
+              <Label htmlFor="phone">رقم الهاتف</Label>
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <PhoneNumberInput
+                    id="phone"
+                    value={field.value}
+                    onChange={field.onChange}
+                    className={authInputClass}
+                  />
+                )}
               />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
+              {errors.phone && (
+                <p className="text-xs text-destructive">{errors.phone.message}</p>
               )}
             </div>
           )}

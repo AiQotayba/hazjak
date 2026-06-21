@@ -8,7 +8,7 @@ import { omitPassword } from "@hazjak/utils";
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    email: string;
+    phone: string;
     role: Role;
     firstName: string;
     lastName: string;
@@ -31,15 +31,15 @@ export async function authenticate(
 
   try {
     const payload = verifyAccessToken(token);
-    if (payload.purpose === "email_verification") {
-      return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403);
+    if (payload.purpose === "phone_verification") {
+      return sendError(res, "يجب التحقق من رقم هاتفك أولاً", 403);
     }
     const user = await prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user || user.isBanned) {
       return sendError(res, "حساب غير صالح", 401);
     }
-    if (!user.isEmailVerified) {
-      return sendError(res, "يجب التحقق من بريدك الإلكتروني أولاً", 403);
+    if (!user.isPhoneVerified) {
+      return sendError(res, "يجب التحقق من رقم هاتفك أولاً", 403);
     }
     req.user = omitPassword(user) as AuthRequest["user"];
     next();

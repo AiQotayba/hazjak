@@ -13,6 +13,7 @@ import {
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BookingStats } from "@/features/user-bookings/lib/user-bookings";
+import { isAwaitingDeposit } from "@/features/user-bookings/lib/user-bookings";
 import { cn } from "@/lib/utils";
 
 interface ProfileBookingStatsProps {
@@ -36,6 +37,8 @@ export function ProfileBookingStats({ stats, loading }: ProfileBookingStatsProps
   }
 
   if (!stats) return null;
+
+  const nextNeedsDeposit = stats.nextBooking ? isAwaitingDeposit(stats.nextBooking) : false;
 
   const tiles = [
     {
@@ -101,10 +104,22 @@ export function ProfileBookingStats({ stats, loading }: ProfileBookingStatsProps
           )}
         </ul>
       )}
+      {nextNeedsDeposit && (
+        <Link
+          href={`/user/bookings?booking=${stats.nextBooking!.id}`}
+          className="mt-3 block rounded-2xl border border-accent-gold/50 bg-accent/40 px-4 py-3 text-sm text-heading leading-relaxed shadow-soft hover:shadow-card transition-shadow"
+        >
+          <span className="font-bold">أكّد دفع العربون</span> — ادفع عبر شام كاش ثم أكّد من صفحة
+          الحجز لإتمام حجزك في {stats.nextBooking!.stadium.name}.
+        </Link>
+      )}
       {stats.nextBooking ? (
         <Link
           href={`/user/bookings?booking=${stats.nextBooking.id}`}
-          className="mt-3 block rounded-2xl border border-primary/15 bg-gradient-to-l from-primary/10 to-section-alt p-4 shadow-soft transition-all hover:shadow-card hover:border-primary/30"
+          className={cn(
+            "mt-3 block rounded-2xl border border-primary/15 bg-gradient-to-l from-primary/10 to-section-alt p-4 shadow-soft transition-all hover:shadow-card hover:border-primary/30",
+            nextNeedsDeposit && "ring-2 ring-accent-gold/40"
+          )}
         >
           <p className="text-[10px] font-bold text-primary mb-1.5">أقرب حجز لك</p>
           <p className="text-base font-bold text-heading truncate">{stats.nextBooking.stadium.name}</p>

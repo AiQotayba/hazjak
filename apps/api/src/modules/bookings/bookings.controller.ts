@@ -1,6 +1,6 @@
 ﻿import type { Response } from "express";
 import { prisma } from "../../db";
-import { getPagination, buildMeta, buildTableOrderBy, isMorningSlot } from "@hazjak/utils";
+import { getPagination, buildMeta, buildTableOrderBy, formatDate } from "@hazjak/utils";
 import {
   createBookingSchema,
   updateBookingStatusSchema,
@@ -11,21 +11,27 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { icontains } from "../../utils/prisma-search";
-import { notifyBookingStatus } from "../../services/notification.service";
-import { sendEmail } from "../../services/email/email.service";
-import {
-  bookingConfirmedEmail,
-  bookingRejectedEmail,
-  depositRequestEmail,
-} from "../../services/email/templates";
+import { notifyBookingStatus, createNotification } from "../../services/notification.service";
+import { activateDepositRequest } from "../../services/booking-deposit.service";
 import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { calculatePrice } from "../stadiums/stadiums.controller";
 import {
   computeDaySlots,
-  generateDepositReferenceCode,
   localDateKey,
   localTimeValue,
 } from "../../utils/booking-slots";
+import {
+  assertStatusTransition,
+  expireStaleDepositBookings,
+  isAwaitingDeposit,
+} from "../../utils/booking-lifecycle";
+import {
+  sendWhatsAppMessage,
+} from "../../services/whatsapp/whatsapp.service";
+import {
+  bookingConfirmedWhatsAppMessage,
+  depositPaidOwnerWhatsAppMessage,
+} from "../../services/whatsapp/messages";
 
 async function hasConflict(
   stadiumId: string,
@@ -118,7 +124,7 @@ export async function createBooking(req: AuthRequest, res: Response) {
     start
   );
 
-  const depositReferenceCode = null;
+  const hasDeposit = !!(stadium.depositAmount && stadium.depositAmount > 0);
 
   const booking = await prisma.booking.create({
     data: {
@@ -128,29 +134,50 @@ export async function createBooking(req: AuthRequest, res: Response) {
       endTime: end,
       totalPrice,
       depositAmount: stadium.depositAmount,
-      depositReferenceCode,
+      depositReferenceCode: null,
       notes: body.notes,
       status: "PENDING",
     },
     include: {
       stadium: { select: { name: true, ownerId: true, shamCashId: true, shamCashQrImage: true } },
-      user: { select: { email: true } },
+      user: { select: { phone: true } },
     },
   });
 
-  await notifyBookingStatus(req.user!.id, booking.stadium.name, "PENDING", booking.id);
-  await notifyBookingStatus(
+  await createNotification(
     booking.stadium.ownerId,
-    booking.stadium.name,
-    "PENDING",
+    "طلب حجز جديد",
+    `وصل طلب حجز جديد لملعب ${booking.stadium.name}. راجع الطلب من لوحة الحجوزات.`,
+    "BOOKING_PENDING",
     booking.id
   );
 
-  if (booking.depositAmount && booking.depositAmount > 0 && booking.depositReferenceCode) {
-    // يُرسل طلب العربون عند قبول المالك مع طلب عربون — وليس عند إنشاء الطلب.
+  if (hasDeposit) {
+    await activateDepositRequest({
+      bookingId: booking.id,
+      userId: req.user!.id,
+      depositAmount: stadium.depositAmount!,
+      stadium: booking.stadium,
+      user: booking.user,
+    });
+    const fresh = await prisma.booking.findUnique({
+      where: { id: booking.id },
+      include: {
+        stadium: { select: { name: true, ownerId: true, shamCashId: true, shamCashQrImage: true } },
+        user: { select: { phone: true } },
+      },
+    });
+    return sendSuccess(
+      res,
+      fresh,
+      `تم الحجز — ادفع العربون خلال ${BOOKING_EXPIRATION_MIN} دقيقة عبر شام كاش (ستصلك التعليمات على واتساب)`,
+      201
+    );
   }
 
-  return sendSuccess(res, booking, "تم إرسال طلب الحجز", 201);
+  await notifyBookingStatus(req.user!.id, booking.stadium.name, "PENDING", booking.id);
+
+  return sendSuccess(res, booking, "تم إرسال طلب الحجز — بانتظار رد صاحب الملعب", 201);
 }
 
 export async function createOwnerManualBooking(req: AuthRequest, res: Response) {
@@ -188,7 +215,7 @@ export async function createOwnerManualBooking(req: AuthRequest, res: Response) 
     },
     include: {
       stadium: { select: { name: true } },
-      user: { select: { firstName: true, lastName: true, email: true, phone: true } },
+      user: { select: { firstName: true, lastName: true, phone: true } },
     },
   });
 
@@ -204,6 +231,7 @@ const BOOKING_SORT_FIELDS = [
 ] as const;
 
 export async function listBookings(req: AuthRequest, res: Response) {
+  await expireStaleDepositBookings();
   const query = bookingListQuerySchema.parse(req.query);
   const { page, limit, skip } = getPagination(query.page, query.limit);
   const { status, stadiumId, search, sort_field, sort_order } = query;
@@ -229,7 +257,7 @@ export async function listBookings(req: AuthRequest, res: Response) {
       { stadium: { city: icontains(q) } },
       { user: { firstName: icontains(q) } },
       { user: { lastName: icontains(q) } },
-      { user: { email: icontains(q) } },
+      { user: { phone: icontains(q) } },
       { notes: icontains(q) },
     ];
   }
@@ -256,7 +284,7 @@ export async function listBookings(req: AuthRequest, res: Response) {
           },
         },
         user: {
-          select: { id: true, firstName: true, lastName: true, email: true, phone: true },
+          select: { id: true, firstName: true, lastName: true, phone: true },
         },
       },
     }),
@@ -282,6 +310,7 @@ export async function listBookings(req: AuthRequest, res: Response) {
 }
 
 export async function getBooking(req: AuthRequest, res: Response) {
+  await expireStaleDepositBookings();
   const id = param(req, "id");
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -315,7 +344,76 @@ export async function getBooking(req: AuthRequest, res: Response) {
   });
 }
 
+export async function confirmDeposit(req: AuthRequest, res: Response) {
+  await expireStaleDepositBookings();
+  const id = param(req, "id");
+
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    include: {
+      stadium: {
+        select: {
+          name: true,
+          ownerId: true,
+          contactWhatsapp: true,
+          owner: { select: { phone: true, firstName: true } },
+        },
+      },
+      user: { select: { firstName: true, lastName: true, phone: true } },
+    },
+  });
+
+  if (!booking) return sendError(res, "الحجز غير موجود", 404);
+  if (booking.userId !== req.user!.id) return sendError(res, "غير مصرح", 403);
+  if (!isAwaitingDeposit(booking)) {
+    return sendError(res, "لا يوجد عربون بانتظار التأكيد", 400);
+  }
+
+  const updated = await prisma.booking.update({
+    where: { id },
+    data: { depositPaidAt: new Date() },
+    include: {
+      stadium: true,
+      user: { select: { id: true, firstName: true, lastName: true, phone: true } },
+    },
+  });
+
+  const playerName = `${booking.user.firstName} ${booking.user.lastName}`;
+  await createNotification(
+    booking.stadium.ownerId,
+    "اللاعب أكّد دفع العربون",
+    `${playerName} أكّد دفع العربون لحجز ${booking.stadium.name}. راجع التحويل ثم أكّد الحجز.`,
+    "DEPOSIT_REMINDER",
+    booking.id
+  );
+
+  const ownerPhone =
+    booking.stadium.contactWhatsapp ?? booking.stadium.owner.phone ?? null;
+  if (ownerPhone && booking.depositReferenceCode) {
+    const msg = depositPaidOwnerWhatsAppMessage({
+      playerName,
+      stadiumName: booking.stadium.name,
+      referenceCode: booking.depositReferenceCode,
+    });
+    await sendWhatsAppMessage(ownerPhone, msg);
+  }
+
+  return sendSuccess(
+    res,
+    {
+      ...updated,
+      stadium: {
+        ...updated.stadium,
+        contactPhone: undefined,
+        contactWhatsapp: undefined,
+      },
+    },
+    "تم استلام إبلاغك — صاحب الملعب سيراجع التحويل ويؤكد الحجز"
+  );
+}
+
 export async function updateStatus(req: AuthRequest, res: Response) {
+  await expireStaleDepositBookings();
   const { status, cancelledReason, requireDeposit } = updateBookingStatusSchema.parse(req.body);
   const id = param(req, "id");
   const booking = await prisma.booking.findUnique({
@@ -331,7 +429,7 @@ export async function updateStatus(req: AuthRequest, res: Response) {
           contactWhatsapp: true,
         },
       },
-      user: { select: { email: true, phone: true } },
+      user: { select: { phone: true, firstName: true, lastName: true } },
     },
   });
   if (!booking) return sendError(res, "الحجز غير موجود", 404);
@@ -349,48 +447,47 @@ export async function updateStatus(req: AuthRequest, res: Response) {
 
   if (requireDeposit) {
     if (!isOwner && !isAdmin) return sendError(res, "غير مصرح", 403);
-    if (booking.status !== "PENDING") {
-      return sendError(res, "لا يمكن طلب عربون لهذا الحجز", 400);
+    try {
+      assertStatusTransition(booking, status, { requireDeposit: true });
+    } catch (e) {
+      return sendError(res, e instanceof Error ? e.message : "انتقال غير مسموح", 400);
     }
+
     const depositAmount = booking.stadium.depositAmount;
     if (!depositAmount || depositAmount <= 0) {
       return sendError(res, "لا يوجد عربون مُعرّف للملعب", 400);
     }
 
-    const depositReferenceCode =
-      booking.depositReferenceCode ?? generateDepositReferenceCode();
+    await activateDepositRequest({
+      bookingId: booking.id,
+      userId: booking.userId,
+      depositAmount,
+      referenceCode: booking.depositReferenceCode,
+      stadium: booking.stadium,
+      user: booking.user,
+    });
 
-    const updated = await prisma.booking.update({
+    const updated = await prisma.booking.findUnique({
       where: { id },
-      data: {
-        status: "PENDING",
-        depositAmount,
-        depositReferenceCode,
-      },
       include: {
         stadium: {
           select: { name: true, shamCashId: true, shamCashQrImage: true, contactWhatsapp: true },
         },
-        user: { select: { email: true, phone: true } },
+        user: { select: { phone: true } },
       },
     });
-
-    await notifyBookingStatus(booking.userId, updated.stadium.name, "PENDING", booking.id);
-
-    const tpl = depositRequestEmail({
-      stadiumName: updated.stadium.name,
-      depositAmount,
-      referenceCode: depositReferenceCode,
-      shamCashId: updated.stadium.shamCashId,
-      shamCashQrImage: updated.stadium.shamCashQrImage,
-    });
-    sendEmail({ to: updated.user.email, ...tpl });
 
     return sendSuccess(
       res,
       updated,
-      `تم طلب العربون — لدى اللاعب ${BOOKING_EXPIRATION_MIN} دقيقة لإتمام الدفع`
+      `أُرسلت تعليمات العربون للاعب (${BOOKING_EXPIRATION_MIN} دقيقة لإتمام الدفع)`
     );
+  }
+
+  try {
+    assertStatusTransition(booking, status);
+  } catch (e) {
+    return sendError(res, e instanceof Error ? e.message : "انتقال غير مسموح", 400);
   }
 
   const updated = await prisma.booking.update({
@@ -398,25 +495,25 @@ export async function updateStatus(req: AuthRequest, res: Response) {
     data: { status, cancelledReason },
     include: {
       stadium: { select: { name: true, shamCashId: true } },
-      user: { select: { email: true } },
+      user: { select: { phone: true } },
     },
   });
 
   await notifyBookingStatus(booking.userId, updated.stadium.name, status, booking.id);
 
-  if (status === "CONFIRMED") {
-    const tpl = bookingConfirmedEmail({
-      stadiumName: updated.stadium.name,
-      startTime: booking.startTime,
-      endTime: booking.endTime,
-      totalPrice: booking.totalPrice,
+  if (status === "CONFIRMED" && updated.user.phone) {
+    const startLabel = formatDate(booking.startTime, {
+      dateStyle: "medium",
+      timeStyle: "short",
     });
-    sendEmail({ to: updated.user.email, ...tpl });
-  }
-
-  if (status === "REJECTED") {
-    const tpl = bookingRejectedEmail(updated.stadium.name);
-    sendEmail({ to: updated.user.email, ...tpl });
+    await sendWhatsAppMessage(
+      updated.user.phone,
+      bookingConfirmedWhatsAppMessage({
+        stadiumName: updated.stadium.name,
+        startLabel,
+        totalPrice: booking.totalPrice,
+      })
+    );
   }
 
   return sendSuccess(res, updated, "تم تحديث حالة الحجز");

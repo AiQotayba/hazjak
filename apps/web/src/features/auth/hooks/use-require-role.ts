@@ -8,14 +8,14 @@ import { useAuthStore } from "@/features/auth/store/auth";
 export function useRequireRole(role: Role, loginPath = "/login") {
   const { token, user } = useAuthStore();
   const router = useRouter();
-  const ready = !!token && user?.role === role && user.isEmailVerified;
+  const ready = !!token && user?.role === role && user.isPhoneVerified;
 
   useEffect(() => {
     if (!token || user?.role !== role) {
       router.replace(loginPath);
       return;
     }
-    if (!user.isEmailVerified) {
+    if (!user.isPhoneVerified) {
       router.replace("/verify-email");
     }
   }, [token, user, role, router, loginPath]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Search } from "lucide-react";
@@ -26,11 +26,28 @@ import {
 } from "@/components/layout/app-nav";
 import { cn } from "@/lib/utils";
 
+function useIsLocalHost() {
+  const [isLocal, setIsLocal] = useState(false);
+
+  useEffect(() => {
+    const { hostname } = window.location;
+    setIsLocal(
+      hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname === "[::1]" ||
+        hostname.endsWith(".local")
+    );
+  }, []);
+
+  return isLocal;
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, token, logout } = useAuthStore();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const isLocal = useIsLocalHost();
 
   const stadiumsHref = stadiumsHrefForRole(user?.role);
   const accountNav =
@@ -120,15 +137,17 @@ export function SiteHeader() {
             <InstallAppButton />
 
             {token && user ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive"
-                onClick={() => setLogoutOpen(true)}
-                aria-label="تسجيل الخروج"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              isLocal ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-9 w-9 text-muted-foreground hover:text-destructive"
+                  onClick={() => setLogoutOpen(true)}
+                  aria-label="تسجيل الخروج"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              ) : null
             ) : (
               <>
                 <Button variant="ghost" size="sm" className="rounded-full hidden sm:inline-flex" asChild>

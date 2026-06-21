@@ -3,15 +3,15 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
 import { loginSchema, type LoginInput } from "@hazjak/validation";
 import { APP_MOTTO_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { AuthFormShell, authInputClass } from "@/features/auth/components/auth-form-shell";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { redirectAfterLogin, useRedirectIfAuthenticated } from "@/features/auth";
@@ -33,7 +33,7 @@ function LoginPageContent() {
   const clearLoginError = useAuthStore((s) => s.clearLoginError);
   const { hydrated, isAuthenticated } = useRedirectIfAuthenticated();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
+  const { control, register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -71,18 +71,21 @@ function LoginPageContent() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">البريد الإلكتروني</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="name@example.com"
-            className={authInputClass}
-            dir="ltr"
-            {...register("email")}
+          <Label htmlFor="phone">رقم الهاتف</Label>
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <PhoneNumberInput
+                id="phone"
+                value={field.value}
+                onChange={field.onChange}
+                className={authInputClass}
+              />
+            )}
           />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email.message}</p>
+          {errors.phone && (
+            <p className="text-xs text-destructive">{errors.phone.message}</p>
           )}
         </div>
         <div className="space-y-2">

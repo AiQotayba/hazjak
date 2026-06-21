@@ -9,7 +9,7 @@ import { BookingsFilters } from "@/features/user-bookings/components/bookings-fi
 import { BookingListItem } from "@/features/user-bookings/components/booking-list-item";
 import { BookingDetailDialog } from "@/features/user-bookings/components/booking-detail-dialog";
 import { UserBookingsHero } from "@/features/user-bookings/components/user-bookings-hero";
-import { ARCHIVED_BOOKING_STATUSES } from "@/features/user-bookings/lib/user-bookings";
+import { ARCHIVED_BOOKING_STATUSES, isAwaitingDeposit, sortUpcomingBookings } from "@/features/user-bookings/lib/user-bookings";
 import {
   useUserBookingsQuery,
   useUserBookingsUpcomingCount,
@@ -38,7 +38,7 @@ function UserBookingsContent() {
 
   const isArchived = (s: string) =>
     (ARCHIVED_BOOKING_STATUSES as readonly string[]).includes(s);
-  const upcoming = bookings.filter((b) => !isArchived(b.status));
+  const upcoming = sortUpcomingBookings(bookings.filter((b) => !isArchived(b.status)));
   const past = bookings.filter((b) => isArchived(b.status));
 
   function openDetail(id: string) {
@@ -55,13 +55,21 @@ function UserBookingsContent() {
     router.replace(qs ? `/user/bookings?${qs}` : "/user/bookings", { scroll: false });
   }
 
-  function handleCancelled() {
+  function handleBookingsChange() {
     queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
   }
+
+  const depositDueCount = upcoming.filter((b) => isAwaitingDeposit(b)).length;
 
   return (
     <>
       <UserBookingsHero firstName={user?.firstName} upcomingCount={upcomingCount} />
+      {depositDueCount > 0 && (
+        <p className="mb-4 rounded-2xl border border-accent-gold/40 bg-accent/40 px-4 py-3 text-sm text-heading leading-relaxed">
+          لديك {depositDueCount === 1 ? "حجز يحتاج" : `${depositDueCount} حجوزات تحتاج`} دفع
+          العربون. ستجد تعليمات شام كاش على واتساب — بعد الدفع اضغط «أبلغنا بدفع العربون».
+        </p>
+      )}
       <BookingsFilters />
 
       {loading ? (
@@ -85,7 +93,11 @@ function UserBookingsContent() {
               <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
                 {upcoming.map((b) => (
                   <li key={b.id}>
-                    <BookingListItem booking={b} onPress={() => openDetail(b.id)} />
+                    <BookingListItem
+                      booking={b}
+                      onPress={() => openDetail(b.id)}
+                      onDepositConfirmed={handleBookingsChange}
+                    />
                   </li>
                 ))}
               </ul>
@@ -97,7 +109,11 @@ function UserBookingsContent() {
               <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
                 {past.map((b) => (
                   <li key={b.id}>
-                    <BookingListItem booking={b} onPress={() => openDetail(b.id)} />
+                    <BookingListItem
+                      booking={b}
+                      onPress={() => openDetail(b.id)}
+                      onDepositConfirmed={handleBookingsChange}
+                    />
                   </li>
                 ))}
               </ul>
@@ -110,7 +126,8 @@ function UserBookingsContent() {
         bookingId={bookingId}
         open={!!bookingId}
         onOpenChange={handleDetailOpenChange}
-        onCancelled={handleCancelled}
+        onCancelled={handleBookingsChange}
+        onUpdated={handleBookingsChange}
       />
     </>
   );

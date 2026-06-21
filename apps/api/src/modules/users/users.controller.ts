@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { env } from "@hazjak/config";
 import { prisma } from "../../db";
-import { getPagination, buildMeta, buildTableOrderBy, omitPassword } from "@hazjak/utils";
+import { getPagination, buildMeta, buildTableOrderBy, omitPassword, normalizePhone } from "@hazjak/utils";
 import { userListQuerySchema } from "@hazjak/validation";
 import { updateProfileSchema } from "@hazjak/validation";
 import type { AuthRequest } from "../../middlewares/auth";
@@ -32,7 +32,7 @@ function tryDeleteLocalAvatar(avatarUrl: string | null | undefined) {
 const USER_SORT_FIELDS = [
   "firstName",
   "lastName",
-  "email",
+  "phone",
   "role",
   "isBanned",
   "createdAt",
@@ -49,7 +49,7 @@ export async function listUsers(req: AuthRequest, res: Response) {
       OR: [
         { firstName: icontains(search) },
         { lastName: icontains(search) },
-        { email: icontains(search) },
+        { phone: icontains(search) },
       ],
     }),
   };
@@ -66,10 +66,9 @@ export async function listUsers(req: AuthRequest, res: Response) {
         id: true,
         firstName: true,
         lastName: true,
-        email: true,
         phone: true,
         role: true,
-        isEmailVerified: true,
+        isPhoneVerified: true,
         isBanned: true,
         createdAt: true,
       },
@@ -96,9 +95,14 @@ export async function updateUser(req: AuthRequest, res: Response) {
     tryDeleteLocalAvatar(current?.avatar);
   }
 
+  const data = { ...body };
+  if (body.phone !== undefined) {
+    data.phone = normalizePhone(body.phone);
+  }
+
   const user = await prisma.user.update({
     where: { id },
-    data: body,
+    data,
   });
   return sendSuccess(res, omitPassword(user));
 }
@@ -129,7 +133,7 @@ export async function banUser(req: AuthRequest, res: Response) {
   const user = await prisma.user.update({
     where: { id: param(req, "id") },
     data: { isBanned: !!isBanned },
-    select: { id: true, email: true, isBanned: true },
+    select: { id: true, phone: true, isBanned: true },
   });
   return sendSuccess(res, user);
 }
@@ -139,7 +143,7 @@ export async function changeRole(req: AuthRequest, res: Response) {
   const user = await prisma.user.update({
     where: { id: param(req, "id") },
     data: { role },
-    select: { id: true, email: true, role: true },
+    select: { id: true, phone: true, role: true },
   });
   return sendSuccess(res, user);
 }

@@ -21,7 +21,7 @@ type OwnerBooking = {
   id: string;
   status: string;
   stadium: { name: string };
-  user: { firstName: string; lastName: string; email?: string; phone?: string | null };
+  user: { firstName: string; lastName: string; phone: string };
   startTime: string;
   endTime?: string;
   totalPrice?: number;

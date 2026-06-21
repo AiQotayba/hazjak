@@ -78,7 +78,7 @@ export function StadiumDetailDialog({
             <p className="font-bold">
               {stadium.owner.firstName} {stadium.owner.lastName}
             </p>
-            <p className="text-xs text-muted-foreground">{stadium.owner.email}</p>
+            <p className="text-xs text-muted-foreground">{stadium.owner.phone}</p>
           </div>
 
           {stadium.contactPhone && (

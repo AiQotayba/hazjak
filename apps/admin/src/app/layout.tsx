@@ -1,12 +1,7 @@
-﻿import { Tajawal } from "next/font/google";
+﻿import "@fontsource/tajawal/400.css";
+import "@fontsource/tajawal/700.css";
 import { Providers } from "./providers";
 import "./globals.css";
-
-const tajawal = Tajawal({
-  subsets: ["arabic"],
-  weight: ["400", "700"],
-  variable: "--font-tajawal",
-});
 
 export const metadata = {
   title: "حجزك | لوحة الإدارة",
@@ -14,7 +9,7 @@ export const metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
+    <html lang="ar" dir="rtl">
       <body className="min-h-dvh antialiased">
         <Providers>{children}</Providers>
       </body>

@@ -54,12 +54,11 @@ model User {
   id              String           @id @default(uuid())
   firstName       String
   lastName        String
-  email           String           @unique
-  phone           String?
+  phone           String           @unique
   password        String
   avatar          String?
   role            Role             @default(USER)
-  isEmailVerified Boolean          @default(false)
+  isPhoneVerified Boolean          @default(false)
   isBanned        Boolean          @default(false)
   otpCode         String?
   otpExpiresAt    DateTime?
@@ -157,6 +156,8 @@ model Booking {
   totalPrice      Float
   depositAmount         Float?
   depositReferenceCode  String?
+  depositRequestedAt    DateTime?
+  depositPaidAt         DateTime?
   status                BookingStatus @default(PENDING)
   notes                 String?
   cancelledReason String?

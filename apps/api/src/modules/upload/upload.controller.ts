@@ -7,7 +7,9 @@ import { sendError, sendSuccess } from "../../utils/response";
 function uploadPublicUrl(subdir: string, filename: string) {
   const base =
     process.env.API_PUBLIC_URL?.replace(/\/$/, "") ?? `http://localhost:${env.apiPort}`;
-  return `${base}/uploads/${subdir}/${filename}`;
+  // Relative path is also returned so clients can resolve against current API_PUBLIC_URL
+  const relative = `/uploads/${subdir}/${filename}`;
+  return `${base}${relative}`;
 }
 
 export async function uploadImage(req: AuthRequest, res: Response) {

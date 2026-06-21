@@ -46,11 +46,10 @@ export interface AuthUser {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
-  phone?: string | null;
+  phone: string;
   avatar?: string | null;
   role: Role;
-  isEmailVerified: boolean;
+  isPhoneVerified: boolean;
 }
 
 export interface AuthTokens {

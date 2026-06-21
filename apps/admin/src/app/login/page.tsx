@@ -12,7 +12,7 @@ import type { AuthTokens } from "@hazjak/types";
 export default function AdminLoginPage() {
   const { token, user, setAuth } = useAuthStore();
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
     try {
       const res = await api<AuthTokens>("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ phone, password }),
       });
       if (!res.success || !res.data) {
         setError(res.message || "فشل تسجيل الدخول");
@@ -54,12 +54,14 @@ export default function AdminLoginPage() {
         <p className="text-sm text-text-muted text-center mb-8">لوحة الإدارة</p>
         <form onSubmit={login} className="space-y-4">
           <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="البريد الإلكتروني"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="رقم الهاتف"
             required
-            autoComplete="email"
+            autoComplete="tel"
+            dir="ltr"
+            className="text-start"
           />
           <Input
             type="password"

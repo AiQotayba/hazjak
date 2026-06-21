@@ -28,14 +28,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ConfirmAlert } from "@/components/ui/confirm-alert";
 import {
   Select,
   SelectContent,
@@ -547,30 +540,20 @@ function DataTableInner<T extends object>({
         </div>
       )}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{deleteTitle}</DialogTitle>
-            <DialogDescription>
-              {selectedRow && deleteDescription
-                ? deleteDescription(selectedRow)
-                : "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-            >
-              إلغاء
-            </Button>
-            <Button variant="danger" onClick={handleDeleteConfirm} disabled={isDeleting}>
-              {isDeleting ? "جاري الحذف..." : "حذف"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmAlert
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={deleteTitle}
+        description={
+          selectedRow && deleteDescription
+            ? deleteDescription(selectedRow)
+            : "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء."
+        }
+        confirmLabel="حذف"
+        destructive
+        loading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

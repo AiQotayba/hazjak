@@ -28,7 +28,7 @@ export async function adminListNotifications(req: AuthRequest, res: Response) {
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
-      user: { select: { firstName: true, lastName: true, email: true } },
+      user: { select: { firstName: true, lastName: true, phone: true } },
     },
   });
   return sendSuccess(res, { notifications, unread: notifications.filter((n) => !n.isRead).length });

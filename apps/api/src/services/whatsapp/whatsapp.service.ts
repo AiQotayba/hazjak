@@ -111,23 +111,33 @@ async function getSendMedia(payload: ReturnType<typeof mediaPayload>): Promise<W
   }
 }
 
-export async function sendWhatsAppMessage(number: string, message: string) {
+type SendMessageOptions = { timeoutMs?: number };
+
+export async function sendWhatsAppMessage(
+  number: string,
+  message: string,
+  options?: SendMessageOptions
+) {
+  const timeoutMs = options?.timeoutMs ?? 45_000;
+
   if (!isConfigured()) {
     console.info("[whatsapp] skipped (not configured):", message.slice(0, 80));
     return { ok: false as const, skipped: true };
   }
 
+  const payload = {
+    api_key: env.whatsappApiKey,
+    sender: env.whatsappSender,
+    number: normalizeWhatsAppNumber(number),
+    message,
+  };
+
   try {
     const res = await fetch(`${env.whatsappApiBase}/send-message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        api_key: env.whatsappApiKey,
-        sender: env.whatsappSender,
-        number: normalizeWhatsAppNumber(number),
-        message,
-      }),
-      signal: AbortSignal.timeout(15_000),
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     const result = await parseWhatsAppResponse(res);
@@ -141,6 +151,15 @@ export async function sendWhatsAppMessage(number: string, message: string) {
     console.error("[whatsapp] send-message error:", err);
     return { ok: false as const, skipped: false };
   }
+}
+
+/** إرسال غير متزامن — لا يعطّل طلب HTTP */
+export function sendWhatsAppMessageAsync(number: string, message: string) {
+  void sendWhatsAppMessage(number, message, { timeoutMs: 60_000 }).then((result) => {
+    if (!result.ok && !result.skipped) {
+      console.warn("[whatsapp] async message not delivered to", normalizeWhatsAppNumber(number));
+    }
+  });
 }
 
 export async function sendWhatsAppImage(

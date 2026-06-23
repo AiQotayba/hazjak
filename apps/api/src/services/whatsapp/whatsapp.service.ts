@@ -67,65 +67,99 @@ function mediaPayload(number: string, url: string, caption: string) {
 }
 
 async function postSendMedia(payload: ReturnType<typeof mediaPayload>): Promise<WhatsAppApiResult> {
-  const res = await fetch(`${env.whatsappApiBase}/send-media`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(60_000),
-  });
-  const result = await parseWhatsAppResponse(res);
-  if (!result.ok) {
-    console.error("[whatsapp] send-media POST failed:", result.msg ?? res.status);
+  try {
+    const res = await fetch(`${env.whatsappApiBase}/send-media`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(45_000),
+    });
+    const result = await parseWhatsAppResponse(res);
+    if (!result.ok) {
+      console.error("[whatsapp] send-media POST failed:", result.msg ?? res.status);
+    }
+    return result;
+  } catch (err) {
+    console.error("[whatsapp] send-media POST error:", err);
+    return { ok: false, skipped: false };
   }
-  return result;
 }
 
 /** GET fallback — مطابق لـ api.docx.md */
 async function getSendMedia(payload: ReturnType<typeof mediaPayload>): Promise<WhatsAppApiResult> {
-  const params = new URLSearchParams({
-    api_key: payload.api_key,
-    sender: payload.sender,
-    number: payload.number,
-    media_type: payload.media_type,
-    caption: payload.caption,
-    url: payload.url,
-  });
+  try {
+    const params = new URLSearchParams({
+      api_key: payload.api_key,
+      sender: payload.sender,
+      number: payload.number,
+      media_type: payload.media_type,
+      caption: payload.caption,
+      url: payload.url,
+    });
 
-  const res = await fetch(`${env.whatsappApiBase}/send-media?${params}`, {
-    signal: AbortSignal.timeout(60_000),
-  });
-  const result = await parseWhatsAppResponse(res);
-  if (!result.ok) {
-    console.error("[whatsapp] send-media GET failed:", result.msg ?? res.status);
+    const res = await fetch(`${env.whatsappApiBase}/send-media?${params}`, {
+      signal: AbortSignal.timeout(45_000),
+    });
+    const result = await parseWhatsAppResponse(res);
+    if (!result.ok) {
+      console.error("[whatsapp] send-media GET failed:", result.msg ?? res.status);
+    }
+    return result;
+  } catch (err) {
+    console.error("[whatsapp] send-media GET error:", err);
+    return { ok: false, skipped: false };
   }
-  return result;
 }
 
-export async function sendWhatsAppMessage(number: string, message: string) {
+type SendMessageOptions = { timeoutMs?: number };
+
+export async function sendWhatsAppMessage(
+  number: string,
+  message: string,
+  options?: SendMessageOptions
+) {
+  const timeoutMs = options?.timeoutMs ?? 45_000;
+
   if (!isConfigured()) {
     console.info("[whatsapp] skipped (not configured):", message.slice(0, 80));
     return { ok: false as const, skipped: true };
   }
 
-  const res = await fetch(`${env.whatsappApiBase}/send-message`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      api_key: env.whatsappApiKey,
-      sender: env.whatsappSender,
-      number: normalizeWhatsAppNumber(number),
-      message,
-    }),
-    signal: AbortSignal.timeout(30_000),
-  });
+  const payload = {
+    api_key: env.whatsappApiKey,
+    sender: env.whatsappSender,
+    number: normalizeWhatsAppNumber(number),
+    message,
+  };
 
-  const result = await parseWhatsAppResponse(res);
-  if (!result.ok) {
-    console.error("[whatsapp] send-message failed:", result.msg ?? res.status);
+  try {
+    const res = await fetch(`${env.whatsappApiBase}/send-message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
+    const result = await parseWhatsAppResponse(res);
+    if (!result.ok) {
+      console.error("[whatsapp] send-message failed:", result.msg ?? res.status);
+      return { ok: false as const, skipped: false };
+    }
+
+    return { ok: true as const, skipped: false };
+  } catch (err) {
+    console.error("[whatsapp] send-message error:", err);
     return { ok: false as const, skipped: false };
   }
+}
 
-  return { ok: true as const, skipped: false };
+/** إرسال غير متزامن — لا يعطّل طلب HTTP */
+export function sendWhatsAppMessageAsync(number: string, message: string) {
+  void sendWhatsAppMessage(number, message, { timeoutMs: 60_000 }).then((result) => {
+    if (!result.ok && !result.skipped) {
+      console.warn("[whatsapp] async message not delivered to", normalizeWhatsAppNumber(number));
+    }
+  });
 }
 
 export async function sendWhatsAppImage(

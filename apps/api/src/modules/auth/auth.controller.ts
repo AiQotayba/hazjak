@@ -12,7 +12,7 @@ import {
 import type { AuthRequest } from "../../middlewares/auth";
 import { signAccessToken, signRefreshToken, signVerificationToken } from "../../utils/jwt";
 import { sendError, sendSuccess } from "../../utils/response";
-import { sendWhatsAppMessage } from "../../services/whatsapp/whatsapp.service";
+import { sendWhatsAppMessageAsync } from "../../services/whatsapp/whatsapp.service";
 import { otpWhatsAppMessage } from "../../services/whatsapp/messages";
 
 function generateOtp() {
@@ -42,8 +42,8 @@ async function findUserByPhone(rawPhone: string) {
   return prisma.user.findUnique({ where: { phone } });
 }
 
-async function sendOtp(phone: string, otp: string, purpose: "verify" | "reset") {
-  await sendWhatsAppMessage(phone, otpWhatsAppMessage(otp, purpose));
+function sendOtp(phone: string, otp: string, purpose: "verify" | "reset") {
+  sendWhatsAppMessageAsync(phone, otpWhatsAppMessage(otp, purpose));
 }
 
 export async function register(req: AuthRequest, res: Response) {
@@ -66,7 +66,7 @@ export async function register(req: AuthRequest, res: Response) {
     },
   });
 
-  await sendOtp(phone, otp, "verify");
+  sendOtp(phone, otp, "verify");
   const safe = omitPassword(user);
   const verificationToken = signVerificationToken(user.id, user.phone);
   return sendSuccess(
@@ -96,7 +96,7 @@ export async function login(req: AuthRequest, res: Response) {
         otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    await sendOtp(user.phone, otp, "verify");
+    sendOtp(user.phone, otp, "verify");
 
     const safe = omitPassword(user);
     return sendError(res, "يجب التحقق من رقم هاتفك أولاً", 403, {
@@ -182,7 +182,7 @@ export async function forgotPassword(req: AuthRequest, res: Response) {
         otpExpiresAt: new Date(Date.now() + 15 * 60 * 1000),
       },
     });
-    await sendOtp(user.phone, otp, "reset");
+    sendOtp(user.phone, otp, "reset");
   }
   return sendSuccess(res, null, "إذا كان الرقم مسجلاً، ستصلك رسالة واتساب قريباً");
 }

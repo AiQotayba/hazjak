@@ -57,7 +57,7 @@ export function useOwnerStadium() {
       shamCashQrImage: s.shamCashQrImage || undefined,
       coverImage: s.coverImage || undefined,
       videoUrl: s.videoUrl || undefined,
-      sportType: s.sportType,
+      sportType: s.sportType || "FOOTBALL",
     };
   }
 

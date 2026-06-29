@@ -14,7 +14,7 @@ import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { StatusBadge } from "./StatusBadge";
 import { ConfirmDepositButton } from "./confirm-deposit-button";
-import { isAwaitingDeposit } from "@/features/user-bookings/lib/user-bookings";
+import { isAwaitingDeposit, isBookingTimeEnded } from "@/features/user-bookings/lib/user-bookings";
 import { cn } from "@/lib/utils";
 
 export interface BookingSummary {
@@ -100,6 +100,7 @@ export function BookingDetailDialog({
 
   const showContact =
     booking &&
+    !isBookingTimeEnded(booking) &&
     (booking.status === "CONFIRMED" || booking.status === "COMPLETED") &&
     (booking.stadium.contactPhone || booking.stadium.contactWhatsapp);
 
@@ -109,6 +110,9 @@ export function BookingDetailDialog({
         className="w-[calc(100%-0.5rem)] sm:max-w-md md:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-y-auto border-0 bg-transparent shadow-none"
         dir="rtl"
       >
+        <DialogTitle className="sr-only">
+          {booking ? `حجز ${booking.stadium.name}` : "تفاصيل الحجز"}
+        </DialogTitle>
         <div className="overflow-hidden rounded-3xl bg-card shadow-card">
           {loading ? (
             <BookingDetailSkeleton />
@@ -181,7 +185,8 @@ function BookingDetailBody({
   const dateLabel = formatDate(start, { weekday: "long", day: "numeric", month: "long" });
   const timeLabel = `${formatTime(start)} – ${formatTime(end)}`;
   const locationLine = [booking.stadium.area, booking.stadium.city].filter(Boolean).join("، ");
-  const canCancel = CANCELLABLE.includes(booking.status);
+  const timeEnded = isBookingTimeEnded(booking);
+  const canCancel = CANCELLABLE.includes(booking.status) && !timeEnded;
   const initial = booking.stadium.name.trim().charAt(0) || "ب";
 
   return (
@@ -208,6 +213,7 @@ function BookingDetailBody({
         <div className="absolute bottom-3 start-3">
           <StatusBadge
             status={booking.status}
+            endTime={booking.endTime}
             depositReferenceCode={booking.depositReferenceCode}
             depositPaidAt={booking.depositPaidAt}
             className="text-[11px] px-2.5 py-1 shadow-soft bg-card/95 backdrop-blur-sm"
@@ -217,9 +223,9 @@ function BookingDetailBody({
 
       <div className="p-5 space-y-4">
         <DialogHeader className="text-start space-y-2 p-0">
-          <DialogTitle className="text-xl font-bold text-heading leading-snug">
+          <p className="text-xl font-bold text-heading leading-snug">
             {booking.stadium.name}
-          </DialogTitle>
+          </p>
           <DialogDescription asChild>
             <div className="space-y-1">
               {locationLine && (
@@ -298,6 +304,12 @@ function BookingDetailBody({
               />
             </div>
           )}
+
+        {timeEnded && booking.status !== "COMPLETED" && (
+          <p className="rounded-lg border border-border bg-secondary/50 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+            انتهى وقت هذا الحجز.
+          </p>
+        )}
 
         {booking.status === "PENDING" &&
           booking.depositReferenceCode &&

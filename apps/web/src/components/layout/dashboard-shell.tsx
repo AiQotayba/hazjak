@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { InstallAppButton } from "@/features/pwa/components/install-app-button";
 import { ConfirmAlert } from "@/components/ui/confirm-alert";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon };
@@ -171,6 +172,7 @@ export function DashboardShell({
             </Link>
             <p className="text-[10px] text-muted-foreground truncate mt-0.5">{title}</p>
           </div>
+          <InstallAppButton />
         </header>
 
         <Dialog open={menuOpen} onOpenChange={setMenuOpen}>

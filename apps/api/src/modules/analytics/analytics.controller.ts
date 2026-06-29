@@ -2,15 +2,18 @@
 import { prisma } from "../../db";
 import { isMorningSlot } from "@hazjak/utils";
 import type { AuthRequest } from "../../middlewares/auth";
+import { runBookingLifecycleJobs } from "../../utils/booking-lifecycle";
 import {
-  isConfirmedBooking,
+  isActivePendingBooking,
   isRevenueEligible,
+  isUpcomingConfirmedBooking,
   sumEligibleRevenue,
   sumUpcomingRevenue,
 } from "../../utils/revenue";
 import { sendSuccess } from "../../utils/response";
 
 export async function dashboard(req: AuthRequest, res: Response) {
+  await runBookingLifecycleJobs();
   const ownerId = req.user!.id;
   const stadiums = await prisma.stadium.findMany({
     where: req.user!.role === "ADMIN" ? {} : { ownerId },
@@ -27,7 +30,7 @@ export async function dashboard(req: AuthRequest, res: Response) {
   const revenueEligible = bookings.filter((b) => isRevenueEligible(b, now));
   const revenue = sumEligibleRevenue(bookings, now);
   const upcomingRevenue = sumUpcomingRevenue(bookings, now);
-  const confirmedBookings = bookings.filter((b) => isConfirmedBooking(b.status)).length;
+  const confirmedBookings = bookings.filter((b) => isUpcomingConfirmedBooking(b, now)).length;
   const morning = revenueEligible.filter((b) => isMorningSlot(b.startTime)).length;
   const evening = revenueEligible.length - morning;
   const cancelled = bookings.filter((b) => b.status === "CANCELLED").length;
@@ -53,7 +56,7 @@ export async function dashboard(req: AuthRequest, res: Response) {
     totalBookings: bookings.length,
     confirmedBookings,
     revenueBookings: revenueEligible.length,
-    pendingBookings: bookings.filter((b) => b.status === "PENDING").length,
+    pendingBookings: bookings.filter((b) => isActivePendingBooking(b, now)).length,
     revenue,
     upcomingRevenue,
     morningBookings: morning,

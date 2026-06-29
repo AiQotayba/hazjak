@@ -1,8 +1,8 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { citiesLabel, ogImage } from "@/lib/seo";
+import { ogImage } from "@/lib/seo";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -12,11 +12,18 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
 });
 
-const defaultDescription = `منصة حجز ملاعب كرة القدم في ${citiesLabel}. تصفّح الملاعب، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب.`;
+const defaultDescription = `منصة حجز ملاعب كرة القدم في ${APP_COUNTRY_AR}. تصفّح الملاعب، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب.`;
+
+export const viewport: Viewport = {
+  themeColor: "#16a34a",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
-    default: `${APP_NAME_AR} — احجز ملعبك في ${APP_CITIES.join(" و")}`,
+    default: `${APP_NAME_AR} — احجز ملعبك في ${APP_COUNTRY_AR}`,
     template: `%s | ${APP_NAME_AR}`,
   },
   description: defaultDescription,
@@ -29,8 +36,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000"),
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   formatDetection: {
     telephone: false,

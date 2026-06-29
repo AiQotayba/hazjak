@@ -65,7 +65,7 @@ export function LandingHowItWorks({ compact = false }: { compact?: boolean }) {
           </div>
           <div className="absolute -bottom-6 -end-4 rounded-2xl bg-card shadow-card border border-border p-4 w-[min(100%,220px)]">
             <p className="text-xs font-bold text-primary">حجز جاري</p>
-            <p className="font-bold text-sm text-heading mt-0.5">ملعب الجامعة — إدلب</p>
+            <p className="font-bold text-sm text-heading mt-0.5">ملعب النور</p>
             <p className="text-xs text-muted-foreground">بانتظار تأكيد المالك</p>
           </div>
         </div>

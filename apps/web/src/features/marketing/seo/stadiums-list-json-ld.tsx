@@ -1,5 +1,6 @@
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { citiesLabel, fetchStadiumsForSeo, siteUrl } from "@/lib/seo";
+import { locationLabel, fetchStadiumsForSeo, siteUrl } from "@/lib/seo";
 import { JsonLd } from "./json-ld";
 
 export async function StadiumsListJsonLd() {
@@ -11,8 +12,8 @@ export async function StadiumsListJsonLd() {
     <JsonLd
       data={{
         "@type": "ItemList",
-        name: `ملاعب كرة القدم في ${citiesLabel}`,
-        description: `قائمة ملاعب ${APP_NAME_AR} المتاحة للحجز في ${citiesLabel}`,
+        name: `ملاعب كرة القدم في ${locationLabel}`,
+        description: `قائمة ملاعب ${APP_NAME_AR} المتاحة للحجز في ${APP_COUNTRY_AR}`,
         numberOfItems: stadiums.length,
         itemListElement: stadiums.map((stadium, index) => ({
           "@type": "ListItem",

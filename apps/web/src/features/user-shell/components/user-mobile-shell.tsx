@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { CalendarDays, MapPin, User } from "lucide-react";
+import { InstallAppButton } from "@/features/pwa/components/install-app-button";
 import { APP_NAME_AR } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
@@ -20,10 +21,11 @@ export function UserMobileShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-background max-w-lg mx-auto w-full shadow-card md:shadow-none">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-card/95 backdrop-blur-md px-4 pt-safe">
         <div className="flex h-14 items-center gap-2">
-          <Link href="/" className="flex items-center gap-2 min-w-0">
-            <Image src="/logo.png" alt={APP_NAME_AR} width={32} height={32} className="h-8 w-8 shrink-0" />
-            <span className="font-display text-lg font-bold text-heading truncate">{APP_NAME_AR}</span>
+          <Link href="/" className="flex min-w-0 flex-1 items-center gap-2">
+            <Image src="/icon-192.png" alt={APP_NAME_AR} width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg" />
+            <span className="font-display truncate text-lg font-bold text-heading">{APP_NAME_AR}</span>
           </Link>
+          <InstallAppButton />
         </div>
       </header>
 

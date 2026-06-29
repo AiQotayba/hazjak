@@ -22,7 +22,7 @@ export function InstallAppDialog() {
         <div className="relative bg-gradient-to-br from-primary/15 via-card to-secondary p-6 pb-5">
           <div className="mb-4 flex items-center gap-3">
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-card shadow-soft">
-              <Image src="/logo.png" alt={APP_NAME_AR} fill className="object-cover" sizes="56px" />
+              <Image src="/icon-192.png" alt={APP_NAME_AR} fill className="object-cover" sizes="56px" />
             </div>
             <div>
               <DialogHeader className="space-y-1 p-0 text-start">

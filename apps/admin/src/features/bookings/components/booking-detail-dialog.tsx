@@ -230,25 +230,26 @@ export function BookingDetailDialog({
 
             {booking.status === "PENDING" && !awaitingDeposit && !depositPaidAwaitingConfirm && (
               <div className="flex flex-col gap-2 pt-2">
-                <Button
-                  size="sm"
-                  disabled={actionLoading}
-                  onClick={() =>
-                    requestStatusAction({
-                      body: { status: "CONFIRMED" },
-                      successMessage: "تم قبول الحجز",
-                      title: "قبول الحجز",
-                      description: "هل تريد قبول هذا الحجز مباشرة دون طلب عربون؟",
-                      confirmLabel: "قبول",
-                    })
-                  }
-                >
-                  قبول مباشرة
-                </Button>
+                {stadiumDeposit <= 0 && (
+                  <Button
+                    size="sm"
+                    disabled={actionLoading}
+                    onClick={() =>
+                      requestStatusAction({
+                        body: { status: "CONFIRMED" },
+                        successMessage: "تم قبول الحجز",
+                        title: "قبول الحجز",
+                        description: "هل تريد قبول هذا الحجز؟",
+                        confirmLabel: "قبول",
+                      })
+                    }
+                  >
+                    قبول الحجز
+                  </Button>
+                )}
                 {stadiumDeposit > 0 && (
                   <Button
                     size="sm"
-                    variant="outline"
                     disabled={actionLoading}
                     onClick={() =>
                       requestStatusAction({

@@ -5,9 +5,14 @@ const TERMINAL = new Set(["COMPLETED", "CANCELLED", "REJECTED", "EXPIRED", "NO_S
 
 type BookingLike = {
   status: string;
+  depositAmount?: number | null;
   depositReferenceCode?: string | null;
   depositPaidAt?: Date | null;
 };
+
+export function stadiumRequiresDeposit(booking: Pick<BookingLike, "depositAmount">) {
+  return booking.depositAmount != null && booking.depositAmount > 0;
+}
 
 export function isAwaitingDeposit(booking: BookingLike) {
   return (
@@ -42,9 +47,9 @@ export function assertStatusTransition(
     throw new Error("انتقال حالة غير مسموح");
   }
 
-  if (from === "PENDING" && nextStatus === "CONFIRMED" && isAwaitingDeposit(booking)) {
-    if (!booking.depositPaidAt) {
-      throw new Error("لا يمكن تأكيد الحجز — اللاعب لم يؤكّد دفع العربون بعد");
+  if (from === "PENDING" && nextStatus === "CONFIRMED") {
+    if (stadiumRequiresDeposit(booking) && !booking.depositPaidAt) {
+      throw new Error("لا يمكن تأكيد الحجز — يجب دفع العربون وتأكيده من اللاعب أولاً");
     }
   }
 }
@@ -64,4 +69,31 @@ export async function expireStaleDepositBookings() {
   });
 
   return result.count;
+}
+
+/** يُحوّل الحجوزات التي انتهى وقتها — مؤكد → مكتمل، معلّق → منتهي */
+export async function finalizePastBookings(now = new Date()) {
+  const [completed, expired] = await Promise.all([
+    prisma.booking.updateMany({
+      where: {
+        status: "CONFIRMED",
+        endTime: { lte: now },
+      },
+      data: { status: "COMPLETED" },
+    }),
+    prisma.booking.updateMany({
+      where: {
+        status: "PENDING",
+        endTime: { lte: now },
+      },
+      data: { status: "EXPIRED" },
+    }),
+  ]);
+
+  return { completed: completed.count, expired: expired.count };
+}
+
+export async function runBookingLifecycleJobs(now = new Date()) {
+  await expireStaleDepositBookings();
+  await finalizePastBookings(now);
 }

@@ -1,6 +1,6 @@
-﻿import { APP_CITIES } from "@hazjak/constants";
+﻿import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { citiesLabel, siteUrl } from "@/lib/seo";
+import { locationLabel, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/features/marketing/seo/json-ld";
 import { landingFaqs } from "../data/faq-data";
 
@@ -14,7 +14,7 @@ export function LandingJsonLd() {
           name: APP_NAME_AR,
           url: siteUrl,
           inLanguage: "ar-SY",
-          description: `منصة حجز ملاعب كرة القدم في ${citiesLabel}، سوريا`,
+          description: `منصة حجز ملاعب كرة القدم في ${locationLabel}`,
           publisher: { "@id": `${siteUrl}/#organization` },
           potentialAction: {
             "@type": "SearchAction",
@@ -39,10 +39,7 @@ export function LandingJsonLd() {
             priceCurrency: "SYP",
             description: "تصفح مجاني — دفع العربون عند تأكيد الحجز",
           },
-          areaServed: APP_CITIES.map((city) => ({
-            "@type": "City",
-            name: city,
-          })),
+          areaServed: { "@type": "Country", name: APP_COUNTRY_AR },
         },
         {
           "@type": "FAQPage",

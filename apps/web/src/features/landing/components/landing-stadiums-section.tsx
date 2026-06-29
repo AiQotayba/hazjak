@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { APP_CITIES } from "@hazjak/constants";
 import { PageHeader } from "@/components/layout/page-header";
 import { StadiumCard } from "@/features/stadium/components/stadium-card";
 import {
@@ -82,7 +81,7 @@ export function LandingStadiumsSection() {
         >
           <PageHeader
             title="الملاعب المتاحة"
-            description={`تصفّح ملاعب ${APP_CITIES.join(" و")} واحجز موعدك`}
+            description="تصفّح الملاعب واحجز موعدك"
             action={
               <Button variant="outline" className="rounded-full" asChild>
                 <Link href={stadiumsHref}>عرض الكل</Link>
@@ -113,7 +112,7 @@ export function LandingStadiumsSection() {
             <div className="mt-6">
               <EmptyState
                 title="لا توجد ملاعب"
-                description="جرّب مدينة أخرى أو عدّل كلمات البحث"
+                description="جرّب بحثاً آخر أو عدّل كلمات البحث"
                 actionLabel="عرض كل الملاعب"
                 actionHref="/stadiums"
               />

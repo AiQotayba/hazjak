@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
-import { Banknote, CalendarCheck, ClipboardList, Clock, Percent } from "lucide-react";
+import { Banknote, CalendarCheck, ClipboardList, Clock, Percent, Plus } from "lucide-react";
 
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/features/owner-dashboard/components/stat-card";
 import { OwnerBookingDetailDialog } from "@/features/owner-bookings";
+import { getBookingPlayerLabel, getBookingPlayerPhone } from "@/features/owner-bookings/lib/manual-booking";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
@@ -26,6 +27,8 @@ type OwnerBooking = {
   endTime?: string;
   totalPrice?: number;
   notes?: string | null;
+  guestName?: string | null;
+  guestPhone?: string | null;
 };
 
 const STAT_ITEMS = [
@@ -89,7 +92,12 @@ export default function OwnerDashboardPage() {
       .then(([statsRes, pendingRes, confirmedRes]) => {
         setStats(statsRes.data ?? null);
         setPending(pendingRes.data ?? []);
-        setConfirmed(confirmedRes.data ?? []);
+        const now = Date.now();
+        setConfirmed(
+          (confirmedRes.data ?? []).filter(
+            (b) => b.endTime && new Date(b.endTime).getTime() > now
+          )
+        );
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -110,6 +118,12 @@ export default function OwnerDashboardPage() {
         description={`أهلاً ${user?.firstName ?? ""} — راجع الطلبات وأكّد الحجوزات`}
         action={
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" className="rounded-full gap-1.5" asChild>
+              <Link href="/owner/bookings?create=1">
+                <Plus className="h-4 w-4" />
+                إضافة حجز
+              </Link>
+            </Button>
             <Button size="sm" variant="outline" asChild>
               <Link href="/owner/stadium">الملعب</Link>
             </Button>
@@ -251,16 +265,23 @@ function BookingSection({
               >
                 <div className="text-start min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <StatusBadge status={b.status} className="text-[10px]" />
+                    <StatusBadge
+                      status={b.status}
+                      endTime={b.endTime}
+                      className="text-[10px]"
+                    />
                   </div>
                   <p className="font-bold text-heading text-sm">{b.stadium.name}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {b.user.firstName} {b.user.lastName}
-                    {b.user.phone ? (
-                      <span dir="ltr" className="inline-block ms-1">
-                        · {b.user.phone}
-                      </span>
-                    ) : null}
+                    {getBookingPlayerLabel(b)}
+                    {(() => {
+                      const phone = getBookingPlayerPhone(b);
+                      return phone ? (
+                        <span dir="ltr" className="inline-block ms-1">
+                          · {phone}
+                        </span>
+                      ) : null;
+                    })()}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatDate(b.startTime, { dateStyle: "medium" })}

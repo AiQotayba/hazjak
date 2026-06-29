@@ -18,6 +18,22 @@ export function isConfirmedBooking(status: string): boolean {
   return REVENUE_STATUSES.has(status);
 }
 
+/** مؤكد ولم ينتهِ وقت الحجز بعد */
+export function isUpcomingConfirmedBooking(
+  booking: Pick<RevenueBooking, "status" | "endTime">,
+  now: Date = new Date()
+): boolean {
+  return booking.status === "CONFIRMED" && booking.endTime.getTime() > now.getTime();
+}
+
+/** معلّق ولم ينتهِ وقت الحجز بعد */
+export function isActivePendingBooking(
+  booking: Pick<RevenueBooking, "status" | "endTime">,
+  now: Date = new Date()
+): boolean {
+  return booking.status === "PENDING" && booking.endTime.getTime() > now.getTime();
+}
+
 export function sumEligibleRevenue(
   bookings: RevenueBooking[],
   now: Date = new Date()

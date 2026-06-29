@@ -160,6 +160,8 @@ model Booking {
   depositPaidAt         DateTime?
   status                BookingStatus @default(PENDING)
   notes                 String?
+  guestName             String?
+  guestPhone            String?
   cancelledReason String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

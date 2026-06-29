@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Building2, CalendarCheck, ClipboardList, Zap } from "lucide-react";
-import { APP_CITIES } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 
 const perks = [
@@ -19,8 +18,6 @@ const enter = (delay: number) => ({
 });
 
 export function OwnerHero() {
-  const cities = APP_CITIES.join(" و");
-
   return (
     <section className="relative overflow-hidden bg-section-alt border-b border-border/40">
       <motion.div

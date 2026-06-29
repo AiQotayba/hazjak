@@ -1,6 +1,6 @@
 ﻿import type { Response } from "express";
 import { prisma } from "../../db";
-import { getPagination, buildMeta, buildTableOrderBy, formatDate } from "@hazjak/utils";
+import { getPagination, buildMeta, buildTableOrderBy } from "@hazjak/utils";
 import {
   createBookingSchema,
   updateBookingStatusSchema,
@@ -11,7 +11,7 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { icontains } from "../../utils/prisma-search";
-import { notifyBookingStatus, createNotification } from "../../services/notification.service";
+import { notifyBookingStatus, createNotification, notifyPlayerBookingConfirmed } from "../../services/notification.service";
 import { activateDepositRequest } from "../../services/booking-deposit.service";
 import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { calculatePrice } from "../stadiums/stadiums.controller";
@@ -20,16 +20,16 @@ import {
   localDateKey,
   localTimeValue,
 } from "../../utils/booking-slots";
-import {
+import { runBookingLifecycleJobs,
   assertStatusTransition,
-  expireStaleDepositBookings,
   isAwaitingDeposit,
 } from "../../utils/booking-lifecycle";
+import { ownerBookingsUrl } from "../../utils/app-urls";
+import { mapBookingGuestAsUser } from "../../utils/booking-display";
 import {
   sendWhatsAppMessage,
 } from "../../services/whatsapp/whatsapp.service";
 import {
-  bookingConfirmedWhatsAppMessage,
   depositPaidOwnerWhatsAppMessage,
 } from "../../services/whatsapp/messages";
 
@@ -55,6 +55,7 @@ async function hasConflict(
 }
 
 export async function createBooking(req: AuthRequest, res: Response) {
+  await runBookingLifecycleJobs();
   const body = createBookingSchema.parse(req.body);
   const start = new Date(body.startTime);
   const end = new Date(body.endTime);
@@ -139,18 +140,17 @@ export async function createBooking(req: AuthRequest, res: Response) {
       status: "PENDING",
     },
     include: {
-      stadium: { select: { name: true, ownerId: true, shamCashId: true, shamCashQrImage: true } },
+      stadium: {
+        select: {
+          name: true,
+          ownerId: true,
+          shamCashId: true,
+          shamCashQrImage: true,
+        },
+      },
       user: { select: { phone: true } },
     },
   });
-
-  await createNotification(
-    booking.stadium.ownerId,
-    "طلب حجز جديد",
-    `وصل طلب حجز جديد لملعب ${booking.stadium.name}. راجع الطلب من لوحة الحجوزات.`,
-    "BOOKING_PENDING",
-    booking.id
-  );
 
   if (hasDeposit) {
     await activateDepositRequest({
@@ -160,13 +160,17 @@ export async function createBooking(req: AuthRequest, res: Response) {
       stadium: booking.stadium,
       user: booking.user,
     });
+
     const fresh = await prisma.booking.findUnique({
       where: { id: booking.id },
       include: {
-        stadium: { select: { name: true, ownerId: true, shamCashId: true, shamCashQrImage: true } },
+        stadium: {
+          select: { name: true, shamCashId: true, shamCashQrImage: true },
+        },
         user: { select: { phone: true } },
       },
     });
+
     return sendSuccess(
       res,
       fresh,
@@ -174,6 +178,14 @@ export async function createBooking(req: AuthRequest, res: Response) {
       201
     );
   }
+
+  await createNotification(
+    booking.stadium.ownerId,
+    "طلب حجز جديد",
+    `وصل طلب حجز جديد لملعب ${booking.stadium.name}. راجع الحجوزات: ${ownerBookingsUrl(booking.id)}`,
+    "BOOKING_PENDING",
+    booking.id
+  );
 
   await notifyBookingStatus(req.user!.id, booking.stadium.name, "PENDING", booking.id);
 
@@ -210,6 +222,8 @@ export async function createOwnerManualBooking(req: AuthRequest, res: Response) 
       endTime: end,
       totalPrice,
       depositAmount: stadium.depositAmount,
+      guestName: body.guestName,
+      guestPhone: body.guestPhone ?? null,
       notes,
       status: body.status,
     },
@@ -219,7 +233,7 @@ export async function createOwnerManualBooking(req: AuthRequest, res: Response) 
     },
   });
 
-  return sendSuccess(res, booking, "تم إنشاء الحجز", 201);
+  return sendSuccess(res, mapBookingGuestAsUser(booking), "تم إنشاء الحجز", 201);
 }
 
 const BOOKING_SORT_FIELDS = [
@@ -231,7 +245,7 @@ const BOOKING_SORT_FIELDS = [
 ] as const;
 
 export async function listBookings(req: AuthRequest, res: Response) {
-  await expireStaleDepositBookings();
+  await runBookingLifecycleJobs();
   const query = bookingListQuerySchema.parse(req.query);
   const { page, limit, skip } = getPagination(query.page, query.limit);
   const { status, stadiumId, search, sort_field, sort_order } = query;
@@ -258,6 +272,8 @@ export async function listBookings(req: AuthRequest, res: Response) {
       { user: { firstName: icontains(q) } },
       { user: { lastName: icontains(q) } },
       { user: { phone: icontains(q) } },
+      { guestName: icontains(q) },
+      { guestPhone: icontains(q) },
       { notes: icontains(q) },
     ];
   }
@@ -291,26 +307,37 @@ export async function listBookings(req: AuthRequest, res: Response) {
     prisma.booking.count({ where }),
   ]);
 
-  const data = bookings.map((b) => ({
-    ...b,
-    stadium: {
-      ...b.stadium,
-      contactPhone:
-        b.status === "CONFIRMED" || b.status === "COMPLETED"
-          ? b.stadium.contactPhone
-          : undefined,
-      contactWhatsapp:
-        b.status === "CONFIRMED" || b.status === "COMPLETED"
-          ? b.stadium.contactWhatsapp
-          : undefined,
-    },
-  }));
+  const isOwnerView =
+    req.user!.role === "ADMIN" ||
+    (req.user!.role === "STADIUM_OWNER" &&
+      bookings.some((b) => b.stadium && "id" in b.stadium));
+
+  const data = bookings.map((b) => {
+    const mapped = {
+      ...b,
+      stadium: {
+        ...b.stadium,
+        contactPhone:
+          b.status === "CONFIRMED" || b.status === "COMPLETED"
+            ? b.stadium.contactPhone
+            : undefined,
+        contactWhatsapp:
+          b.status === "CONFIRMED" || b.status === "COMPLETED"
+            ? b.stadium.contactWhatsapp
+            : undefined,
+      },
+    };
+    if (req.user!.role === "STADIUM_OWNER" || req.user!.role === "ADMIN") {
+      return mapBookingGuestAsUser(mapped);
+    }
+    return mapped;
+  });
 
   return sendPaginated(res, data, buildMeta(total, page, limit));
 }
 
 export async function getBooking(req: AuthRequest, res: Response) {
-  await expireStaleDepositBookings();
+  await runBookingLifecycleJobs();
   const id = param(req, "id");
   const booking = await prisma.booking.findUnique({
     where: { id },
@@ -334,18 +361,24 @@ export async function getBooking(req: AuthRequest, res: Response) {
   const showContact =
     booking.status === "CONFIRMED" || booking.status === "COMPLETED";
 
-  return sendSuccess(res, {
+  const payload = {
     ...booking,
     stadium: {
       ...booking.stadium,
       contactPhone: showContact ? booking.stadium.contactPhone : undefined,
       contactWhatsapp: showContact ? booking.stadium.contactWhatsapp : undefined,
     },
-  });
+  };
+
+  const isOwnerView =
+    req.user!.role === "ADMIN" ||
+    (req.user!.role === "STADIUM_OWNER" && booking.stadium.ownerId === req.user!.id);
+
+  return sendSuccess(res, isOwnerView ? mapBookingGuestAsUser(payload) : payload);
 }
 
 export async function confirmDeposit(req: AuthRequest, res: Response) {
-  await expireStaleDepositBookings();
+  await runBookingLifecycleJobs();
   const id = param(req, "id");
 
   const booking = await prisma.booking.findUnique({
@@ -379,10 +412,19 @@ export async function confirmDeposit(req: AuthRequest, res: Response) {
   });
 
   const playerName = `${booking.user.firstName} ${booking.user.lastName}`;
+
+  await createNotification(
+    booking.userId,
+    "بانتظار تأكيد الملعب",
+    `تم استلام إبلاغ دفع العربون. صاحب الملعب سيراجع التحويل في شام كاش ويؤكد حجزك.`,
+    "DEPOSIT_REMINDER",
+    booking.id
+  );
+
   await createNotification(
     booking.stadium.ownerId,
     "اللاعب أكّد دفع العربون",
-    `${playerName} أكّد دفع العربون لحجز ${booking.stadium.name}. راجع التحويل ثم أكّد الحجز.`,
+    `${playerName} أكّد دفع العربون لحجز ${booking.stadium.name}. راجع التحويل ثم أكّد الحجز: ${ownerBookingsUrl(booking.id)}`,
     "DEPOSIT_REMINDER",
     booking.id
   );
@@ -394,6 +436,7 @@ export async function confirmDeposit(req: AuthRequest, res: Response) {
       playerName,
       stadiumName: booking.stadium.name,
       referenceCode: booking.depositReferenceCode,
+      bookingsUrl: ownerBookingsUrl(booking.id),
     });
     await sendWhatsAppMessage(ownerPhone, msg);
   }
@@ -413,7 +456,7 @@ export async function confirmDeposit(req: AuthRequest, res: Response) {
 }
 
 export async function updateStatus(req: AuthRequest, res: Response) {
-  await expireStaleDepositBookings();
+  await runBookingLifecycleJobs();
   const { status, cancelledReason, requireDeposit } = updateBookingStatusSchema.parse(req.body);
   const id = param(req, "id");
   const booking = await prisma.booking.findUnique({
@@ -499,21 +542,19 @@ export async function updateStatus(req: AuthRequest, res: Response) {
     },
   });
 
-  await notifyBookingStatus(booking.userId, updated.stadium.name, status, booking.id);
-
-  if (status === "CONFIRMED" && updated.user.phone) {
-    const startLabel = formatDate(booking.startTime, {
-      dateStyle: "medium",
-      timeStyle: "short",
+  if (status === "CONFIRMED") {
+    await notifyPlayerBookingConfirmed({
+      userId: booking.userId,
+      phone: booking.user.phone,
+      stadiumName: updated.stadium.name,
+      startTime: booking.startTime,
+      totalPrice: booking.totalPrice,
+      depositPaidAt: booking.depositPaidAt,
+      depositAmount: booking.depositAmount,
+      bookingId: booking.id,
     });
-    await sendWhatsAppMessage(
-      updated.user.phone,
-      bookingConfirmedWhatsAppMessage({
-        stadiumName: updated.stadium.name,
-        startLabel,
-        totalPrice: booking.totalPrice,
-      })
-    );
+  } else {
+    await notifyBookingStatus(booking.userId, updated.stadium.name, status, booking.id);
   }
 
   return sendSuccess(res, updated, "تم تحديث حالة الحجز");
@@ -538,12 +579,13 @@ export async function rebook(req: AuthRequest, res: Response) {
 }
 
 export async function upcoming(req: AuthRequest, res: Response) {
-  req.query.status = "CONFIRMED";
+  await runBookingLifecycleJobs();
+  const now = new Date();
   const bookings = await prisma.booking.findMany({
     where: {
       userId: req.user!.id,
       status: { in: ["PENDING", "CONFIRMED"] },
-      startTime: { gte: new Date() },
+      endTime: { gt: now },
     },
     orderBy: { startTime: "asc" },
     take: 10,

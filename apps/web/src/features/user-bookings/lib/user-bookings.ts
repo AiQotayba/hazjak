@@ -10,12 +10,32 @@ export const ARCHIVED_BOOKING_STATUSES = [
 
 export type DepositFields = {
   status: string;
+  endTime?: string;
   depositReferenceCode?: string | null;
   depositAmount?: number | null;
   depositPaidAt?: string | null;
 };
 
+export function isBookingTimeEnded(
+  booking: { endTime?: string },
+  now: number = Date.now()
+) {
+  if (!booking.endTime) return false;
+  return new Date(booking.endTime).getTime() <= now;
+}
+
+export function isBookingArchived(booking: DepositFields & { endTime: string }) {
+  if ((ARCHIVED_BOOKING_STATUSES as readonly string[]).includes(booking.status)) {
+    return true;
+  }
+  return (
+    isBookingTimeEnded(booking) &&
+    (booking.status === "CONFIRMED" || booking.status === "PENDING")
+  );
+}
+
 export function isAwaitingDeposit(booking: DepositFields) {
+  if (isBookingTimeEnded(booking)) return false;
   return (
     booking.status === "PENDING" &&
     !!booking.depositReferenceCode &&
@@ -24,6 +44,7 @@ export function isAwaitingDeposit(booking: DepositFields) {
 }
 
 export function isDepositPaidPendingOwner(booking: DepositFields) {
+  if (isBookingTimeEnded(booking)) return false;
   return (
     booking.status === "PENDING" &&
     !!booking.depositReferenceCode &&
@@ -33,10 +54,12 @@ export function isDepositPaidPendingOwner(booking: DepositFields) {
 
 /** حجز بانتظار رد الملعب (بدون عربون) */
 export function isPendingOwnerReview(booking: DepositFields) {
+  if (isBookingTimeEnded(booking)) return false;
   return booking.status === "PENDING" && !booking.depositReferenceCode;
 }
 
 export function getBookingStatusHint(booking: DepositFields): string | null {
+  if (isBookingTimeEnded(booking)) return null;
   if (isAwaitingDeposit(booking)) return "ادفع العربون وأبلّغنا";
   if (isDepositPaidPendingOwner(booking)) return "بانتظار تأكيد الملعب";
   if (isPendingOwnerReview(booking)) return "بانتظار رد الملعب";
@@ -44,6 +67,7 @@ export function getBookingStatusHint(booking: DepositFields): string | null {
 }
 
 export function getOwnerBookingDepositHint(booking: DepositFields): string | null {
+  if (isBookingTimeEnded(booking)) return null;
   if (isAwaitingDeposit(booking)) return "بانتظار العربون";
   if (isDepositPaidPendingOwner(booking)) return "أكّد الحجز";
   if (isPendingOwnerReview(booking)) return "رد على الطلب";
@@ -54,6 +78,9 @@ export function getBookingStatusLabel(
   status: string,
   booking?: DepositFields
 ): string {
+  if (booking?.endTime && isBookingTimeEnded(booking)) {
+    if (status === "CONFIRMED" || status === "PENDING") return "انتهى";
+  }
   if (status === "PENDING" && booking) {
     if (isAwaitingDeposit(booking)) return "بانتظار العربون";
     if (isDepositPaidPendingOwner(booking)) return "بانتظار التأكيد";
@@ -107,21 +134,18 @@ export function computeBookingStats(
   totalFromMeta?: number
 ): BookingStats {
   const now = Date.now();
-  const isArchived = (status: string) =>
-    (ARCHIVED_BOOKING_STATUSES as readonly string[]).includes(status);
-  const upcomingList = bookings.filter((b) => !isArchived(b.status));
+  const upcomingList = bookings.filter((b) => !isBookingArchived(b));
   const nextBooking =
     upcomingList
       .filter((b) => new Date(b.startTime).getTime() >= now)
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] ??
-    upcomingList.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0] ??
     null;
 
   return {
     total: totalFromMeta ?? bookings.length,
     upcoming: upcomingList.length,
-    pending: bookings.filter((b) => b.status === "PENDING").length,
-    confirmed: bookings.filter((b) => b.status === "CONFIRMED").length,
+    pending: bookings.filter((b) => b.status === "PENDING" && !isBookingArchived(b)).length,
+    confirmed: bookings.filter((b) => b.status === "CONFIRMED" && !isBookingArchived(b)).length,
     completed: bookings.filter((b) => b.status === "COMPLETED").length,
     cancelled: bookings.filter((b) =>
       ["CANCELLED", "REJECTED", "EXPIRED", "NO_SHOW"].includes(b.status)

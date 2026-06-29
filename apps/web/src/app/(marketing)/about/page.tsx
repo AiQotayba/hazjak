@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { citiesLabel, createMetadata } from "@/lib/seo";
+import { createMetadata } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/features/marketing/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata = createMetadata({
   title: "من نحن",
-  description: `${APP_NAME_AR} منصة سورية تربط اللاعبين بأصحاب ملاعب كرة القدم في ${citiesLabel}. حجز بسيط وشفاف مع تأكيد من صاحب الملعب.`,
+  description: `${APP_NAME_AR} منصة سورية تربط اللاعبين بأصحاب ملاعب كرة القدم في ${APP_COUNTRY_AR}. حجز بسيط وشفاف مع تأكيد من صاحب الملعب.`,
   path: "/about",
 });
 
@@ -23,12 +24,12 @@ export default function AboutPage() {
       />
       <MarketingPageShell
       title="من نحن"
-      description={`${APP_NAME_AR} — حجز ملاعب كرة القدم في حلب وإدلب`}
+      description={`${APP_NAME_AR} — حجز ملاعب كرة القدم في ${APP_COUNTRY_AR}`}
     >
       <Card className="surface-card max-w-2xl">
         <CardContent className="p-6 md:p-8 space-y-4 text-muted-foreground leading-relaxed">
           <p>
-            {APP_NAME_AR} منصة لحجز ملاعب كرة القدم في حلب وإدلب. نربط اللاعبين بأصحاب
+            {APP_NAME_AR} منصة سورية لحجز ملاعب كرة القدم. نربط اللاعبين بأصحاب
             الملاعب عبر تجربة حجز بسيطة وشفافة.
           </p>
           <p>

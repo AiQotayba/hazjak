@@ -52,7 +52,11 @@ export function ProfileRecentBookings({ bookings, loading }: ProfileRecentBookin
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-bold text-heading truncate">{booking.stadium.name}</p>
-                  <StatusBadge status={booking.status} className="text-[9px] px-1.5 py-0 shrink-0" />
+                  <StatusBadge
+                    status={booking.status}
+                    endTime={booking.endTime}
+                    className="text-[9px] px-1.5 py-0 shrink-0"
+                  />
                   {isAwaitingDeposit(booking) && (
                     <span className="text-[10px] font-bold rounded-md bg-accent-gold/20 text-heading px-2 py-0.5 shrink-0">
                       أكّد العربون

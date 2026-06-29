@@ -1,4 +1,10 @@
 import { prisma, type NotificationType } from "../db";
+import { formatDate } from "@hazjak/utils";
+import { sendWhatsAppMessageAsync } from "./whatsapp/whatsapp.service";
+import {
+  bookingConfirmedAfterDepositWhatsAppMessage,
+  bookingConfirmedWhatsAppMessage,
+} from "./whatsapp/messages";
 
 export async function createNotification(
   userId: string,
@@ -63,4 +69,53 @@ export async function notifyBookingStatus(
   };
   const n = map[status];
   if (n) await createNotification(userId, n.title, n.message, n.type, bookingId);
+}
+
+/** إشعار اللاعب + واتساب عند تأكيد صاحب الملعب للحجز */
+export async function notifyPlayerBookingConfirmed(input: {
+  userId: string;
+  phone: string;
+  stadiumName: string;
+  startTime: Date;
+  totalPrice: number;
+  depositPaidAt?: Date | null;
+  depositAmount?: number | null;
+  bookingId: string;
+}) {
+  const hadDepositReviewed =
+    !!input.depositPaidAt &&
+    input.depositAmount != null &&
+    input.depositAmount > 0;
+
+  if (hadDepositReviewed) {
+    await createNotification(
+      input.userId,
+      "حجزك مؤكد",
+      `صاحب الملعب راجع العربون وأكّد حجزك في ${input.stadiumName}. نراك في الموعد!`,
+      "BOOKING_CONFIRMED",
+      input.bookingId
+    );
+  } else {
+    await notifyBookingStatus(input.userId, input.stadiumName, "CONFIRMED", input.bookingId);
+  }
+
+  const startLabel = formatDate(input.startTime, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  const message = hadDepositReviewed
+    ? bookingConfirmedAfterDepositWhatsAppMessage({
+        stadiumName: input.stadiumName,
+        startLabel,
+        totalPrice: input.totalPrice,
+        depositAmount: input.depositAmount!,
+      })
+    : bookingConfirmedWhatsAppMessage({
+        stadiumName: input.stadiumName,
+        startLabel,
+        totalPrice: input.totalPrice,
+      });
+
+  sendWhatsAppMessageAsync(input.phone, message);
 }

@@ -50,7 +50,7 @@ export function StadiumsBrowse({
         <div className="mt-6">
           <EmptyState
             title="لا توجد ملاعب"
-            description="جرّب مدينة أخرى أو عدّل كلمات البحث"
+            description="جرّب بحثاً آخر أو عدّل كلمات البحث"
             actionLabel="مسح الفلاتر"
             actionHref={basePath}
           />

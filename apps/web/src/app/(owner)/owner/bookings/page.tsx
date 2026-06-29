@@ -1,11 +1,14 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Plus } from "lucide-react";
 import { BOOKING_STATUS_FILTER_ALL, BOOKING_STATUS_FILTER_OPTIONS } from "@hazjak/constants";
 import { formatPrice, formatDate, formatTime } from "@hazjak/utils";
 import { getOwnerBookingDepositHint } from "@/features/user-bookings/lib/user-bookings";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +16,9 @@ import { EmptyState } from "@/components/shared/empty-state";
 import {
   OwnerBookingDetailDialog,
   OwnerBookingsCalendar,
+  CreateOwnerManualBookingDialog,
+  getBookingPlayerLabel,
+  isManualBooking,
 } from "@/features/owner-bookings";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
@@ -24,6 +30,8 @@ type BookingRow = {
   endTime: string;
   totalPrice: number;
   notes?: string | null;
+  guestName?: string | null;
+  guestPhone?: string | null;
   depositAmount?: number | null;
   depositReferenceCode?: string | null;
   depositPaidAt?: string | null;
@@ -43,12 +51,16 @@ const STATUS_OPTIONS = BOOKING_STATUS_FILTER_OPTIONS.map((o) => ({
 
 export default function OwnerBookingsPage() {
   const { token } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const bookingId = searchParams.get("booking");
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [filter, setFilter] = useState<string>(BOOKING_STATUS_FILTER_ALL);
   const [view, setView] = useState<"list" | "calendar">("calendar");
   const [loading, setLoading] = useState(true);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   function load() {
     const params = new URLSearchParams({ limit: view === "calendar" ? "100" : "30" });
@@ -67,11 +79,49 @@ export default function OwnerBookingsPage() {
   function openDetail(id: string) {
     setDetailId(id);
     setDetailOpen(true);
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("booking", id);
+    router.replace(`/owner/bookings?${next.toString()}`, { scroll: false });
   }
+
+  function closeDetail(open: boolean) {
+    setDetailOpen(open);
+    if (open) return;
+    setDetailId(null);
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("booking");
+    const qs = next.toString();
+    router.replace(qs ? `/owner/bookings?${qs}` : "/owner/bookings", { scroll: false });
+  }
+
+  useEffect(() => {
+    if (!bookingId) return;
+    setDetailId(bookingId);
+    setDetailOpen(true);
+  }, [bookingId]);
+
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      setCreateOpen(true);
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("create");
+      const qs = next.toString();
+      router.replace(qs ? `/owner/bookings?${qs}` : "/owner/bookings", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   return (
     <>
-      <PageHeader title="الحجوزات" description="اضغط على حجز لعرض التفاصيل" />
+      <PageHeader
+        title="الحجوزات"
+        description="اضغط على حجز لعرض التفاصيل"
+        action={
+          <Button size="sm" className="rounded-full gap-1.5" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
+            إضافة حجز
+          </Button>
+        }
+      />
 
       <div className="flex flex-col gap-3 mb-6" >
         <SegmentedControl
@@ -122,6 +172,7 @@ export default function OwnerBookingsPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusBadge
                           status={b.status}
+                          endTime={b.endTime}
                           depositReferenceCode={b.depositReferenceCode}
                           depositPaidAt={b.depositPaidAt}
                         />
@@ -132,7 +183,12 @@ export default function OwnerBookingsPage() {
                         )}
                       </div>
                       <p className="font-bold text-heading mt-2">
-                        {b.user.firstName} {b.user.lastName}
+                        {getBookingPlayerLabel(b)}
+                        {isManualBooking(b) && (
+                          <span className="ms-1.5 text-[10px] font-bold text-muted-foreground">
+                            (يدوي)
+                          </span>
+                        )}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         {formatDate(b.startTime, { dateStyle: "medium" })} ·{" "}
@@ -152,10 +208,16 @@ export default function OwnerBookingsPage() {
         </ul>
       )}
 
+      <CreateOwnerManualBookingDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={load}
+      />
+
       <OwnerBookingDetailDialog
         bookingId={detailId}
         open={detailOpen}
-        onOpenChange={setDetailOpen}
+        onOpenChange={closeDetail}
         onUpdated={load}
       />
     </>

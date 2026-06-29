@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bell, CalendarCheck, MapPin, ShieldCheck } from "lucide-react";
-import { APP_CITIES, APP_MOTTO_AR, APP_TAGLINE_AR } from "@hazjak/constants";
+import { APP_COUNTRY_AR, APP_MOTTO_AR, APP_TAGLINE_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 
 const trustPoints = [
@@ -20,8 +20,6 @@ const fadeUp = (delay = 0) => ({
 });
 
 export function LandingHero({ browseHref = "/stadiums" }: { browseHref?: string }) {
-  const cities = APP_CITIES.join(" و");
-
   return (
     <section className="relative overflow-hidden border-b border-border bg-background">
       <div aria-hidden className="pointer-events-none absolute inset-0 blob-orange opacity-70" />
@@ -35,7 +33,7 @@ export function LandingHero({ browseHref = "/stadiums" }: { browseHref?: string 
               className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground"
             >
               <MapPin className="h-3.5 w-3.5" aria-hidden />
-              {cities}
+              {APP_COUNTRY_AR}
             </motion.p>
 
             <motion.h1
@@ -90,7 +88,7 @@ export function LandingHero({ browseHref = "/stadiums" }: { browseHref?: string 
             transition={{ delay: 0.12, duration: 0.5 }}
             className="relative mx-auto w-full max-w-md lg:max-w-none"
           >
-            <HeroVisual cities={cities} />
+            <HeroVisual location={APP_COUNTRY_AR} />
           </motion.div>
         </div>
       </div>
@@ -98,14 +96,14 @@ export function LandingHero({ browseHref = "/stadiums" }: { browseHref?: string 
   );
 }
 
-function HeroVisual({ cities }: { cities: string }) {
+function HeroVisual({ location }: { location: string }) {
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-3xl bg-primary p-1 shadow-card">
         <div className="relative aspect-[4/3] overflow-hidden rounded-[1.35rem]">
           <Image
             src="https://images.unsplash.com/photo-1529900748604-07564a03e7a6?q=80&w=1200&auto=format"
-            alt={`ملعب كرة قدم في ${cities}`}
+            alt={`ملعب كرة قدم في ${location}`}
             fill
             className="object-cover"
             sizes="(max-width:1024px) 90vw, 520px"
@@ -113,14 +111,14 @@ function HeroVisual({ cities }: { cities: string }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-transparent" />
           <p className="absolute bottom-4 start-4 end-4 text-sm font-medium text-primary-foreground">
-            ملاعب موثّقة في {cities}
+            ملاعب موثّقة في {location}
           </p>
         </div>
       </div>
 
       <div className="absolute -bottom-5 start-4 surface-card p-4 sm:start-6 sm:p-5">
         <p className="text-xs font-semibold text-primary">طلب حجز</p>
-        <p className="mt-0.5 font-bold text-heading">ملعب الشهباء — حلب</p>
+        <p className="mt-0.5 font-bold text-heading">ملعب الشهباء</p>
         <p className="mt-1 text-xs text-muted-foreground">الجمعة · 7:00 – 8:00 م</p>
         <span className="mt-2 inline-flex rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-semibold text-accent-foreground">
           بانتظار التأكيد

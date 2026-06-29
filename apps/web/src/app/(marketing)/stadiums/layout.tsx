@@ -1,14 +1,14 @@
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { BreadcrumbJsonLd, StadiumsListJsonLd } from "@/features/marketing/seo";
-import { citiesLabel, createMetadata } from "@/lib/seo";
+import { locationLabel, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: `ملاعب كرة القدم في ${citiesLabel}`,
+  title: `ملاعب كرة القدم في ${locationLabel}`,
   description:
-    `تصفّح ملاعب كرة القدم في ${citiesLabel}. قارن أسعار الصباح والمساء، اطلع على التقييمات، وأرسل طلب حجز — صاحب الملعب يؤكّد الموعد.`,
+    `تصفّح ملاعب كرة القدم في ${locationLabel}. قارن أسعار الصباح والمساء، اطلع على التقييمات، وأرسل طلب حجز — صاحب الملعب يؤكّد الموعد.`,
   path: "/stadiums",
   keywords: [
-    "ملاعب حلب",
-    "ملاعب إدلب",
+    "ملاعب سوريا",
     "حجز ملعب",
     "أسعار ملاعب",
     "ملاعب خماسيات",

@@ -17,6 +17,7 @@ import {
   getBookingStatusLabel,
   isAwaitingDeposit,
   isDepositPaidPendingOwner,
+  isBookingTimeEnded,
   type DepositFields,
 } from "@/features/user-bookings/lib/user-bookings";
 
@@ -44,28 +45,35 @@ export function StatusBadge({
   status,
   className,
   icon = true,
+  endTime,
   depositReferenceCode,
   depositPaidAt,
 }: {
   status: string;
   className?: string;
   icon?: boolean;
+  endTime?: string;
   depositReferenceCode?: string | null;
   depositPaidAt?: string | null;
 }) {
   const depositCtx: DepositFields | undefined =
-    depositReferenceCode !== undefined || depositPaidAt !== undefined
-      ? { status, depositReferenceCode, depositPaidAt }
+    depositReferenceCode !== undefined || depositPaidAt !== undefined || endTime !== undefined
+      ? { status, endTime, depositReferenceCode, depositPaidAt }
       : undefined;
 
   const label = getBookingStatusLabel(status, depositCtx);
+  const ended = depositCtx && isBookingTimeEnded(depositCtx);
   const Icon =
-    status === "PENDING" && depositCtx && isAwaitingDeposit(depositCtx)
+    ended
+      ? CalendarX2
+      : status === "PENDING" && depositCtx && isAwaitingDeposit(depositCtx)
       ? Wallet
       : statusIcon[status] ?? HelpCircle;
 
   const variant =
-    status === "PENDING" && depositCtx && isDepositPaidPendingOwner(depositCtx)
+    ended
+      ? "secondary"
+      : status === "PENDING" && depositCtx && isDepositPaidPendingOwner(depositCtx)
       ? "success"
       : statusVariant[status] ?? "outline";
 

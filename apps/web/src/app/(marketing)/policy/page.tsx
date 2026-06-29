@@ -1,4 +1,4 @@
-import { createMetadata, citiesLabel } from "@/lib/seo";
+import { createMetadata, locationLabel } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/features/marketing/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export const metadata = createMetadata({
   title: "سياسة الإلغاء والعربون",
   description:
-    `قواعد الإلغاء واسترداد العربون على ${citiesLabel}: إلغاء قبل 24 ساعة من موعد المباراة لاسترداد كامل العربون.`,
+    `قواعد الإلغاء واسترداد العربون على ${locationLabel}: إلغاء قبل 24 ساعة من موعد المباراة لاسترداد كامل العربون.`,
   path: "/policy",
 });
 

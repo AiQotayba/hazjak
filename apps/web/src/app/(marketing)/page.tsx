@@ -5,16 +5,15 @@ import {
   LandingFaq,
   LandingJsonLd,
 } from "@/features/landing";
-import { citiesLabel, createMetadata } from "@/lib/seo";
+import { locationLabel, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: `احجز ملعب كرة قدم في ${citiesLabel}`,
+  title: `احجز ملعب كرة قدم في ${locationLabel}`,
   description:
-    `منصة حجزك لحجز ملاعب كرة القدم في ${citiesLabel}: تصفّح المواعيد والأسعار، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب خلال دقائق.`,
+    `منصة حجزك لحجز ملاعب كرة القدم في ${locationLabel}: تصفّح المواعيد والأسعار، أرسل طلب حجز، واستلم تأكيداً من صاحب الملعب خلال دقائق.`,
   path: "/",
   keywords: [
-    "حجز ملاعب حلب",
-    "حجز ملاعب إدلب",
+    "حجز ملاعب سوريا",
     "ملاعب كرة قدم",
     "حجز ملعب أونلاين",
     "حجزك",

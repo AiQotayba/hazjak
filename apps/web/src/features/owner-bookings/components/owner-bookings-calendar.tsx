@@ -20,7 +20,8 @@ import {
 import { arSA } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatTime } from "@hazjak/utils";
-import { getOwnerBookingDepositHint } from "@/features/user-bookings/lib/user-bookings";
+import { getOwnerBookingDepositHint, isBookingTimeEnded } from "@/features/user-bookings/lib/user-bookings";
+import { getBookingPlayerLabel } from "@/features/owner-bookings/lib/manual-booking";
 import { Button } from "@/components/ui/button";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,6 +43,7 @@ export interface OwnerCalendarBooking {
   status: string;
   startTime: string;
   endTime: string;
+  notes?: string | null;
   depositAmount?: number | null;
   depositReferenceCode?: string | null;
   depositPaidAt?: string | null;
@@ -306,6 +308,10 @@ function BookingEventPill({
   onClick: () => void;
 }) {
   const depositHint = getOwnerBookingDepositHint(booking);
+  const ended = isBookingTimeEnded(booking);
+  const eventStyle = ended
+    ? EVENT_STYLES.EXPIRED
+    : EVENT_STYLES[booking.status] ?? "bg-secondary text-heading";
   return (
     <button
       type="button"
@@ -313,8 +319,8 @@ function BookingEventPill({
       className={cn(
         "w-full text-start rounded-md transition-opacity hover:opacity-80",
         compact ? "px-1.5 py-0.5 text-[10px] font-medium truncate" : "px-3 py-2 text-xs font-medium",
-        depositHint ? "ring-1 ring-accent-gold/50" : "",
-        EVENT_STYLES[booking.status] ?? "bg-secondary text-heading"
+        depositHint && !ended ? "ring-1 ring-accent-gold/50" : "",
+        eventStyle
       )}
     >
       <span className="opacity-80" dir="ltr">
@@ -322,7 +328,7 @@ function BookingEventPill({
       </span>
       {!compact && " — "}
       {compact ? " " : null}
-      {booking.user.firstName} {booking.user.lastName}
+      {getBookingPlayerLabel(booking)}
       {depositHint && (
         <span className={cn("block opacity-90", compact ? "text-[9px]" : "text-[10px] mt-0.5")}>
           {depositHint}

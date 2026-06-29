@@ -1,10 +1,10 @@
 ﻿import { Clock, MapPin, Wallet } from "lucide-react";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 
 const items = [
   {
     icon: MapPin,
-    title: APP_CITIES.join(" · "),
+    title: APP_COUNTRY_AR,
     desc: "ملاعب موثّقة في مدينتك — ابحث بالحي والسعر",
   },
   {

@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 
 export function OwnerFinalCta() {
@@ -13,7 +13,7 @@ export function OwnerFinalCta() {
           </h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
             أنشئ حساباً، أضف بيانات الملعب والأسعار، وابدأ استقبال الطلبات من اللاعبين في{" "}
-            {APP_CITIES.join(" و")}.
+            {APP_COUNTRY_AR}.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button size="lg" className="rounded-full shadow-soft gap-2" asChild>

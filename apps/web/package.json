@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test",
@@ -52,6 +53,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "dotenv": "^16.5.0",
+    "sharp": "^0.35.2",
     "tailwindcss": "^4.1.10",
     "typescript": "^5.8.3"
   }

@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import Image from "next/image";
 
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 
 const columns = [
@@ -35,12 +35,11 @@ export function SiteFooter() {
               </div>
               <div>
                 <p className="font-display text-xl font-bold text-primary">{APP_NAME_AR}</p>
-                <p className="text-xs text-primary/70 font-medium">حجز ملاعبك بسهولة</p>
+                <p className="text-xs text-primary/70 font-medium">حجز ملاعب في {APP_COUNTRY_AR}</p>
               </div>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mt-4">
-              حجز ملاعب كرة القدم في {APP_CITIES.join(" و")} — مواعيد واضحة وتأكيد من صاحب
-              الملعب.
+              حجز ملاعب كرة القدم في {APP_COUNTRY_AR} — مواعيد واضحة وتأكيد من صاحب الملعب.
             </p>
           </div>
           {columns.map((col) => (
@@ -59,7 +58,7 @@ export function SiteFooter() {
           ))}
         </div>
         <p className="mt-10 pt-6 border-t border-border/80 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {APP_NAME_AR} · جميع الحقوق محفوظة · بُني بكل حب في سوريا
+          © {new Date().getFullYear()} {APP_NAME_AR} · جميع الحقوق محفوظة · بُني بكل حب في {APP_COUNTRY_AR}
         </p>
       </div>
     </footer>

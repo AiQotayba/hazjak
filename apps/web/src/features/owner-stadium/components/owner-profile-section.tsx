@@ -1,10 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmAlert } from "@/components/ui/confirm-alert";
+import { useAuthStore } from "@/features/auth/store/auth";
 import { ownerInputClass } from "../types";
 
 function Field({
@@ -39,7 +44,18 @@ export function OwnerProfileSection({
   setProfile,
   saveProfile,
 }: OwnerProfileSectionProps) {
+  const router = useRouter();
+  const { logout } = useAuthStore();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+
+  function handleLogout() {
+    logout();
+    setLogoutOpen(false);
+    router.replace("/login");
+  }
+
   return (
+    <>
     <Card className="border-0 shadow-soft max-w-lg">
       <CardContent className="p-5 space-y-4">
         <p className="text-sm text-muted-foreground">
@@ -85,7 +101,28 @@ export function OwnerProfileSection({
             حفظ الملف الشخصي
           </Button>
         </form>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full gap-2 rounded-2xl border-0 bg-destructive/5 text-destructive shadow-soft"
+          onClick={() => setLogoutOpen(true)}
+        >
+          <LogOut className="h-4 w-4" />
+          تسجيل الخروج
+        </Button>
       </CardContent>
     </Card>
+
+    <ConfirmAlert
+      open={logoutOpen}
+      onOpenChange={setLogoutOpen}
+      title="تسجيل الخروج"
+      description="هل تريد تسجيل الخروج؟ ستحتاج تسجيل الدخول مرة أخرى للوصول إلى لوحة الملعب."
+      confirmLabel="تأكيد الخروج"
+      destructive
+      onConfirm={handleLogout}
+    />
+    </>
   );
 }

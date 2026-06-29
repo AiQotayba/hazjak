@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { Button } from "@/components/ui/button";
 import { Section } from "./section";
-import { APP_CITIES } from "@hazjak/constants";
 
 export function LandingFinalCta() {
   return (
@@ -13,7 +13,7 @@ export function LandingFinalCta() {
         />
         <div className="relative max-w-xl mx-auto text-center">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-heading">
-            جاهز تحجز في {APP_CITIES.join(" أو ")}؟
+            جاهز تحجز في {APP_COUNTRY_AR}؟
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             تصفّح مجاناً — حساب بسيط لإرسال طلب الحجز.

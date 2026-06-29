@@ -15,6 +15,7 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { computeDaySlots } from "../../utils/booking-slots";
+import { runBookingLifecycleJobs } from "../../utils/booking-lifecycle";
 import { icontains } from "../../utils/prisma-search";
 
 function redactPublicContacts<T extends { contactPhone?: string | null; contactWhatsapp?: string | null }>(
@@ -291,6 +292,7 @@ export async function deleteStadium(req: AuthRequest, res: Response) {
 }
 
 export async function getAvailability(req: AuthRequest, res: Response) {
+  await runBookingLifecycleJobs();
   const stadiumId = param(req, "id");
   const startDate = req.query.startDate
     ? new Date(req.query.startDate as string)
@@ -325,6 +327,7 @@ export async function getAvailability(req: AuthRequest, res: Response) {
 }
 
 export async function getBookingSlots(req: AuthRequest, res: Response) {
+  await runBookingLifecycleJobs();
   const stadiumId = param(req, "id");
   const date = req.query.date as string | undefined;
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {

@@ -1,11 +1,12 @@
 import { PhoneOff, CalendarX, MapPin } from "lucide-react";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { Section, SectionHeading } from "./section";
 
 const problems = [
   {
     icon: PhoneOff,
     stat: "4+ مكالمات",
-    pain: "تتصل بملاعب حلب أو إدلب لتسأل عن الموعد",
+    pain: "تتصل بملاعب كثيرة لتسأل عن الموعد",
     consequence: "تضيع وقتك قبل ما تعرف مين فاضي",
   },
   {
@@ -16,8 +17,8 @@ const problems = [
   },
   {
     icon: MapPin,
-    stat: "مدينتان",
-    pain: "ما في مكان واحد يجمع ملاعب حلب وإدلب",
+    stat: "بدون منصة",
+    pain: "ما في مكان واحد يجمع ملاعبك في سوريا",
     consequence: "كل أسبوع تبدأ البحث من الصفر",
   },
 ];
@@ -28,7 +29,7 @@ export function LandingProblem() {
       <SectionHeading
         eyebrow="المشكلة"
         title="حجز الملاعب لسا يدوي"
-        description="في حلب وإدلب، كثير الفرق تعتمد على واتساب ومكالمات."
+        description={`في ${APP_COUNTRY_AR}، كثير الفرق تعتمد على واتساب ومكالمات.`}
         centered
       />
       <div className="grid gap-5 md:grid-cols-3">

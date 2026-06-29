@@ -1,19 +1,19 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { BookingsFilters } from "@/features/user-bookings/components/bookings-filters";
 import { BookingListItem } from "@/features/user-bookings/components/booking-list-item";
+import { UserBookingsPageSkeleton } from "@/features/user-bookings/components/booking-list-item-skeleton";
 import { BookingDetailDialog } from "@/features/user-bookings/components/booking-detail-dialog";
 import { UserBookingsHero } from "@/features/user-bookings/components/user-bookings-hero";
-import { ARCHIVED_BOOKING_STATUSES, isAwaitingDeposit, sortUpcomingBookings } from "@/features/user-bookings/lib/user-bookings";
-import {
-  useUserBookingsQuery,
-  useUserBookingsUpcomingCount,
-} from "@/features/user-bookings/hooks/use-user-bookings-query";
+import { isAwaitingDeposit, isBookingArchived, sortUpcomingBookings } from "@/features/user-bookings/lib/user-bookings";
+import { useUserBookingsQuery, useUserBookingsUpcomingCount } from "@/features/user-bookings/hooks/use-user-bookings-query";
 import { useAuthStore } from "@/features/auth/store/auth";
 
 function UserBookingsContent() {
@@ -36,10 +36,9 @@ function UserBookingsContent() {
   const bookings = data?.bookings ?? [];
   const loading = isLoading || isFetching;
 
-  const isArchived = (s: string) =>
-    (ARCHIVED_BOOKING_STATUSES as readonly string[]).includes(s);
-  const upcoming = sortUpcomingBookings(bookings.filter((b) => !isArchived(b.status)));
-  const past = bookings.filter((b) => isArchived(b.status));
+  const isArchived = (b: (typeof bookings)[number]) => isBookingArchived(b);
+  const upcoming = sortUpcomingBookings(bookings.filter((b) => !isArchived(b)));
+  const past = bookings.filter((b) => isArchived(b));
 
   function openDetail(id: string) {
     const next = new URLSearchParams(searchParams.toString());
@@ -60,6 +59,15 @@ function UserBookingsContent() {
   }
 
   const depositDueCount = upcoming.filter((b) => isAwaitingDeposit(b)).length;
+  const [pastExpanded, setPastExpanded] = useState(false);
+  const hasUpcoming = upcoming.length > 0;
+  const hasPast = past.length > 0;
+  const pastCollapsed = hasUpcoming && hasPast && !pastExpanded;
+
+  useEffect(() => {
+    if (!hasUpcoming) setPastExpanded(true);
+    else setPastExpanded(false);
+  }, [hasUpcoming]);
 
   return (
     <>
@@ -73,11 +81,7 @@ function UserBookingsContent() {
       <BookingsFilters />
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[168px] rounded-2xl" />
-          ))}
-        </div>
+        <UserBookingsPageSkeleton />
       ) : bookings.length === 0 ? (
         <EmptyState
           title="لا حجوزات بعد"
@@ -87,7 +91,7 @@ function UserBookingsContent() {
         />
       ) : (
         <div className="space-y-6">
-          {upcoming.length > 0 && (
+          {hasUpcoming ? (
             <section>
               <p className="text-xs font-bold text-primary mb-2">قادمة</p>
               <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
@@ -102,10 +106,48 @@ function UserBookingsContent() {
                 ))}
               </ul>
             </section>
+          ) : (
+            <section className="rounded-2xl border border-dashed border-primary/25 bg-gradient-to-br from-primary/8 via-card to-secondary/40 p-6 text-center shadow-soft">
+              <p className="font-display text-base font-bold text-heading">لا حجوزات قادمة</p>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                تصفّح الملاعب واحجز موعدك القادم
+              </p>
+              <Button size="sm" className="rounded-full gap-1.5" asChild>
+                <Link href="/user/stadiums">
+                  <Plus className="h-4 w-4" />
+                  احجز ملعب
+                </Link>
+              </Button>
+            </section>
           )}
-          {past.length > 0 && (
+
+          {hasPast && pastCollapsed && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-2xl h-11 gap-2 border-0 bg-secondary/80 text-heading font-bold shadow-none"
+              onClick={() => setPastExpanded(true)}
+            >
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              عرض الحجوزات السابقة ({past.length})
+            </Button>
+          )}
+
+          {hasPast && !pastCollapsed && (
             <section>
-              <p className="text-xs font-bold text-muted-foreground mb-2">سابقة</p>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <p className="text-xs font-bold text-muted-foreground">سابقة</p>
+                {hasUpcoming && (
+                  <button
+                    type="button"
+                    onClick={() => setPastExpanded(false)}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-heading transition-colors"
+                  >
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    إخفاء
+                  </button>
+                )}
+              </div>
               <ul className="space-y-3 xl:grid xl:grid-cols-2 xl:gap-4 xl:space-y-0">
                 {past.map((b) => (
                   <li key={b.id}>
@@ -135,16 +177,7 @@ function UserBookingsContent() {
 
 export default function UserBookingsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="space-y-3">
-          <Skeleton className="h-28 rounded-3xl" />
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[168px] rounded-2xl" />
-          ))}
-        </div>
-      }
-    >
+    <Suspense fallback={<UserBookingsPageSkeleton />}>
       <UserBookingsContent />
     </Suspense>
   );

@@ -15,7 +15,13 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
 import { useSnackbar } from "@/components/ui/snackbar";
-import { isAwaitingDeposit, isDepositPaidPendingOwner, isPendingOwnerReview } from "@/features/user-bookings/lib/user-bookings";
+import { isAwaitingDeposit, isDepositPaidPendingOwner, isPendingOwnerReview, isBookingTimeEnded } from "@/features/user-bookings/lib/user-bookings";
+import {
+  getBookingPlayerLabel,
+  getBookingPlayerPhone,
+  getManualBookingExtraNotes,
+  isManualBooking,
+} from "@/features/owner-bookings/lib/manual-booking";
 
 export type OwnerBookingDetail = {
   id: string;
@@ -27,6 +33,8 @@ export type OwnerBookingDetail = {
   depositAmount?: number | null;
   depositReferenceCode?: string | null;
   depositPaidAt?: string | null;
+  guestName?: string | null;
+  guestPhone?: string | null;
   user: { firstName: string; lastName: string; phone: string };
   stadium: { name: string; depositAmount?: number | null; contactWhatsapp?: string | null };
 };
@@ -83,10 +91,17 @@ export function OwnerBookingDetailDialog({
   const awaitingDeposit = booking ? isAwaitingDeposit(booking) : false;
   const depositPaidAwaitingConfirm = booking ? isDepositPaidPendingOwner(booking) : false;
   const pendingOwnerReview = booking ? isPendingOwnerReview(booking) : false;
+  const timeEnded = booking ? isBookingTimeEnded(booking) : false;
+  const isManual = booking ? isManualBooking(booking) : false;
+  const extraNotes = booking ? getManualBookingExtraNotes(booking.notes) : null;
+  const playerPhone = booking ? getBookingPlayerPhone(booking) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" dir="rtl">
+        <DialogTitle className="sr-only">
+          {booking ? `حجز ${booking.stadium.name}` : "تفاصيل الحجز"}
+        </DialogTitle>
         {loading ? (
           <p className="py-8 text-center text-sm text-muted-foreground">جاري التحميل...</p>
         ) : !booking ? (
@@ -95,9 +110,10 @@ export function OwnerBookingDetailDialog({
           <div className="space-y-4">
             <DialogHeader className="text-start space-y-2">
               <div className="flex items-start justify-between gap-2">
-                <DialogTitle className="text-heading">{booking.stadium.name}</DialogTitle>
+                <p className="font-display text-lg font-bold text-heading">{booking.stadium.name}</p>
                 <StatusBadge
                   status={booking.status}
+                  endTime={booking.endTime}
                   depositReferenceCode={booking.depositReferenceCode}
                   depositPaidAt={booking.depositPaidAt}
                 />
@@ -107,8 +123,8 @@ export function OwnerBookingDetailDialog({
             <dl className="space-y-3 text-sm">
               <Row
                 icon={User}
-                label="اللاعب"
-                value={`${booking.user.firstName} ${booking.user.lastName}${booking.user.phone ? ` · ${booking.user.phone}` : ""}`}
+                label={isManual ? "الضيف" : "اللاعب"}
+                value={`${booking ? getBookingPlayerLabel(booking) : ""}${playerPhone ? ` · ${playerPhone}` : ""}`}
               />
               <Row
                 icon={Clock}
@@ -129,19 +145,26 @@ export function OwnerBookingDetailDialog({
                   value={formatDate(booking.depositPaidAt, { dateStyle: "medium", timeStyle: "short" })}
                 />
               )}
-              {booking.notes && <Row icon={FileText} label="ملاحظات" value={booking.notes} />}
+              {extraNotes && <Row icon={FileText} label="ملاحظات" value={extraNotes} />}
+              {isManual && (
+                <p className="text-[11px] text-muted-foreground rounded-lg bg-secondary/60 px-3 py-2">
+                  حجز أُضيف يدوياً من لوحة الملعب
+                </p>
+              )}
             </dl>
 
             {awaitingDeposit && (
               <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
-                اللاعب حجز الموعد — بانتظار دفع العربون وتأكيده في التطبيق خلال{" "}
-                {BOOKING_EXPIRATION_MIN} دقيقة.
+                أُرسلت تعليمات العربون للاعب على واتساب — بانتظار دفع العربون وتأكيده في التطبيق خلال{" "}
+                {BOOKING_EXPIRATION_MIN} دقيقة. لا يمكن تأكيد الحجز قبل ذلك.
               </p>
             )}
 
             {pendingOwnerReview && (
               <p className="rounded-lg border border-border bg-secondary/50 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
-                طلب حجز جديد بدون عربون — يمكنك قبول الحجز أو رفضه.
+                {stadiumDeposit > 0
+                  ? "طلب حجز جديد — أرسل تعليمات العربون للاعب أو ارفض الطلب."
+                  : "طلب حجز جديد بدون عربون — يمكنك قبول الحجز أو رفضه."}
               </p>
             )}
 
@@ -151,8 +174,36 @@ export function OwnerBookingDetailDialog({
               </p>
             )}
 
+            {timeEnded && booking.status !== "COMPLETED" && (
+              <p className="rounded-lg border border-border bg-secondary/50 px-3 py-2 text-xs text-muted-foreground leading-relaxed">
+                انتهى وقت هذا الحجز.
+              </p>
+            )}
+
             <div className="grid gap-2 pt-2">
-              {pendingOwnerReview && (
+              {!timeEnded && pendingOwnerReview && stadiumDeposit > 0 && (
+                <>
+                  <Button
+                    disabled={actionLoading}
+                    onClick={() =>
+                      patchStatus(
+                        { status: "PENDING", requireDeposit: true },
+                        "أُرسلت تعليمات العربون للاعب"
+                      )
+                    }
+                  >
+                    إرسال طلب عربون ({formatPrice(stadiumDeposit)})
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    disabled={actionLoading}
+                    onClick={() => patchStatus({ status: "REJECTED" }, "تم رفض الحجز")}
+                  >
+                    رفض
+                  </Button>
+                </>
+              )}
+              {!timeEnded && pendingOwnerReview && stadiumDeposit <= 0 && (
                 <>
                   <Button
                     disabled={actionLoading}
@@ -169,25 +220,7 @@ export function OwnerBookingDetailDialog({
                   </Button>
                 </>
               )}
-              {booking.status === "PENDING" &&
-                !awaitingDeposit &&
-                !depositPaidAwaitingConfirm &&
-                !pendingOwnerReview &&
-                stadiumDeposit > 0 && (
-                  <Button
-                    variant="secondary"
-                    disabled={actionLoading}
-                    onClick={() =>
-                      patchStatus(
-                        { status: "PENDING", requireDeposit: true },
-                        "أُرسلت تعليمات العربون للاعب"
-                      )
-                    }
-                  >
-                    إرسال طلب عربون ({formatPrice(stadiumDeposit)})
-                  </Button>
-                )}
-              {booking.status === "PENDING" && awaitingDeposit && (
+              {!timeEnded && booking.status === "PENDING" && awaitingDeposit && (
                 <Button
                   variant="destructive"
                   disabled={actionLoading}
@@ -196,7 +229,7 @@ export function OwnerBookingDetailDialog({
                   رفض
                 </Button>
               )}
-              {depositPaidAwaitingConfirm && (
+              {!timeEnded && depositPaidAwaitingConfirm && (
                 <>
                   <Button
                     disabled={actionLoading}
@@ -213,7 +246,7 @@ export function OwnerBookingDetailDialog({
                   </Button>
                 </>
               )}
-              {booking.status === "CONFIRMED" && (
+              {booking.status === "CONFIRMED" && !timeEnded && (
                 <Button
                   variant="outline"
                   disabled={actionLoading}

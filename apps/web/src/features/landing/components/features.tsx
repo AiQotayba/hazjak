@@ -9,6 +9,7 @@ import {
   Building2,
 } from "lucide-react";
 import { useState } from "react";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { cn } from "@/lib/utils";
 import { Section, SectionHeading } from "./section";
 
@@ -16,7 +17,7 @@ const features = [
   {
     icon: MapPin,
     title: "ملاعب حسب المنطقة",
-    description: "حلب، إدلب، والأحياء — ابحث بالمدينة والسعر الصباحي/المسائي.",
+    description: "ابحث بالمدينة والحي والسعر الصباحي/المسائي.",
   },
   {
     icon: Filter,
@@ -53,7 +54,7 @@ export function LandingFeatures() {
       <SectionHeading
         eyebrow="الخدمات"
         title="كل اللي تحتاجه للحجز"
-        description="ميزات مبنية لفرق كرة القدم في حلب وإدلب."
+        description={`ميزات مبنية لفرق كرة القدم في ${APP_COUNTRY_AR}.`}
         centered
       />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

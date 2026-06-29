@@ -1,10 +1,13 @@
 ﻿import type { Metadata } from "next";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
 
 export const siteUrl = process.env.NEXT_PUBLIC_WEB_URL ?? "http://localhost:3000";
 export const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
-export const citiesLabel = APP_CITIES.join(" و");
+/** تسمية الموقع الجغرافية في النصوص العامة — سوريا فقط */
+export const locationLabel = APP_COUNTRY_AR;
+/** @deprecated استخدم locationLabel */
+export const citiesLabel = APP_COUNTRY_AR;
 export const ogImage = `${siteUrl}/logo.png`;
 export const supportEmail = "support@hazjak.sy";
 
@@ -13,9 +16,9 @@ export const DEFAULT_KEYWORDS = [
   "ملاعب كرة قدم",
   "حجز ملعب",
   "ملعب كرة قدم",
-  "حلب",
-  "إدلب",
-  "سوريا",
+  "حجز ملاعب سوريا",
+  "ملاعب سوريا",
+  APP_COUNTRY_AR,
   APP_NAME_AR,
   "حجز ملعب أونلاين",
   "ملاعب خماسيات",
@@ -50,7 +53,7 @@ export function createMetadata({
 }): Metadata {
   const url = `${siteUrl}${path}`;
   const ogImages = images ?? [
-    { url: ogImage, width: 512, height: 512, alt: `${APP_NAME_AR} — حجز ملاعب في ${citiesLabel}` },
+    { url: ogImage, width: 512, height: 512, alt: `${APP_NAME_AR} — حجز ملاعب في ${locationLabel}` },
   ];
 
   return {

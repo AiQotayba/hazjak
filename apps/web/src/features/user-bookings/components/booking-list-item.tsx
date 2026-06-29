@@ -4,7 +4,7 @@ import { MediaImage } from "@/components/ui/media-image";
 import { CalendarDays, Clock, MapPin, Wallet } from "lucide-react";
 import { formatDate, formatPrice, formatTime } from "@hazjak/utils";
 import { cn } from "@/lib/utils";
-import { isAwaitingDeposit, getBookingStatusHint } from "@/features/user-bookings/lib/user-bookings";
+import { isAwaitingDeposit, getBookingStatusHint, isBookingArchived } from "@/features/user-bookings/lib/user-bookings";
 import { ConfirmDepositButton } from "./confirm-deposit-button";
 import { StatusBadge } from "./StatusBadge";
 
@@ -31,7 +31,6 @@ interface BookingListItemProps {
   onDepositConfirmed?: () => void;
 }
 
-const ARCHIVED_STATUSES = ["COMPLETED", "CANCELLED", "REJECTED", "EXPIRED", "NO_SHOW"];
 
 function StadiumImage({
   name,
@@ -94,7 +93,7 @@ export function BookingListItem({
   onPress,
   onDepositConfirmed,
 }: BookingListItemProps) {
-  const isArchived = ARCHIVED_STATUSES.includes(booking.status);
+  const isArchived = isBookingArchived(booking);
   const start = new Date(booking.startTime);
   const end = new Date(booking.endTime);
   const timeLabel = `${formatTime(start)} – ${formatTime(end)}`;
@@ -133,6 +132,7 @@ export function BookingListItem({
         <div className="absolute bottom-2 start-2">
           <StatusBadge
             status={booking.status}
+            endTime={booking.endTime}
             depositReferenceCode={booking.depositReferenceCode}
             depositPaidAt={booking.depositPaidAt}
             className="text-[10px] px-2 py-0.5 shadow-soft bg-card/95 backdrop-blur-sm"

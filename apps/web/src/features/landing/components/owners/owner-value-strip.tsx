@@ -1,5 +1,5 @@
 ﻿import { Clock, MapPin, Sparkles } from "lucide-react";
-import { APP_CITIES } from "@hazjak/constants";
+import { APP_COUNTRY_AR } from "@hazjak/constants";
 
 const items = [
   {
@@ -14,7 +14,7 @@ const items = [
   },
   {
     icon: MapPin,
-    title: APP_CITIES.join(" · "),
+    title: APP_COUNTRY_AR,
     desc: "اللاعب يبحث حسب المدينة ويرسل طلباً واضحاً",
   },
 ];

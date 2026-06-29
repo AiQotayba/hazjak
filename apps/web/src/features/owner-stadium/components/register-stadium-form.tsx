@@ -114,7 +114,7 @@ export function RegisterStadiumForm() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="نوع الملعب" error={errors.sportType?.message}>
               <Select
-                value={sportType ?? "FOOTBALL"}
+                value={typeof sportType === "string" ? sportType : "FOOTBALL"}
                 onValueChange={(v) => setValue("sportType", v as RegisterStadiumFormValues["sportType"])}
               >
                 <SelectTrigger className={inputClass}>

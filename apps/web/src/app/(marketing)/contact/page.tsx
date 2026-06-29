@@ -1,6 +1,6 @@
-﻿import { APP_CITIES } from "@hazjak/constants";
+﻿import { APP_COUNTRY_AR } from "@hazjak/constants";
 import { APP_NAME_AR } from "@/lib/brand";
-import { citiesLabel, createMetadata, supportEmail } from "@/lib/seo";
+import { locationLabel, createMetadata, supportEmail } from "@/lib/seo";
 import { BreadcrumbJsonLd, JsonLd } from "@/features/marketing/seo";
 import { MarketingPageShell } from "@/features/marketing/components/page-shell";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Mail, MapPin } from "lucide-react";
 
 export const metadata = createMetadata({
   title: "تواصل معنا",
-  description: `تواصل مع فريق دعم ${APP_NAME_AR} في ${citiesLabel}. البريد: ${supportEmail} — نرد خلال يوم عمل.`,
+  description: `تواصل مع فريق دعم ${APP_NAME_AR} في ${locationLabel}. البريد: ${supportEmail} — نرد خلال يوم عمل.`,
   path: "/contact",
 });
 
@@ -25,18 +25,18 @@ export default function ContactPage() {
         data={{
           "@type": "ContactPage",
           name: `تواصل مع ${APP_NAME_AR}`,
-          description: `صفحة التواصل مع فريق دعم ${APP_NAME_AR} في ${citiesLabel}`,
+          description: `صفحة التواصل مع فريق دعم ${APP_NAME_AR} في ${locationLabel}`,
           mainEntity: {
             "@type": "Organization",
             name: APP_NAME_AR,
             email: supportEmail,
-            areaServed: APP_CITIES.map((city) => ({ "@type": "City", name: city })),
+            areaServed: { "@type": "Country", name: APP_COUNTRY_AR },
           },
         }}
       />
       <MarketingPageShell
       title="تواصل معنا"
-      description={`فريق الدعم في ${APP_CITIES.join(" و")} — نرد خلال يوم عمل`}
+      description={`فريق الدعم في ${APP_COUNTRY_AR} — نرد خلال يوم عمل`}
     >
       <Card className="surface-card max-w-lg">
         <CardContent className="p-6 space-y-5">
@@ -49,7 +49,7 @@ export default function ContactPage() {
           </p>
           <p className="flex items-center gap-3 text-muted-foreground">
             <MapPin className="h-5 w-5 shrink-0 text-primary" />
-            {APP_CITIES.join(" · ")}
+            {APP_COUNTRY_AR}
           </p>
         </CardContent>
       </Card>

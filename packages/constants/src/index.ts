@@ -37,7 +37,10 @@ export const MATCH_REMINDER_HOURS_BEFORE = 2;
 export const APP_NAME_AR = "Hazjak";
 export const APP_TAGLINE_AR = "ملعبك الجاي — احجزه بضغطة";
 export const APP_MOTTO_AR = "العب أكثر، ابحث أقل";
-export const APP_CITIES = ["حلب", "إدلب"] as const;
+export const APP_COUNTRY_AR = "سوريا";
+/** المدن المتاحة للفلترة والتسجيل — تُضاف مدن أخرى لاحقاً */
+export const APP_CITIES = ["حلب", "الرقة"] as const;
+export type AppCity = (typeof APP_CITIES)[number];
 
 /** قيمة فارغة للفلتر = «الكل» (لا تُرسل للـ API) */
 export const BOOKING_STATUS_FILTER_ALL = "all" as const;

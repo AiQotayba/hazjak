@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { CalendarCheck, MapPin, Sparkles, Zap } from "lucide-react";
-import { APP_CITIES, APP_MOTTO_AR } from "@hazjak/constants";
+import { APP_MOTTO_AR } from "@hazjak/constants";
 import { cn } from "@/lib/utils";
 
 const perks = [
@@ -23,8 +23,6 @@ interface StadiumsHeroProps {
 }
 
 export function StadiumsHero({ total, className }: StadiumsHeroProps) {
-  const cities = APP_CITIES.join(" و");
-
   return (
     <section
       className={cn(

@@ -11,7 +11,7 @@ import type { AuthRequest } from "../../middlewares/auth";
 import { param } from "../../utils/params";
 import { sendError, sendPaginated, sendSuccess } from "../../utils/response";
 import { icontains } from "../../utils/prisma-search";
-import { notifyBookingStatus, createNotification, notifyPlayerBookingConfirmed } from "../../services/notification.service";
+import { notifyBookingStatus, createNotification, notifyPlayerBookingConfirmed, notifyBookingCancelled } from "../../services/notification.service";
 import { activateDepositRequest } from "../../services/booking-deposit.service";
 import { BOOKING_EXPIRATION_MIN } from "@hazjak/constants";
 import { calculatePrice } from "../stadiums/stadiums.controller";
@@ -470,6 +470,7 @@ export async function updateStatus(req: AuthRequest, res: Response) {
           shamCashId: true,
           shamCashQrImage: true,
           contactWhatsapp: true,
+          owner: { select: { phone: true } },
         },
       },
       user: { select: { phone: true, firstName: true, lastName: true } },
@@ -552,6 +553,23 @@ export async function updateStatus(req: AuthRequest, res: Response) {
       depositPaidAt: booking.depositPaidAt,
       depositAmount: booking.depositAmount,
       bookingId: booking.id,
+    });
+  } else if (status === "CANCELLED") {
+    const cancelledByPlayer = isUser && booking.userId === req.user!.id;
+    const playerName = `${booking.user.firstName} ${booking.user.lastName}`.trim();
+    const ownerPhone =
+      booking.stadium.contactWhatsapp ?? booking.stadium.owner.phone ?? null;
+
+    await notifyBookingCancelled({
+      bookingId: booking.id,
+      playerUserId: booking.userId,
+      playerPhone: booking.user.phone,
+      playerName,
+      ownerUserId: booking.stadium.ownerId,
+      ownerPhone,
+      stadiumName: updated.stadium.name,
+      startTime: booking.startTime,
+      cancelledByPlayer,
     });
   } else {
     await notifyBookingStatus(booking.userId, updated.stadium.name, status, booking.id);

@@ -2,9 +2,12 @@ import { prisma, type NotificationType } from "../db";
 import { formatDate } from "@hazjak/utils";
 import { sendWhatsAppMessageAsync } from "./whatsapp/whatsapp.service";
 import {
+  bookingCancelledOwnerWhatsAppMessage,
+  bookingCancelledPlayerWhatsAppMessage,
   bookingConfirmedAfterDepositWhatsAppMessage,
   bookingConfirmedWhatsAppMessage,
 } from "./whatsapp/messages";
+import { ownerBookingsUrl } from "../utils/app-urls";
 
 export async function createNotification(
   userId: string,
@@ -118,4 +121,63 @@ export async function notifyPlayerBookingConfirmed(input: {
       });
 
   sendWhatsAppMessageAsync(input.phone, message);
+}
+
+/** إشعار + واتساب عند إلغاء الحجز — اللاعب دائماً، وصاحب الملعب إذا ألغى اللاعب */
+export async function notifyBookingCancelled(input: {
+  bookingId: string;
+  playerUserId: string;
+  playerPhone: string;
+  playerName: string;
+  ownerUserId: string;
+  ownerPhone: string | null;
+  stadiumName: string;
+  startTime: Date;
+  cancelledByPlayer: boolean;
+}) {
+  const startLabel = formatDate(input.startTime, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
+  await createNotification(
+    input.playerUserId,
+    "تم إلغاء الحجز",
+    input.cancelledByPlayer
+      ? `ألغيت حجزك في ${input.stadiumName} (${startLabel}).`
+      : `تم إلغاء حجزك في ${input.stadiumName} (${startLabel}).`,
+    "BOOKING_CANCELLED",
+    input.bookingId
+  );
+
+  sendWhatsAppMessageAsync(
+    input.playerPhone,
+    bookingCancelledPlayerWhatsAppMessage({
+      stadiumName: input.stadiumName,
+      startLabel,
+      cancelledByPlayer: input.cancelledByPlayer,
+    })
+  );
+
+  if (!input.cancelledByPlayer) return;
+
+  await createNotification(
+    input.ownerUserId,
+    "إلغاء حجز من لاعب",
+    `${input.playerName} ألغى حجزه في ${input.stadiumName} (${startLabel}).`,
+    "BOOKING_CANCELLED",
+    input.bookingId
+  );
+
+  if (input.ownerPhone) {
+    sendWhatsAppMessageAsync(
+      input.ownerPhone,
+      bookingCancelledOwnerWhatsAppMessage({
+        playerName: input.playerName,
+        stadiumName: input.stadiumName,
+        startLabel,
+        bookingsUrl: ownerBookingsUrl(input.bookingId),
+      })
+    );
+  }
 }

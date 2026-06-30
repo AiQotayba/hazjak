@@ -58,6 +58,16 @@ export function isPendingOwnerReview(booking: DepositFields) {
   return booking.status === "PENDING" && !booking.depositReferenceCode;
 }
 
+/** يظهر زر الإلغاء للحجوزات النشطة (معلّق أو مؤكد) */
+export function showCancelBookingAction(booking: { status: string }) {
+  return booking.status === "PENDING" || booking.status === "CONFIRMED";
+}
+
+/** يمكن تنفيذ الإلغاء فعلياً */
+export function canCancelBooking(booking: { status: string; endTime: string }) {
+  return showCancelBookingAction(booking) && !isBookingTimeEnded(booking);
+}
+
 export function getBookingStatusHint(booking: DepositFields): string | null {
   if (isBookingTimeEnded(booking)) return null;
   if (isAwaitingDeposit(booking)) return "ادفع العربون وأبلّغنا";

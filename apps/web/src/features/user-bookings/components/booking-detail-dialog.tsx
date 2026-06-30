@@ -12,10 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/features/auth/store/auth";
+import { useSnackbar } from "@/components/ui/snackbar";
 import { StatusBadge } from "./StatusBadge";
 import { ConfirmDepositButton } from "./confirm-deposit-button";
-import { isAwaitingDeposit, isBookingTimeEnded } from "@/features/user-bookings/lib/user-bookings";
-import { cn } from "@/lib/utils";
+import {
+  canCancelBooking,
+  isAwaitingDeposit,
+  isBookingTimeEnded,
+  showCancelBookingAction,
+} from "@/features/user-bookings/lib/user-bookings";
 
 export interface BookingSummary {
   id: string;
@@ -49,8 +54,6 @@ interface BookingDetailDialogProps {
   onUpdated?: () => void;
 }
 
-const CANCELLABLE = ["PENDING", "CONFIRMED"];
-
 export function BookingDetailDialog({
   bookingId,
   open,
@@ -59,6 +62,7 @@ export function BookingDetailDialog({
   onUpdated,
 }: BookingDetailDialogProps) {
   const { token } = useAuthStore();
+  const showSnack = useSnackbar((s) => s.show);
   const [booking, setBooking] = useState<BookingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -78,15 +82,20 @@ export function BookingDetailDialog({
   async function cancelBooking() {
     if (!booking || !token) return;
     setActionLoading(true);
-    await api(`/bookings/${booking.id}/status`, {
+    const res = await api(`/bookings/${booking.id}/status`, {
       method: "PATCH",
       token,
       body: JSON.stringify({ status: "CANCELLED" }),
     });
     setActionLoading(false);
     setCancelAlertOpen(false);
-    onCancelled?.();
-    onOpenChange(false);
+    if (res.success) {
+      showSnack(res.message ?? "تم إلغاء الحجز");
+      onCancelled?.();
+      onOpenChange(false);
+      return;
+    }
+    showSnack(res.message ?? "تعذّر إلغاء الحجز", "error");
   }
 
   async function handleDepositConfirmed() {
@@ -113,7 +122,7 @@ export function BookingDetailDialog({
         <DialogTitle className="sr-only">
           {booking ? `حجز ${booking.stadium.name}` : "تفاصيل الحجز"}
         </DialogTitle>
-        <div className="overflow-hidden rounded-3xl bg-card shadow-card">
+        <div className="flex max-h-[min(calc(100dvh-2rem),720px)] min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-card shadow-card">
           {loading ? (
             <BookingDetailSkeleton />
           ) : !booking ? (
@@ -186,11 +195,13 @@ function BookingDetailBody({
   const timeLabel = `${formatTime(start)} – ${formatTime(end)}`;
   const locationLine = [booking.stadium.area, booking.stadium.city].filter(Boolean).join("، ");
   const timeEnded = isBookingTimeEnded(booking);
-  const canCancel = CANCELLABLE.includes(booking.status) && !timeEnded;
+  const showCancel = showCancelBookingAction(booking);
+  const cancelEnabled = canCancelBooking(booking);
   const initial = booking.stadium.name.trim().charAt(0) || "ب";
 
   return (
-    <>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
       <div className="relative aspect-[9/6] bg-muted">
         {booking.stadium.coverImage ? (
           <MediaImage
@@ -350,30 +361,37 @@ function BookingDetailBody({
           </div>
         )}
 
-        <div className={cn("grid gap-2", canCancel ? "grid-cols-2" : "grid-cols-1")}>
-          {canCancel && (
-            <Button
-              variant="destructive"
-              className="rounded-2xl h-11"
-              disabled={actionLoading}
-              onClick={onCancel}
-            >
-              {actionLoading ? "جاري الإلغاء..." : "إلغاء الحجز"}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            className="rounded-2xl h-11 gap-1.5 border-0 bg-secondary hover:bg-secondary/80"
-            asChild
-          >
-            <Link href={`/stadiums/${booking.stadium.slug}`}>
-              <ExternalLink className="h-4 w-4" />
-              صفحة الملعب
-            </Link>
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          className="w-full rounded-2xl h-11 gap-1.5 border-0 bg-secondary hover:bg-secondary/80"
+          asChild
+        >
+          <Link href={`/stadiums/${booking.stadium.slug}`}>
+            <ExternalLink className="h-4 w-4" />
+            صفحة الملعب
+          </Link>
+        </Button>
       </div>
-    </>
+      </div>
+
+      {showCancel && (
+        <div className="shrink-0 border-t border-border/60 bg-card p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <Button
+            variant="destructive"
+            className="w-full rounded-2xl h-12 text-base font-bold"
+            disabled={actionLoading || !cancelEnabled}
+            onClick={onCancel}
+          >
+            {actionLoading ? "جاري الإلغاء..." : "إلغاء الحجز"}
+          </Button>
+          {!cancelEnabled && timeEnded && (
+            <p className="mt-2 text-center text-[11px] text-muted-foreground">
+              انتهى وقت الحجز — لا يمكن الإلغاء
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

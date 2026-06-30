@@ -53,6 +53,22 @@ export function buildBookingRange(dateStr: string, timeStart: string) {
   return { start, end };
 }
 
+export function isBookingSlotPast(dateStr: string, timeStart: string, now = new Date()) {
+  const { start } = buildBookingRange(dateStr, timeStart);
+  return start < now;
+}
+
+export function applyPastSlotAvailability<
+  T extends { value: string; available: boolean; reason?: string },
+>(slots: T[], dateStr: string, now = new Date()): T[] {
+  return slots.map((slot) => {
+    if (isBookingSlotPast(dateStr, slot.value, now)) {
+      return { ...slot, available: false, reason: "past" };
+    }
+    return slot;
+  });
+}
+
 export function parseDateKey(dateStr: string) {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(y, m - 1, d);

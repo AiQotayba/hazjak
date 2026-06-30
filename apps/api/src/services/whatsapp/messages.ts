@@ -85,4 +85,39 @@ export function depositPaidOwnerWhatsAppMessage(input: {
   ].join("\n");
 }
 
+export function bookingCancelledPlayerWhatsAppMessage(input: {
+  stadiumName: string;
+  startLabel: string;
+  cancelledByPlayer: boolean;
+}) {
+  if (input.cancelledByPlayer) {
+    return [
+      `تم إلغاء حجزك في ${input.stadiumName}.`,
+      `الموعد: ${input.startLabel}`,
+      `يمكنك حجز موعد جديد من التطبيق في أي وقت.`,
+    ].join("\n");
+  }
+
+  return [
+    `تم إلغاء حجزك في ${input.stadiumName} من قِبل الملعب.`,
+    `الموعد: ${input.startLabel}`,
+    `للاستفسار تواصل مع صاحب الملعب.`,
+  ].join("\n");
+}
+
+export function bookingCancelledOwnerWhatsAppMessage(input: {
+  playerName: string;
+  stadiumName: string;
+  startLabel: string;
+  bookingsUrl: string;
+}) {
+  return [
+    `إلغاء حجز من لاعب`,
+    `${input.playerName} ألغى حجزه في ${input.stadiumName}.`,
+    `الموعد: ${input.startLabel}`,
+    `راجع التفاصيل في لوحتك:`,
+    input.bookingsUrl,
+  ].join("\n");
+}
+
 

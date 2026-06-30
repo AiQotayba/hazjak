@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { useSnackbar } from "@/components/ui/snackbar";
 import {
+  applyPastSlotAvailability,
   BOOKING_SLOT_MINUTES,
   buildBookingRange,
   formatBookingDate,
@@ -83,6 +84,19 @@ export function BookingDialog({
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [dayBlocked, setDayBlocked] = useState(false);
   const [step, setStep] = useState<BookingStep>(1);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    if (!open) return;
+    setNow(new Date());
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
+  }, [open, date]);
+
+  const effectiveDaySlots = useMemo(
+    () => applyPastSlotAvailability(daySlots, date, now),
+    [daySlots, date, now]
+  );
 
   useEffect(() => {
     if (!open || !stadium.id || !date) return;
@@ -95,19 +109,27 @@ export function BookingDialog({
         if (res.success && res.data?.slots) {
           setDaySlots(res.data.slots);
           setDayBlocked(res.data.dayBlocked);
-          const firstAvailable = res.data.slots.find((s) => s.available);
+          const slots = applyPastSlotAvailability(res.data.slots, date);
+          const firstAvailable = slots.find((s) => s.available);
           if (firstAvailable) setTimeSlot(firstAvailable.value);
         }
       })
       .finally(() => setLoadingSlots(false));
   }, [open, stadium.id, date]);
 
+  useEffect(() => {
+    const selected = effectiveDaySlots.find((s) => s.value === timeSlot);
+    if (selected?.available) return;
+    const firstAvailable = effectiveDaySlots.find((s) => s.available);
+    if (firstAvailable) setTimeSlot(firstAvailable.value);
+  }, [effectiveDaySlots, timeSlot]);
+
   const estimatedPrice = useMemo(
     () => getEstimatedPrice(stadium.morningPrice, stadium.eveningPrice, date, timeSlot),
     [stadium.morningPrice, stadium.eveningPrice, date, timeSlot]
   );
 
-  const selectedSlot = daySlots.find((s) => s.value === timeSlot);
+  const selectedSlot = effectiveDaySlots.find((s) => s.value === timeSlot);
   const selectedSlotLabel = selectedSlot?.label ?? timeSlot;
 
   function validateSlotSelection(): string | null {
@@ -263,17 +285,18 @@ export function BookingDialog({
                             role="listbox"
                             aria-label="توقيت الحجز"
                           >
-                            {daySlots.map((slot) => {
+                            {effectiveDaySlots.map((slot) => {
                               const isSelected = timeSlot === slot.value;
+                              const isBookable = slot.available && !dayBlocked;
                               return (
                                 <button
                                   key={slot.value}
                                   type="button"
                                   role="option"
                                   aria-selected={isSelected}
-                                  disabled={!slot.available || dayBlocked}
+                                  disabled={!isBookable}
                                   onClick={() => {
-                                    if (!slot.available) return;
+                                    if (!isBookable) return;
                                     setSlotError("");
                                     setTimeSlot(slot.value);
                                   }}

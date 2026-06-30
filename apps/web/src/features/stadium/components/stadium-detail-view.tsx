@@ -136,11 +136,11 @@ export function StadiumDetailView({ stadium, token, user }: StadiumDetailViewPro
             onPrev={goPrev}
             onNext={goNext}
           />
-          <StadiumReviewsCard
+          {/* <StadiumReviewsCard
             averageRating={stadium.averageRating}
             reviewCount={reviewCount}
             reviews={stadium.reviews}
-          />
+          /> */}
         </motion.div>
 
         <motion.div {...enter(0.12)} className="space-y-5 lg:sticky lg:top-24">

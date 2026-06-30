@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, LogIn, Timer, Wallet } from "lucide-react";
+import { CalendarDays, Clock, LogIn, Timer, TimerIcon, Wallet } from "lucide-react";
 import { formatPrice } from "@hazjak/utils";
 import type { AuthUser } from "@hazjak/types";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -21,6 +22,7 @@ import { useSnackbar } from "@/components/ui/snackbar";
 import {
   BOOKING_SLOT_MINUTES,
   buildBookingRange,
+  formatBookingDate,
   getBookingTimeSlots,
   getEstimatedPrice,
   localDateInputValue,
@@ -29,6 +31,8 @@ import { getSlotColorClasses, SLOT_LEGEND, type SlotReason } from "@/lib/slot-co
 import { cn } from "@/lib/utils";
 
 const FALLBACK_SLOTS = getBookingTimeSlots();
+
+type BookingStep = 1 | 2;
 
 interface DaySlot {
   value: string;
@@ -73,10 +77,12 @@ export function BookingDialog({
   const [timeSlot, setTimeSlot] = useState(FALLBACK_SLOTS[4]?.value ?? FALLBACK_SLOTS[0]?.value ?? "16:00");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [slotError, setSlotError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [daySlots, setDaySlots] = useState<DaySlot[]>(FALLBACK_SLOTS.map((s) => ({ ...s, available: true })));
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [dayBlocked, setDayBlocked] = useState(false);
+  const [step, setStep] = useState<BookingStep>(1);
 
   useEffect(() => {
     if (!open || !stadium.id || !date) return;
@@ -104,9 +110,31 @@ export function BookingDialog({
   const selectedSlot = daySlots.find((s) => s.value === timeSlot);
   const selectedSlotLabel = selectedSlot?.label ?? timeSlot;
 
+  function validateSlotSelection(): string | null {
+    if (!date || !timeSlot) return "اختر التاريخ والتوقيت";
+    if (!selectedSlot?.available) return "هذا الموعد غير متاح — اختر وقتاً آخر";
+    if (dayBlocked) return "الملعب مغلق في هذا اليوم — اختر تاريخاً آخر";
+
+    const { start } = buildBookingRange(date, timeSlot);
+    if (start < new Date()) return "لا يمكن الحجز في وقت ماضٍ";
+
+    return null;
+  }
+
+  function handleContinue() {
+    setSlotError("");
+    const validationError = validateSlotSelection();
+    if (validationError) {
+      setSlotError(validationError);
+      return;
+    }
+    setSubmitError("");
+    setStep(2);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setSubmitError("");
 
     if (!token || !user) {
       router.push(`/login?next=/stadiums/${encodeURIComponent(stadium.slug)}`);
@@ -118,22 +146,14 @@ export function BookingDialog({
       return;
     }
 
-    if (!date || !timeSlot) {
-      setError("اختر التاريخ والتوقيت");
-      return;
-    }
-
-    if (!selectedSlot?.available) {
-      setError("هذا الموعد غير متاح — اختر وقتاً آخر");
+    const validationError = validateSlotSelection();
+    if (validationError) {
+      setSlotError(validationError);
+      setStep(1);
       return;
     }
 
     const { start, end } = buildBookingRange(date, timeSlot);
-    if (start < new Date()) {
-      setError("لا يمكن الحجز في وقت ماضٍ");
-      return;
-    }
-
     setSubmitting(true);
     const res = await api<{ id: string }>("/bookings", {
       method: "POST",
@@ -157,154 +177,225 @@ export function BookingDialog({
     }
 
     showSnack(res.message ?? "تعذّر إرسال الطلب", "error");
-    setError(res.message ?? "تعذّر إرسال الطلب");
+    setSubmitError(res.message ?? "تعذّر إرسال الطلب");
   }
 
   function handleOpenChange(next: boolean) {
-    if (!next) setError("");
+    if (!next) {
+      setSlotError("");
+      setSubmitError("");
+      setStep(1);
+    }
     onOpenChange(next);
   }
+
+  function handleBack() {
+    setSubmitError("");
+    setStep(1);
+  }
+
+  const stepTitle = step === 1 ? "اختيار الموعد" : "تأكيد التفاصيل";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="w-[calc(100%-2rem)] sm:max-w-lg max-h-[min(calc(100dvh-2rem),720px)] p-3 gap-0 overflow-hidden border-0 bg-transparent shadow-none flex flex-col"
+        className="flex w-[calc(100%-2rem)] max-h-[min(calc(100dvh-2rem),720px)] flex-col gap-0 overflow-hidden border-0 bg-transparent p-3 shadow-none sm:max-w-lg"
         dir="rtl"
       >
-        <div className="flex flex-col overflow-hidden rounded-2xl bg-card shadow-card max-h-full">
-          <div className="shrink-0 p-5 pb-3 space-y-4">
-            <DialogHeader className="text-start space-y-1 p-0">
-              <DialogTitle className="text-xl font-bold text-heading">تفاصيل الحجز</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground">
-                {stadium.name}
-              </DialogDescription>
-            </DialogHeader>
-
-            {!token || !user ? (
-              <LoginPrompt
-                onLogin={() =>
-                  router.push(`/login?next=/stadiums/${encodeURIComponent(stadium.slug)}`)
-                }
-              />
-            ) : (
-              <div>
-                <Label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1.5 block">
-                  التاريخ
-                </Label>
-                <DatePicker
-                  id="booking-date"
-                  value={date}
-                  onChange={setDate}
-                  minDate={minDate}
+        <div className="flex min-h-0 max-h-[min(calc(100dvh-2rem-1.5rem),696px)] flex-col overflow-hidden rounded-2xl bg-card shadow-card">
+          {!token || !user ? (
+            <>
+              <DialogHeader className="shrink-0 space-y-1 border-b border-border/50 p-5 pb-4 text-start">
+                <DialogTitle className="text-xl font-bold text-heading">تفاصيل الحجز</DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground">
+                  {stadium.name}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
+                <LoginPrompt
+                  onLogin={() =>
+                    router.push(`/login?next=/stadiums/${encodeURIComponent(stadium.slug)}`)
+                  }
                 />
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col">
+              <DialogHeader className="shrink-0 space-y-2 border-b border-border/50 p-5 pb-4 text-start">
+                <div className="space-y-1">
+                  <DialogTitle className="text-xl font-bold text-heading">{stepTitle}</DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    {stadium.name}
+                  </DialogDescription>
+                </div>
+                <BookingStepIndicator step={step} />
+              </DialogHeader>
 
-          {token && user && (
-            <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-              <div className="shrink-0 border-y border-border/60 bg-secondary/30 px-5 py-3 space-y-2">
-                <Label className="text-xs font-bold text-heading">
-                  اختيار الموعد ({formatCount(BOOKING_SLOT_MINUTES)} د)
-                </Label>
+              {step === 1 ? (
+                <>
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                    <div className="space-y-4 p-5">
+                      <div>
+                        <Label htmlFor="booking-date" className="mb-1.5 block text-xs text-muted-foreground">
+                          التاريخ
+                        </Label>
+                        <DatePicker
+                          id="booking-date"
+                          value={date}
+                          onChange={(value) => {
+                            setSlotError("");
+                            setDate(value);
+                          }}
+                          minDate={minDate}
+                        />
+                      </div>
 
-                {loadingSlots ? (
-                  <BookingSlotsSkeleton />
-                ) : (
-                  <div
-                    className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto p-0.5"
-                    role="listbox"
-                    aria-label="توقيت الحجز"
-                  >
-                    {daySlots.map((slot) => {
-                      const isSelected = timeSlot === slot.value;
-                      return (
-                        <button
-                          key={slot.value}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          disabled={!slot.available || dayBlocked}
-                          onClick={() => slot.available && setTimeSlot(slot.value)}
-                          className={cn(
-                            "rounded-lg border px-2 py-2.5 text-[11px] font-medium transition-all text-center leading-tight",
-                            getSlotColorClasses(
-                              { available: slot.available, reason: slot.reason as SlotReason | undefined },
-                              isSelected
-                            )
-                          )}
-                        >
-                          {slot.label}
-                        </button>
-                      );
-                    })}
+                      <div className="space-y-2 rounded-2xl bg-secondary/30 px-4 py-3">
+                        <Label className="text-xs font-bold text-heading">
+                          اختيار الموعد ({formatCount(BOOKING_SLOT_MINUTES)} د)
+                        </Label>
+
+                        {loadingSlots ? (
+                          <BookingSlotsSkeleton />
+                        ) : (
+                          <div
+                            className="grid grid-cols-2 gap-1.5 p-0.5 sm:grid-cols-3 lg:grid-cols-4"
+                            role="listbox"
+                            aria-label="توقيت الحجز"
+                          >
+                            {daySlots.map((slot) => {
+                              const isSelected = timeSlot === slot.value;
+                              return (
+                                <button
+                                  key={slot.value}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={isSelected}
+                                  disabled={!slot.available || dayBlocked}
+                                  onClick={() => {
+                                    if (!slot.available) return;
+                                    setSlotError("");
+                                    setTimeSlot(slot.value);
+                                  }}
+                                  className={cn(
+                                    "flex items-center justify-start gap-1 rounded-lg border px-2 py-2.5 text-start text-[11px] font-medium leading-tight transition-all",
+                                    getSlotColorClasses(
+                                      {
+                                        available: slot.available,
+                                        reason: slot.reason as SlotReason | undefined,
+                                      },
+                                      isSelected
+                                    )
+                                  )}
+                                >
+                                  <TimerIcon
+                                    className={cn("mx-1 h-3 w-3", isSelected ? "text-primary" : "")}
+                                    aria-hidden
+                                  />
+                                  {slot.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <div className="flex flex-wrap gap-3 pt-0.5">
+                          {SLOT_LEGEND.map((item) => (
+                            <span
+                              key={item.key}
+                              className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground"
+                            >
+                              <span className={cn("h-2 w-2 shrink-0 rounded-full", item.className)} />
+                              {item.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {dayBlocked && (
+                        <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                          الملعب مغلق في هذا اليوم — اختر تاريخاً آخر
+                        </p>
+                      )}
+
+                      {slotError && (
+                        <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                          {slotError}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                )}
 
-                <div className="flex flex-wrap gap-3">
-                  {SLOT_LEGEND.map((item) => (
-                    <span key={item.key} className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <span className={cn("h-2 w-2 rounded-full shrink-0", item.className)} />
-                      {item.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
+                  <div className="shrink-0 border-t border-border/60 bg-card px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-12 w-full rounded-xl text-base font-bold"
+                      disabled={loadingSlots || dayBlocked || !selectedSlot?.available}
+                      onClick={handleContinue}
+                    >
+                      متابعة
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                    <div className="space-y-4 p-5">
+                      <SelectedSlotSummary date={date} slotLabel={selectedSlotLabel} />
 
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                {dayBlocked && (
-                  <p className="text-sm text-destructive rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2">
-                    الملعب مغلق في هذا اليوم — اختر تاريخاً آخر
-                  </p>
-                )}
+                      <div className="space-y-1.5">
+                        <Label htmlFor="booking-notes" className="text-xs text-muted-foreground">
+                          ملاحظات (مباراة ودية، عدد اللاعبين...)
+                        </Label>
+                        <textarea
+                          id="booking-notes"
+                          className="min-h-[88px] w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-heading placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="مثال: مباراة ودية 7 ضد 7"
+                          maxLength={500}
+                        />
+                      </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="booking-notes" className="text-xs text-muted-foreground">
-                    ملاحظات (مباراة ودية، عدد اللاعبين...)
-                  </Label>
-                  <textarea
-                    id="booking-notes"
-                    className="w-full min-h-[88px] rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-heading placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="مثال: مباراة ودية 7 ضد 7"
-                    maxLength={500}
-                  />
-                </div>
+                      <PriceSummary
+                        estimatedPrice={estimatedPrice}
+                        depositAmount={stadium.depositAmount}
+                        durationLabel={`${formatCount(BOOKING_SLOT_MINUTES)} دقيقة`}
+                        slotLabel={selectedSlotLabel}
+                      />
 
-                <PriceSummary
-                  estimatedPrice={estimatedPrice}
-                  depositAmount={stadium.depositAmount}
-                  durationLabel={`${formatCount(BOOKING_SLOT_MINUTES)} دقيقة`}
-                  slotLabel={selectedSlotLabel}
-                />
+                      {submitError && (
+                        <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                          {submitError}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                {error && (
-                  <p className="text-sm text-destructive rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2">
-                    {error}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-11"
-                    onClick={() => onOpenChange(false)}
-                    disabled={submitting}
-                  >
-                    إلغاء
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="h-11 shadow-soft"
-                    disabled={submitting || dayBlocked || !selectedSlot?.available}
-                  >
-                    {submitting ? "جاري الإرسال..." : "تأكيد الطلب"}
-                  </Button>
-                </div>
-              </div>
-            </form>
+                  <DialogFooter className="shrink-0 border-t border-border/60 bg-card px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                    <div className="flex w-full items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-12 shrink-0 rounded-xl px-4 text-base font-semibold"
+                        onClick={handleBack}
+                        disabled={submitting}
+                      >
+                        السابق
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="h-12 min-h-12 flex-1 rounded-xl text-base font-bold shadow-soft"
+                        disabled={submitting}
+                      >
+                        {submitting ? "جاري الإرسال..." : "تأكيد الطلب"}
+                      </Button>
+                    </div>
+                  </DialogFooter>
+                </form>
+              )}
+            </div>
           )}
         </div>
       </DialogContent>
@@ -312,10 +403,51 @@ export function BookingDialog({
   );
 }
 
+function BookingStepIndicator({ step }: { step: BookingStep }) {
+  return (
+    <div className="flex items-center gap-2" aria-label={`الخطوة ${formatCount(step)} من ٢`}>
+      <span
+        className={cn(
+          "h-1.5 flex-1 rounded-full transition-colors",
+          step >= 1 ? "bg-primary" : "bg-muted"
+        )}
+      />
+      <span
+        className={cn(
+          "h-1.5 flex-1 rounded-full transition-colors",
+          step >= 2 ? "bg-primary" : "bg-muted"
+        )}
+      />
+    </div>
+  );
+}
+
+function SelectedSlotSummary({ date, slotLabel }: { date: string; slotLabel: string }) {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-secondary/30 px-4 py-3 space-y-2">
+      <p className="text-xs font-bold text-heading">الموعد المختار</p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="h-3.5 w-3.5 text-primary" aria-hidden />
+          {formatBookingDate(date)}
+        </span>
+        <span className="inline-flex items-center gap-1.5" dir="ltr">
+          <Clock className="h-3.5 w-3.5 text-primary" aria-hidden />
+          {slotLabel}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Timer className="h-3.5 w-3.5 text-primary" aria-hidden />
+          {formatCount(BOOKING_SLOT_MINUTES)} دقيقة
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function BookingSlotsSkeleton() {
   return (
     <div
-      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-48 overflow-y-auto p-1"
+      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 p-1"
       aria-busy="true"
       aria-label="جاري تحميل المواعيد"
     >

@@ -9,12 +9,14 @@ export function EmptyState({
   description,
   actionLabel,
   actionHref,
+  onAction,
 }: {
   icon?: ReactNode;
   title: string;
   description: string;
   actionLabel?: string;
   actionHref?: string;
+  onAction?: () => void;
 }) {
   return (
     <Card className="border-0 bg-none shadow-none">
@@ -22,7 +24,12 @@ export function EmptyState({
         <div className="mb-2 text-3xl opacity-50">{icon ?? "📭"}</div>
         <h3 className="text-base font-bold">{title}</h3>
         <p className="mt-1 max-w-sm text-xs text-muted-foreground">{description}</p>
-        {actionLabel && actionHref && (
+        {actionLabel && onAction && (
+          <Button className="mt-4" type="button" onClick={onAction}>
+            {actionLabel}
+          </Button>
+        )}
+        {actionLabel && actionHref && !onAction && (
           <Button className="mt-4" asChild>
             <Link href={actionHref}>{actionLabel}</Link>
           </Button>

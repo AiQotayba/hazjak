@@ -114,23 +114,28 @@ export default function OwnerBookingsPage() {
     <>
       <PageHeader
         title="الحجوزات"
-        description="اضغط على حجز لعرض التفاصيل"
-        action={
-          <Button size="sm" className="rounded-full gap-1.5" onClick={() => setCreateOpen(true)}>
+        description="اضغط على حجز لعرض التفاصيل، أو أضف حجزاً يدوياً"
+      />
+
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <SegmentedControl
+            value={view}
+            onChange={setView}
+            options={VIEW_OPTIONS}
+            aria-label="عرض الحجوزات"
+            className="w-full sm:w-fit"
+          />
+
+          <Button
+            type="button"
+            className="rounded-xl h-11 gap-2 w-full sm:w-auto shrink-0"
+            onClick={() => setCreateOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             إضافة حجز
           </Button>
-        }
-      />
-
-      <div className="flex flex-col gap-3 mb-6" >
-        <SegmentedControl
-          value={view}
-          onChange={setView}
-          options={VIEW_OPTIONS}
-          aria-label="عرض الحجوزات"
-          className="w-fit"
-        />
+        </div>
 
         <SegmentedControl
           value={filter}
@@ -154,7 +159,12 @@ export default function OwnerBookingsPage() {
           ))}
         </div>
       ) : bookings.length === 0 ? (
-        <EmptyState title="لا حجوزات" description="جرّب فلتراً آخر أو انتظر طلبات جديدة" />
+        <EmptyState
+          title="لا حجوزات"
+          description="أضف حجزاً يدوياً أو جرّب فلتراً آخر"
+          actionLabel="إضافة حجز"
+          onAction={() => setCreateOpen(true)}
+        />
       ) : (
         <ul className="space-y-3">
           {bookings.map((b) => {

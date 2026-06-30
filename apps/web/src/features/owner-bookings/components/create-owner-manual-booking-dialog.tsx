@@ -29,6 +29,7 @@ import {
 } from "@/lib/booking-slots";
 import { getSlotColorClasses, SLOT_LEGEND, type SlotReason } from "@/lib/slot-colors";
 import { cn } from "@/lib/utils";
+import { Timer } from "lucide-react";
 
 interface DaySlot {
   value: string;
@@ -188,9 +189,6 @@ export function CreateOwnerManualBookingDialog({
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-            <div className="rounded-xl bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
-              {stadium.name} · {formatPrice(estimatedPrice)} تقريباً للموعد المختار
-            </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="manual-date" className="text-xs text-muted-foreground">
@@ -207,7 +205,7 @@ export function CreateOwnerManualBookingDialog({
                 <Skeleton className="h-28 w-full rounded-lg" />
               ) : (
                 <div
-                  className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-36 overflow-y-auto p-0.5"
+                  className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 p-0.5"
                   role="listbox"
                   aria-label="توقيت الحجز"
                 >
@@ -222,7 +220,7 @@ export function CreateOwnerManualBookingDialog({
                         disabled={!slot.available || dayBlocked}
                         onClick={() => slot.available && setTimeSlot(slot.value)}
                         className={cn(
-                          "rounded-lg border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight",
+                          "flex items-center justify-start gap-1 rounded-lg border px-2 py-2.5 text-start text-[11px] font-medium leading-tight transition-all",
                           getSlotColorClasses(
                             {
                               available: slot.available,
@@ -232,12 +230,20 @@ export function CreateOwnerManualBookingDialog({
                           )
                         )}
                       >
+                        <Timer
+                          className={cn("mx-1 h-3 w-3", isSelected ? "text-white" : "text-primary")}
+                          aria-hidden
+                        />
                         {slot.label}
                       </button>
                     );
                   })}
                 </div>
               )}
+
+              <div className="rounded-xl bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+                {stadium.name} · {formatPrice(estimatedPrice)} تقريباً للموعد المختار
+              </div>
               <div className="flex flex-wrap gap-2">
                 {SLOT_LEGEND.map((item) => (
                   <span

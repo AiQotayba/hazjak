@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/lib/api";
-import { formatDate } from "@hazjak/utils";
+import { formatDate, formatTime } from "@hazjak/utils";
 
 interface AvailabilitySlot {
   id: string;
@@ -145,9 +145,9 @@ export function OwnerAvailabilityTab({
                 <li key={slot.id} className="flex items-center justify-between gap-2 rounded-2xl bg-secondary/50 px-3 py-2 text-sm">
                   <span>
                     {formatDate(slot.startTime, { dateStyle: "medium" })} —{" "}
-                    {new Date(slot.startTime).toLocaleTimeString("ar-SY", { hour: "2-digit", minute: "2-digit", numberingSystem: "latn" })}
+                    {formatTime(slot.startTime)}
                     {" – "}
-                    {new Date(slot.endTime).toLocaleTimeString("ar-SY", { hour: "2-digit", minute: "2-digit", numberingSystem: "latn" })}
+                    {formatTime(slot.endTime)}
                   </span>
                   <Button type="button" variant="ghost" size="icon" onClick={() => removeSlot(slot.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />

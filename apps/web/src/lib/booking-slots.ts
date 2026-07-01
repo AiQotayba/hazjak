@@ -1,4 +1,4 @@
-﻿import { estimateBookingPrice, formatDate } from "@hazjak/utils";
+﻿import { estimateBookingPrice, formatDate, formatHHMM12 } from "@hazjak/utils";
 
 export const BOOKING_SLOT_MINUTES = 90;
 const DAY_START_HOUR = 8;
@@ -28,9 +28,10 @@ export function getBookingTimeSlots(): TimeSlotOption[] {
   while (start <= lastStart) {
     const end = start + BOOKING_SLOT_MINUTES;
     const value = formatClock(start);
+    const endValue = formatClock(end);
     slots.push({
       value,
-      label: `${value} – ${formatClock(end)}`,
+      label: `${formatHHMM12(value)} – ${formatHHMM12(endValue)}`,
     });
     start += BOOKING_SLOT_MINUTES;
   }

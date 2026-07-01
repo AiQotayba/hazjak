@@ -57,6 +57,8 @@ export function SiteHeader() {
   }, [pathname]);
 
   const stadiumsHref = stadiumsHrefForRole(user?.role);
+  const isStadiumsBrowsePage =
+    pathname === "/stadiums" || pathname === "/user/stadiums";
   const accountNav =
     user?.role === "STADIUM_OWNER"
       ? ownerAccountNav
@@ -146,16 +148,18 @@ export function SiteHeader() {
           )}
 
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full h-9 w-9 text-primary hover:bg-accent"
-              asChild
-            >
-              <Link href={stadiumsHref} aria-label="بحث الملاعب">
-                <Search className="h-4 w-4" />
-              </Link>
-            </Button>
+            {!isStadiumsBrowsePage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full h-9 w-9 text-primary hover:bg-accent"
+                asChild
+              >
+                <Link href={stadiumsHref} aria-label="بحث الملاعب">
+                  <Search className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
 
             <InstallAppButton />
 

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarDays, Clock, LogIn, Timer, TimerIcon, Wallet } from "lucide-react";
-import { formatPrice } from "@hazjak/utils";
+import { formatHHMM12, formatPrice } from "@hazjak/utils";
 import type { AuthUser } from "@hazjak/types";
 import {
   Dialog,
@@ -130,7 +130,7 @@ export function BookingDialog({
   );
 
   const selectedSlot = effectiveDaySlots.find((s) => s.value === timeSlot);
-  const selectedSlotLabel = selectedSlot?.label ?? timeSlot;
+  const selectedSlotLabel = selectedSlot?.label ?? formatHHMM12(timeSlot);
 
   function validateSlotSelection(): string | null {
     if (!date || !timeSlot) return "اختر التاريخ والتوقيت";

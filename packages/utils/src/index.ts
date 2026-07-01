@@ -30,10 +30,18 @@ export function formatDate(
 export function formatTime(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat("ar-SY", {
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
+    hour12: true,
     ...AR_LATIN,
   }).format(d);
+}
+
+/** Formats "HH:MM" (24h) for display in 12-hour Arabic locale. */
+export function formatHHMM12(hhmm: string): string {
+  const [h, min] = hhmm.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(min)) return hhmm;
+  return formatTime(new Date(2000, 0, 1, h, min));
 }
 
 export function estimateBookingPrice(
